@@ -1,4 +1,4 @@
-brewTrackerApp.config(['$routeProvider',
+feedbackerApp.config(['$routeProvider',
 	function($routeProvider) {
 		$routeProvider.when('/about', {
 			templateUrl: 'fragments/about.html',
@@ -9,9 +9,7 @@ brewTrackerApp.config(['$routeProvider',
 		// 	requireLogin: false
 		// });
 		$routeProvider.when('/landing', {
-			// templateUrl: 'components/landing/landing.html',
-			// requireLogin: false
-			templateUrl: 'fragments/about.html',
+			templateUrl: 'components/landing/landing.html',
 			requireLogin: false
 		});
 		// $routeProvider.when('/list', {
