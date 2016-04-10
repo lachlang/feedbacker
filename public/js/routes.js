@@ -12,10 +12,18 @@ feedbackerApp.config(['$routeProvider',
 			templateUrl: 'components/landing/landing.html',
 			requireLogin: false
 		});
-		// $routeProvider.when('/list', {
-		// 	templateUrl: 'components/list/list.html',
-		// 	requireLogin: true
-		// });
+		$routeProvider.when('/list', {
+			templateUrl: 'components/list/list.html',
+			requireLogin: true
+		});
+		$routeProvider.when('/detailView', {
+			templateUrl: 'components/detail/view.html',
+			requireLogin: true
+		});
+		$routeProvider.when('/detailEdit', {
+			templateUrl: 'components/detail/edit.html',
+			requireLogin: true
+		});
 		// $routeProvider.when('/signOut', {
 		// 	templateUrl: 'components/landing/landing.html',
 		// 	requireLogin: false
