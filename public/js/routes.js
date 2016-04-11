@@ -24,14 +24,14 @@ feedbackerApp.config(['$routeProvider',
 			templateUrl: 'components/detail/edit.html',
 			requireLogin: true
 		});
-		// $routeProvider.when('/signOut', {
-		// 	templateUrl: 'components/landing/landing.html',
-		// 	requireLogin: false
-		// });
-		// $routeProvider.when('/terms', {
-		// 	templateUrl: 'fragments/termsAndConditions.html',
-		// 	requireLogin: false
-		// });
+		$routeProvider.when('/signOut', {
+			templateUrl: 'components/landing/landing.html',
+			requireLogin: false
+		});
+		$routeProvider.when('/terms', {
+			templateUrl: 'fragments/termsAndConditions.html',
+			requireLogin: false
+		});
 		$routeProvider.otherwise({
 			redirectTo: '/landing'
 		});
