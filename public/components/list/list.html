@@ -4,18 +4,44 @@
       <h2>Feedback Summary</h2>
     </div>
   </div>
-  <div class="row">
-    <div class="col-md-12">
-      <h3>Action Feedback</h3>
-
-    <p class="lead">You can track the feedback you need to action...<br>
-  <!--     <ul>
-        <li>View all the shared feedback.</li>
-        <li>Set and track goals</li>
-        <li>See a consolided list of feedback you have been requested to provide</li>
-        <li>Edit and amend previously submitted feedback</li>
-      </ul> -->
-    </p>
+  <div data-ng-controller="FeedbackActionCtrl as actions">
+    <div class="row">
+      <div class="col-md-12">
+        <h3>Action Feedback</h3>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <div data-ng-if="!action.pendingActions">
+          <p class="lead">No pending actions</p>
+        </div>
+        <div class="table-responsive" data-ng-if="action.pendingActions">
+          <table class="table table-hover">
+            <caption class="lead">Feedback you need to action</caption>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Colleague</th>
+                <th>Role</th>
+                <th>Manager</th>
+                <th>Status</th>
+                <th>View</th>
+              </tr>
+            </thead>
+            <tbody>
+          <!-- <tr data-ng-repeat="action.pendingActions"> -->
+              <tr>
+                <td>1</td>
+                <td>Bandit Dan</td>
+                <td>Doer</td>
+                <td>Bandit King</td>
+                <td>Pending</td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </div>
   <div class="row">
