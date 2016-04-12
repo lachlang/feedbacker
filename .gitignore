@@ -5,6 +5,7 @@ bin/
 /lib/
 /logs/
 /modules
+/node_modules
 /project/target
 /target
 tmp/
