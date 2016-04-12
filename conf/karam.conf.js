@@ -19,10 +19,9 @@ module.exports = function(config) {
       'public/js/libs/angular-cookies.min.js',
       'public/js/libs/angular-resource.min.js',
       'public/js/libs/angular-route.min.js',
-      'public/app.js',
-      'public/routes.js',
-      'public/components/**/*.js',
+      'test/unit/lib/angular-mocks.js',
       'public/js/*.js',
+      'public/components/**/*.js',
       'public/js/services/*.js',
       'public/js/libs.js',
       'test/unit/**/*.js'
