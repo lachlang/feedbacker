@@ -1,39 +1,39 @@
-// 'use strict';
+'use strict';
 
-// describe('feedback action controller [FeedbackActionCtrl]', function() {
+describe('feedback action controller [FeedbackActionCtrl]', function() {
 
-// 	var scope, feedbackActionController, model;
-// 	var deferred;
+	var scope, feedbackActionController, model;
+	var deferred;
 
-// 	beforeEach(module('feedbacker'));
+	beforeEach(module('feedbacker'));
 
-//     // define the mock person and relationship services
-//     beforeEach(inject(function($rootScope, $q, $controller, _Model_) {
-// 		scope = $rootScope.$new();
+    // define the mock person and relationship services
+    beforeEach(inject(function($rootScope, $q, $controller, _Model_) {
+		scope = $rootScope.$new();
 
-// 		deferred = $q.defer();
+		deferred = $q.defer();
 
-//     	model = _Model_;
-// 		spyOn(model, 'getPendingFeedbackActions').and.returnValue(deferred.promise);
+    	model = _Model_;
+		spyOn(model, 'getPendingFeedbackActions').and.returnValue(deferred.promise);
 
-// 		feedbackActionController = $controller('FeedbackActionCtrl',{$scope: scope });
-// 	}));
+		feedbackActionController = $controller('FeedbackActionCtrl',{$scope: scope });
+	}));
 
-//     describe('has valid intiatialisation values', function() {
+    describe('has valid intiatialisation values', function() {
 
-//     	// it('should define functions', function() {
-//     	// 	expect(angular.isFunction(feedbackActionController.getPendingFeedbackActions)).toBe(true);
-//     	// });
+    	xit('should define functions', function() {
+    		expect(angular.isFunction(feedbackActionController.getPendingFeedbackActions)).toBe(true);
+    	});
 
-//     	it('for global controller variables', function() {
-//             expect(feedbackActionController).toBeDefined();
-//             expect(feedbackActionController.actions).toBeDefined();
-//     	});
+    	it('for global controller variables', function() {
+            expect(feedbackActionController).toBeDefined();
+            expect(feedbackActionController.actions).toBeDefined();
+    	});
 
-//     	it('and calls the necessary services to pre-populate the model', function(){
-// 			expect(model.getPendingFeedbackActions).toHaveBeenCalled();
-//     	});
+    	it('and calls the necessary services to pre-populate the model', function(){
+			expect(model.getPendingFeedbackActions).toHaveBeenCalled();
+    	});
 
-// 	});
+	});
 
-// });
+});

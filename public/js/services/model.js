@@ -8,7 +8,7 @@ fbServices.service('Model', ['$log', '$q', 'Feedback', function($log, $q, Feedba
 		getPendingFeedbackActions: function(flushCache) {
 			var deferred = $q.defer();
 
-			if (pendingActions.lenth == 0 || flushCache) {
+			if (pendingActions.length == 0 || flushCache) {
 				$log.debug("[Model.getPendingFeedbackActions] Updating from server...");
 				Feedback.getPendingFeedbackActions.then(function(result){
 					$log.debug("[Model.getPendingFeedbackActions] Response from server: [" + result + "]");
