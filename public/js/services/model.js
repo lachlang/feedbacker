@@ -22,7 +22,11 @@ fbServices.service('Model', ['$log', '$q', 'Feedback', function($log, $q, Feedba
 				deferred.resolve(pendingActions);
 			}
 			return deferred.promise;
-		}
+		},
+
+		getCurrentFeedback: function(flushCache) {},
+
+		getFeedbackHistory: function(flushCache) {}
 	}
 	return model;
 }]);

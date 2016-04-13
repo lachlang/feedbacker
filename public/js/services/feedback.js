@@ -5,10 +5,10 @@ fbServices.service('Feedback', ['$log','$http', function($log, $http) {
 			return $http.get("/api/feedback/pending");
 		},
 
-		createNewFeedbackItem: function(id, feedback) {
+		createNewFeedbackItem: function(feedbackId, feedback) {
 			return $http({
 				method: "POST",
-				url: "/api/feedback/new/" + id,
+				url: "/api/feedback/new/" + feedbackId,
 				data:{
 					apiVersion: "1.0",
 					body: feedback
@@ -16,10 +16,10 @@ fbServices.service('Feedback', ['$log','$http', function($log, $http) {
 			});
 		},
 
-		updateFeedbackItem: function(id, feedback) {
+		updateFeedbackItem: function(feedbackId, feedback) {
 			return $http({
 				method:"PUT",
-				url:"/api/feedback/update/" + id,
+				url:"/api/feedback/update/" + feedbackId,
 				data: {
 					apiVersion: "1.0",
 					body: feedback
@@ -27,20 +27,20 @@ fbServices.service('Feedback', ['$log','$http', function($log, $http) {
 			});
 		},
 
-		getFeedbackItem: function(id) {
-			return $http.get("/api/feedback/item/" + id)
+		getFeedbackItem: function(feedbackId) {
+			return $http.get("/api/feedback/item/" + feedbackId)
 		},
 
-		getCurrentFeedbackItemsForUser: function(id) {
-			return $http.get("/api/feedback/current/" + id);
+		getCurrentFeedbackItemsForUser: function(personId) {
+			return $http.get("/api/feedback/current/" + personId);
 		},
 
 		getCurrentFeedbackItemsForSelf: function() {
 			return $http.get("/api/feedback/current/self");
 		},
 
-		getFeedbackHistoryForUser: function(id) {
-			return $http.get("/api/feedback/history/" + id);
+		getFeedbackHistoryForUser: function(personId) {
+			return $http.get("/api/feedback/history/" + personId);
 		},
 		getFeedbackHistoryForSelf: function() {
 			return $http.get("/api/feedback/history/self");
