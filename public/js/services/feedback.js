@@ -27,6 +27,10 @@ fbServices.service('Feedback', ['$log','$http', function($log, $http) {
 			});
 		},
 
+		getFeedbackItem: function(id) {
+			return $http.get("/api/feedback/item/" + id)
+		},
+
 		getCurrentFeedbackItemsForUser: function(id) {
 			return $http.get("/api/feedback/current/" + id);
 		},
