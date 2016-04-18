@@ -7,13 +7,15 @@ describe('service [Model]', function() {
 	
 	beforeEach(module('feedbacker.services'));
 
-	beforeEach(inject(function($q, _Feedback_, _Model_, $rootScope) {
+	beforeEach(inject(function($q, _Model_, _Feedback_, $rootScope) {
 		scope = $rootScope.$new();
 		deferred = $q.defer();
 		model = _Model_;
 
 		feedback = _Feedback_;
         spyOn(feedback, 'getPendingFeedbackActions').and.returnValue(deferred.promise);
+        spyOn(feedback, 'getCurrentFeedbackItemsForSelf').and.returnValue(deferred.promise);
+        spyOn(feedback, 'getFeedbackHistoryForSelf').and.returnValue(deferred.promise);
 
 	}));
 
@@ -26,7 +28,7 @@ describe('service [Model]', function() {
     });
 
     // the mock doesn't appear to be being passed the service implemention :(
-    xdescribe('caches data after the first call to server', function() {
+    describe('caches data after the first call to server', function() {
     	var result;
     	
     	it('should call the feedback.getPendingFeedbackActions service only once', function() {
@@ -38,7 +40,7 @@ describe('service [Model]', function() {
     		expect(feedback.getPendingFeedbackActions).toHaveBeenCalled();
     		expect(feedback.getPendingFeedbackActions.calls.count()).toEqual(1);
 
-    		deferred.resolve({data: {data:httpResponse}});
+    		deferred.resolve({data: {body: httpResponse}});
     		scope.$digest();
     		expect(result).toEqual(httpResponse);
 
@@ -53,11 +55,11 @@ describe('service [Model]', function() {
 
     });
     
-    xdescribe('caches data after the first call to server for multi-tennented data when active representation is set', function() {
+    describe('caches data after the first call to server for multi-tennented data when active representation is set', function() {
     	var result;
 
     	it('should call the feedback.getPendingFeedbackActions service only once', inject(function($q) {
-    		var response = {representationId:10, connections:[{id:2}]}, expectedResult = [{id:2}];
+            var httpResponse = "dummy response";
 
     		model.getPendingFeedbackActions().then(function(data) {
     			result = data;
@@ -65,9 +67,9 @@ describe('service [Model]', function() {
     		expect(feedback.getPendingFeedbackActions).toHaveBeenCalled();
     		expect(feedback.getPendingFeedbackActions.calls.count()).toEqual(1);
     		
-    		deferred.resolve(response);
+    		deferred.resolve({data:{body: httpResponse}});
     		scope.$digest();
-    		expect(result).toEqual(expectedResult);
+    		expect(result).toEqual(httpResponse);
     		
     		result = {};
     		model.getPendingFeedbackActions().then(function(data) {
@@ -75,35 +77,46 @@ describe('service [Model]', function() {
     		});
     		expect(feedback.getPendingFeedbackActions.calls.count()).toEqual(1);
     		scope.$digest();
-    		expect(result).toEqual(expectedResult);
+    		expect(result).toEqual(httpResponse);
     	}));
 
     });
 
-    xdescribe('flushes cached data when requestsed', function() {
+    describe('flushes cached data when requestsed', function() {
     	var result;
 
-    	it('should call the feedback.getPendingFeedbackActions service when flushed', function(){
-    		var response = {data:{data:{person:{id:2, representation:{}, tags:[{id:3}]}}}};
-    		var expectedResult = {id:2, representation:{}, tags:[{id:3}]};
-    		model.getPendingFeedbackActions().then(function(data) {
-    			result = data;
-    		});
-    		expect(feedback.getPendingFeedbackActions).toHaveBeenCalled();
-    		expect(feedback.getPendingFeedbackActions.calls.count()).toEqual(1);
+        var flushTest = function(modelFunction, cachedService) {
+            var httpResponse = "dummy response";
+            modelFunction().then(function(data) {
+                result = data;
+            });
+            expect(cachedService).toHaveBeenCalled();
+            expect(cachedService.calls.count()).toEqual(1);
 
-    		deferred.resolve(response);
-    		scope.$digest();
-    		expect(result).toEqual(expectedResult);
+            deferred.resolve({data: {body: httpResponse}});
+            scope.$digest();
+            expect(result).toEqual(httpResponse);
 
-    		result = {};
-    		model.getPendingFeedbackActions(true).then(function(data) {
-    			result = data;
-    		});
-    		expect(feedback.getPendingFeedbackActions.calls.count()).toEqual(2);
-    		scope.$digest();
-    		expect(result).toEqual(expectedResult);
-    	});
+            result = {};
+            modelFunction(true).then(function(data) {
+                result = data;
+            });
+            expect(cachedService.calls.count()).toEqual(2);
+            scope.$digest();
+            expect(result).toEqual(httpResponse);
+        }
+
+        it('should call the feedback.getPendingFeedbackActions service when flushed', function(){
+            flushTest(model.getPendingFeedbackActions, feedback.getPendingFeedbackActions);
+        });
+
+        it('should call the feedback.getCurrentFeedbackItemsForSelf service when flushed', function(){
+            flushTest(model.getCurrentFeedback, feedback.getCurrentFeedbackItemsForSelf);
+        });
+
+        it('should call the feedback.getFeedbackHistoryForSelf service when flushed', function(){
+            flushTest(model.getFeedbackHistory, feedback.getFeedbackHistoryForSelf);
+        });
 
     });
 
