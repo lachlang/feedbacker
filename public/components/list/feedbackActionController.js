@@ -26,4 +26,7 @@ fbControllers.controller('FeedbackActionCtrl',  ['$scope', '$log', 'Model', func
 		//todo
 	};
 
+	ctrl.editFeedbackDetail = function(feedbackId) {
+		// $location.path = "/edit";
+	}
 }]);

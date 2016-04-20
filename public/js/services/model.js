@@ -1,8 +1,9 @@
-fbServices.service('Model', ['$log', '$q', 'Feedback', function($log, $q, Feedback) {
+fbServices.service('Model', ['$log', '$q', 'Feedback', 'Questions', function($log, $q, Feedback, Questions) {
 
 	var pendingActions = [];
 	var currentFeedbackList = [];
 	var feedbackHistoryList = [];
+	var questionSets = {};
 	var errorResult = undefined;
 
 	var cacheServiceCall = function(mutateCache, updateRequired, getCache, serviceFunction, serviceCallName) {
@@ -48,6 +49,14 @@ fbServices.service('Model', ['$log', '$q', 'Feedback', function($log, $q, Feedba
 									function() { return feedbackHistoryList },
 									Feedback.getFeedbackHistoryForSelf,
 									"Feedback.getFeedbackHistoryForSelf");
+		},
+
+		getQuestionSet: function(questionSetId, flushCache) {
+			return cacheServiceCall(function(result) { questionSets[questionSetId] = result.data.body},
+									function() { return (questionSets[questionSetId] == undefined || flushCache) },
+									function() { return questionSets[questionSetId] },
+									Questions.getQuestionSet,
+									"Questions.getQuestionSet");
 		}
 	}
 	return model;
