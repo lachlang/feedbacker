@@ -6,21 +6,22 @@ fbServices.service('Model', ['$log', '$q', 'Feedback', 'Questions', function($lo
 	var questionSets = {};
 	var errorResult = undefined;
 
-	var cacheServiceCall = function(mutateCache, updateRequired, getCache, serviceFunction, serviceCallName) {
+	var cacheServiceCall = function(mutateCache, updateRequired, getCache, serviceFunction, serviceCallName, mapKey) {
 		var deferred = $q.defer();
 
-		if ( updateRequired() ) {
+		if ( updateRequired(mapKey) ) {
 			$log.debug("[" + serviceCallName + "] Updating from server...");
-			serviceFunction().then(function(result){
-				$log.debug("[" + serviceCallName + "] Response from server: [" + result + "]");
-				mutateCache(result);
-				deferred.resolve(getCache());
+			serviceFunction(mapKey).then(function(result){
+				$log.debug("[" + serviceCallName + "] Response from server...");
+				$log.debug(result)
+				mutateCache(result, mapKey);
+				deferred.resolve(getCache(mapKey));
 			}, function(result){
 				$log.error("[" + serviceCallName + "] Error from server:  [" + result + "]");
 				errorResult(result.data);
 			});
 		} else {
-			deferred.resolve(getCache());
+			deferred.resolve(getCache(mapKey));
 		}
 		return deferred.promise;
 	}
@@ -52,11 +53,15 @@ fbServices.service('Model', ['$log', '$q', 'Feedback', 'Questions', function($lo
 		},
 
 		getQuestionSet: function(questionSetId, flushCache) {
-			return cacheServiceCall(function(result) { questionSets[questionSetId] = result.data.body},
-									function() { return (questionSets[questionSetId] == undefined || flushCache) },
-									function() { return questionSets[questionSetId] },
+			if (questionSetId == undefined) {
+				questionSetId = "default";
+			}
+			return cacheServiceCall(function(result, questionSetId) { questionSets[questionSetId] = result.data.body},
+									function(questionSetId) { return (questionSets[questionSetId] == undefined || flushCache) },
+									function(questionSetId) { return questionSets[questionSetId] },
 									Questions.getQuestionSet,
-									"Questions.getQuestionSet");
+									"Questions.getQuestionSet",
+									questionSetId);
 		}
 	}
 	return model;
