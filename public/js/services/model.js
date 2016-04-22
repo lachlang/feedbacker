@@ -4,6 +4,7 @@ fbServices.service('Model', ['$log', '$q', 'Feedback', 'Questions', function($lo
 	var currentFeedbackList = [];
 	var feedbackHistoryList = [];
 	var questionSets = {};
+	var feedbackDetail = {};
 	var errorResult = undefined;
 
 	var cacheServiceCall = function(mutateCache, updateRequired, getCache, serviceFunction, serviceCallName, mapKey) {
@@ -62,6 +63,15 @@ fbServices.service('Model', ['$log', '$q', 'Feedback', 'Questions', function($lo
 									Questions.getQuestionSet,
 									"Questions.getQuestionSet",
 									questionSetId);
+		},
+
+		getFeedbackDetail: function(feedbackId, flushCache) {
+			return cacheServiceCall(function(result, feedbackId) { feedbackDetail[feedbackId] = result.data.body },
+									function(feedbackId) {return ( feedbackDetail[feedbackId] == undefined || flushCache ) },
+									function(feedbackId) { return feedbackDetail[feedbackId] },
+									Feedback.getFeedbackDetail,
+									"Feedback.getFeedbackDetail",
+									feedbackId);
 		}
 	}
 	return model;

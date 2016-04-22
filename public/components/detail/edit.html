@@ -4,7 +4,7 @@
       <h2>Edit Feedback</h2>
     </div>
   </div>
-  <div class="row" data-ng-repeat="question in edit.questions">
+  <div class="row top-buffer" data-ng-repeat="question in edit.questions">
   	<div class="col-md-1">
   		<span>Q{{$index +1}}</span>
   	</div>
@@ -12,16 +12,25 @@
   		<span>{{question.text}}</span>
   	</div>
   	<div class="col-md-2">
-  		<div class="btn-group btn-group-sm" role="group" aria-label="Answer options">
-  			<label class="btn btn-default" 
+  		<div class="btn-group" role="group" aria-label="Answer options">
+  			<button class="btn btn-default" 
   					data-ng-repeat="option in question.responseOptions" 
   					for="{{option}}" 
   					data-ng-model="question.response" 
-  					uib-btn-radio="'{{option}}'">{{option}}</label>
+  					uib-btn-radio="'{{option}}'">{{option}}</button>
   		</div>
   	</div>
   	<div class="col-md-5">
-  		<input type="textarea" data-ng-model="question.comments" />
+  		<textarea class="field span12" data-ng-model="question.comments" ></textarea>
   	</div>
+  </div>
+  <div class="row">
+  	<div class="col-md-1">
+		<button class="btn btn-primary" data-ng-click="edit.save()">Save</button>  		
+  	</div>
+  	<div class="col-md-1">
+		<button class="btn btn-default" data-ng-click="edit.cancel()">Cancel</button>  		
+  	</div>
+  	<div class="col-md-10"></div>
   </div>
 </div>

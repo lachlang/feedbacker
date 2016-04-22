@@ -1,26 +1,38 @@
 /*
  * Controller for feedback action
  */
-fbControllers.controller('EditCtrl',  ['$scope', '$log', 'Model', 'uibButtonConfig', function($scope, $log, Model, btnConfig) {
+fbControllers.controller('EditCtrl',  ['$scope', '$log', 'Model', 'uibButtonConfig', '$location', function($scope, $log, Model, btnConfig, $location) {
 
 	btnConfig.activeClass = 'btn-primary';
 
 	var ctrl = this;
+	var feedbackId = undefined;
 
 	ctrl.questions = [];
-	ctrl.currentFeedbackList = [];
-	ctrl.feedbackHistoryList = [];
 
-	// get the pending actions
-	Model.getQuestionSet().then(function(response) {
-		ctrl.questions = response;
-	});
+	ctrl.initialiseController = function() {
+		var feedbackId = $location.search()['id'];
+		if (feedbackId) {
+			Model.getFeedbackDetail(feedbackId).then(function(response) {
+				ctrl.question = response;
+			});
+		} else {	
+			Model.getQuestionSet().then(function(response) {
+				ctrl.questions = response;
+			});
+		}
+	}
 
 	ctrl.save = function(feedbackId) {
-		//todo
+		Model.saveFeedback().then(function(response) {
+
+			$location.path("/list");
+		});
 	};
 
-	ctrl.cancel = function(feedbackId) {
-		// $location.path = "/edit";
+	ctrl.cancel = function() {
+		$location.path("/list");
 	}
+
+	ctrl.initialiseController();
 }]);

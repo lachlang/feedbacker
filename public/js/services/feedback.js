@@ -42,8 +42,13 @@ fbServices.service('Feedback', ['$log','$http', function($log, $http) {
 		getFeedbackHistoryForUser: function(personId) {
 			return $http.get("/api/feedback/history/" + personId);
 		},
+
 		getFeedbackHistoryForSelf: function() {
 			return $http.get("/api/feedback/history/self");
+		},
+
+		getFeedbackDetail: function(feedbackId) {
+			return $http.get("/api/feedback/" + feedbackId);
 		}
 	}
 }]);
