@@ -12,7 +12,13 @@
   		<span>{{question.text}}</span>
   	</div>
   	<div class="col-md-2">
-  		
+  		<div class="btn-group btn-group-sm" role="group" aria-label="Answer options">
+  			<label class="btn btn-default" 
+  					data-ng-repeat="option in question.responseOptions" 
+  					for="{{option}}" 
+  					data-ng-model="question.response" 
+  					uib-btn-radio="'{{option}}'">{{option}}</label>
+  		</div>
   	</div>
   	<div class="col-md-5">
   		<input type="textarea" data-ng-model="question.comments" />

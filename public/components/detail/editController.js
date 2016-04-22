@@ -1,7 +1,9 @@
 /*
  * Controller for feedback action
  */
-fbControllers.controller('EditCtrl',  ['$scope', '$log', 'Model', function($scope, $log, Model) {
+fbControllers.controller('EditCtrl',  ['$scope', '$log', 'Model', 'uibButtonConfig', function($scope, $log, Model, btnConfig) {
+
+	btnConfig.activeClass = 'btn-primary';
 
 	var ctrl = this;
 

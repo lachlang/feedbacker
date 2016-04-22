@@ -19,6 +19,7 @@ module.exports = function(config) {
       'public/js/libs/angular-cookies.min.js',
       'public/js/libs/angular-resource.min.js',
       'public/js/libs/angular-route.min.js',
+      'public/js/libs/ui-bootstrap-tpls-1.3.2.min.js',
       'test/unit/lib/angular-mocks.js',
       'public/js/*.js',
       'public/js/services/*.js',
