@@ -1,5 +1,5 @@
 <nav class="navbar navbar-inverse navbar-fixed-top">
-  <div class="container-fluid">
+  <div class="container-fluid" data-ng-controller="MenuCtrl as menu">
     <div class="navbar-header">
       <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
         <span class="sr-only">Toggle navigation</span>
@@ -9,16 +9,22 @@
       </button>
       <a class="navbar-brand" href="#/">Feedbacker</a>
     </div>
-    <div id="navbar" class="navbar-collapse collapse">
-      <form class="navbar-form navbar-right">
+    <div data-ng-if="!hasLoggedIn()" id="navbar" class="navbar-collapse collapse">
+      <form class="navbar-form navbar-right" data-ng-submit="menu.login()">
         <div class="form-group">
-          <input type="text" placeholder="Email" class="form-control">
+          <input type="email" placeholder="Email" class="form-control" required>
         </div>
         <div class="form-group">
-          <input type="password" placeholder="Password" class="form-control">
+          <input type="password" placeholder="Password" class="form-control" minlength="8" required>
         </div>
         <button type="submit" class="btn btn-success">Sign in</button>
       </form>
     </div><!--/.navbar-collapse -->
+    <div data-ng-if="hasLoggedIn()">
+      <button class="btn btn-secondary" data-ng-click="menu.logout()"
+    </div>
   </div>
 </nav>
+<div><!-- 
+  <uib-alert close="menu.resetError()">{{menu.error}}</uib-alert>
+</div> -->

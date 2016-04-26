@@ -19,7 +19,7 @@ fbServices.service('Model', ['$log', '$q', 'Feedback', 'Questions', function($lo
 				deferred.resolve(getCache(mapKey));
 			}, function(result){
 				$log.error("[" + serviceCallName + "] Error from server:  [" + result + "]");
-				errorResult(result.data);
+				errorResult = result.data;
 			});
 		} else {
 			deferred.resolve(getCache(mapKey));
