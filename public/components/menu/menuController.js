@@ -5,7 +5,6 @@ fbControllers.controller('MenuCtrl', ['$scope', '$log', '$location', 'Session', 
 
 	var ctrl = this;
 
-	var isLoggedIn = false;
 	ctrl.error = undefined;
 
 	ctrl.login = function() {
@@ -13,9 +12,7 @@ fbControllers.controller('MenuCtrl', ['$scope', '$log', '$location', 'Session', 
 
 		// LG: 2016-04-26 use standard form validation only at this point
 		Session.login().then(function(result) {
-			hasLoggedIn = true;
 			$location.path("/list");
-			$log.info("logged in!")
 		}, function(result) {
 			$log.error("log in FAILED!")
 			ctrl.error = "Could not log in.  Please try again later.";
@@ -25,6 +22,7 @@ fbControllers.controller('MenuCtrl', ['$scope', '$log', '$location', 'Session', 
 
 	ctrl.logout = function() {
 		ctrl.resetError();
+		Session.logout();
 		$location.path("/landing");
 	};
 
@@ -32,7 +30,7 @@ fbControllers.controller('MenuCtrl', ['$scope', '$log', '$location', 'Session', 
 		ctrl.error = undefined;
 	}
 
-	ctrl.hasLoggedIn = function() {
-		return isLoggedIn;
+	ctrl.isLoggedIn = function() {
+		return Session.isLoggedIn();
 	}
 }]);
