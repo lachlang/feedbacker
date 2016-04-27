@@ -14,13 +14,13 @@ fbControllers.controller('FeedbackActionCtrl',  ['$scope', '$log', 'Model', func
 		ctrl.actions = response;
 	});
 
-	// Model.getCurrentFeedback().then(function(response) {
-	// 	ctrl.currentFeedbackList = response;
-	// });
+	Model.getCurrentFeedback().then(function(response) {
+		ctrl.currentFeedbackList = response;
+	});
 
-	// Model.getFeedbackHistory().then(function(response) {
-	// 	ctrl.feedbackHistoryList = response;
-	// });
+	Model.getFeedbackHistory().then(function(response) {
+		ctrl.feedbackHistoryList = response;
+	});
 
 	ctrl.viewFeedbackDetail = function(feedbackId) {
 		//todo
