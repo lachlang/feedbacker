@@ -69,8 +69,8 @@ fbServices.service('Model', ['$log', '$q', 'Feedback', 'Questions', function($lo
 			return cacheServiceCall(function(result, feedbackId) { feedbackDetail[feedbackId] = result.data.body },
 									function(feedbackId) {return ( feedbackDetail[feedbackId] == undefined || flushCache ) },
 									function(feedbackId) { return feedbackDetail[feedbackId] },
-									Feedback.getFeedbackDetail,
-									"Feedback.getFeedbackDetail",
+									Feedback.getFeedbackItem,
+									"Feedback.getFeedbackItem",
 									feedbackId);
 		}
 	}

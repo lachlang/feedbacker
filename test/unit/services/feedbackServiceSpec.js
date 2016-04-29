@@ -30,7 +30,6 @@ describe('service [Feedback]', function() {
         expect(angular.isFunction(feedback.getCurrentFeedbackItemsForSelf)).toBe(true);
         expect(angular.isFunction(feedback.getFeedbackHistoryForUser)).toBe(true);
         expect(angular.isFunction(feedback.getFeedbackHistoryForSelf)).toBe(true);
-        expect(angular.isFunction(feedback.getFeedbackDetail)).toBe(true);
     });
 
     describe("calls the appropriate server api", function() {
@@ -164,21 +163,6 @@ describe('service [Feedback]', function() {
             expect(result).toEqual(dummyResult);
         });
 
-        it('to retrieve feedback detail', function() {
-            var result, promise = feedback.getFeedbackDetail(21);
-
-            $httpBackend.expectGET('/api/feedback/21').respond(200, dummyResult);
-            
-            // set the response value
-            promise.then(function(data) {
-                result = data.data;
-            });
-            expect(result).toBeUndefined(); // it really should at this point
-            $httpBackend.flush();
-
-            expect(result).toBeDefined();
-            expect(result).toEqual(dummyResult);
-        });
     });
 
 });

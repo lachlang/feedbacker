@@ -1,0 +1,20 @@
+{
+	"body": {
+		"id":12,
+		"feedbackForName":"Bandit Dan",
+		"managerName":"Hugo Boss",
+		"status":"New",
+		"shareFeedback":false
+		"questions":
+		[
+			{ "text": "This is the first question.", "responseOptions":[1,2,3,4,5]},
+			{ "text": "This is the second question.  It is really long and contains a lot of text.  Indeed it just can't quite seem to get the point and end up somewhere sensible.  If only it would ask something that was worth asking and end our suspense.  It isn't that is hasn't been a thrilling ride, but it would be *fantastic* if it would hit the triumphant conclusion.", "responseOptions":[1,2,3,4,5]},
+			{ "text": "This is the third question.", "responseOptions":[1,2,3,4,5]},
+			{ "text": "Here is a yes/no question.", "responseOptions":["Yes", "No"]},
+			{ "text": "Here is a true/false question.", "responseOptions":["True", "False"]},
+			{ "text": "Here is a question with a rating out of three.", "responseOptions":[1,2,3]},
+			{ "text": "Here is a question with a rating out of seven.", "responseOptions":[1,2,3,4,5,6,7]},
+			{ "text": "Here is a question with a text rating.", "responseOptions":["Unbelievable", "Ok", "Pass Conceeded", "Requires Development"]}
+		]
+	}
+}

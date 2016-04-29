@@ -29,7 +29,7 @@ describe('feedback action controller [FeedbackActionCtrl]', function() {
 
     	it('for global controller variables', function() {
             expect(feedbackActionController).toBeDefined();
-            expect(feedbackActionController.actions).toBeDefined();
+            expect(feedbackActionController.pendingActions).toBeDefined();
     	});
 
     	it('and calls the necessary services to pre-populate the model', function(){

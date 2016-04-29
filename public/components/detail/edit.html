@@ -4,6 +4,29 @@
       <h2>Edit Feedback</h2>
     </div>
   </div>
+  <div class="row top-buffer">
+    <div class="col-md-12">
+      <p class="lead">Feedback for <strong>{{edit.feedbackForName}}</strong>.  Feedback will be visbile by <em>{{edit.managerName}}</em></p>
+    </div>
+  </div>
+  <div class="row top-buffer">
+    <div class="col-md-1"></div>
+    <div class="col-md-4">
+      <p>Make feedback visible to {{edit.feedbackForName}}?</p>
+    </div>
+    <div class="col-md-2">
+      <div class="btn-group" role="group" aria-label="Answer options">
+        <button class="btn btn-default" 
+            for="shareFeedback"
+            data-ng-model="edit.shareFeedback" 
+            uib-btn-radio="false">No</button>
+        <button class="btn btn-default" 
+            for="shareFeedback"
+            data-ng-model="edit.shareFeedback" 
+            uib-btn-radio="true">Yes</button>
+      </div>      
+    </div>
+  </div>
   <div class="row top-buffer" data-ng-repeat="question in edit.questions">
   	<div class="col-md-1">
   		<span>Q{{$index +1}}</span>

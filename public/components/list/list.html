@@ -12,10 +12,10 @@
     </div>
     <div class="row">
       <div class="col-md-12">
-        <div data-ng-if="!action.pendingActions">
+        <div data-ng-if="!actions.pendingActions">
           <p class="lead">No pending actions</p>
         </div>
-        <div class="table-responsive" data-ng-if="action.pendingActions">
+        <div class="table-responsive" data-ng-if="actions.pendingActions">
           <table class="table table-hover">
             <caption class="lead">Feedback you need to action</caption>
             <thead>
@@ -29,14 +29,16 @@
               </tr>
             </thead>
             <tbody>
-          <!-- <tr data-ng-repeat="action.pendingActions"> -->
-              <tr>
-                <td>1</td>
-                <td>Bandit Dan</td>
-                <td>Doer</td>
-                <td>Bandit King</td>
-                <td>Pending</td>
-                <td></td>
+              <tr data-ng-repeat="pending in actions.pendingActions">
+                <td>{{$index + 1}}</td>
+                <td>{{pending.name}}</td>
+                <td>{{pending.role}}</td>
+                <td>{{pending.manager}}</td>
+                <td>{{pending.status}}</td>
+                <td>
+                  <a data-ng-show="pending.status=='Closed'" href="#/detailView?id={{pending.id}}">View</a>
+                  <a data-ng-show="pending.status!='Closed'" href="#/detailEdit?id={{pending.id}}">Edit</a>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -44,10 +46,38 @@
       </div>
     </div>
   </div>
-  <div class="row">
+  <div class="row" data-ng-if="actions.feedbackHistoryList">
     <div class="col-md-12">
       <h3>Your Feedback History</h3>
-      <p class="lead">See the feedback provided to you.</p>
+    </div>
+  </div>
+  <div class="row" data-ng-if="actions.feedbackHistoryList">
+    <div class="col-md-12">
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <caption class="lead">Feedback you have previously received</caption>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Colleague</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>View</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr data-ng-repeat="history in actions.feedbackHistoryList">
+              <td>{{$index + 1}}</td>
+              <td>{{history.name}}</td>
+              <td>{{history.role}}</td>
+              <td>{{history.status}}</td>
+              <td>
+                <a href="#/detailView/{{history.id}}">View</a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </div>

@@ -5,13 +5,13 @@ fbControllers.controller('FeedbackActionCtrl',  ['$scope', '$log', 'Model', func
 
 	var ctrl = this;
 
-	ctrl.actions = [];
+	ctrl.pendingActions = [];
 	ctrl.currentFeedbackList = [];
 	ctrl.feedbackHistoryList = [];
 
 	// get the pending actions
 	Model.getPendingFeedbackActions().then(function(response) {
-		ctrl.actions = response;
+		ctrl.pendingActions = response;
 	});
 
 	Model.getCurrentFeedback().then(function(response) {
@@ -23,10 +23,10 @@ fbControllers.controller('FeedbackActionCtrl',  ['$scope', '$log', 'Model', func
 	});
 
 	ctrl.viewFeedbackDetail = function(feedbackId) {
-		//todo
+		// $location.path("/detailView");
 	};
 
 	ctrl.editFeedbackDetail = function(feedbackId) {
-		// $location.path = "/edit";
-	}
+		// $location.path("/detailEdit");
+	};
 }]);

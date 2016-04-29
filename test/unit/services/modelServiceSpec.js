@@ -16,7 +16,7 @@ describe('service [Model]', function() {
         spyOn(feedback, 'getPendingFeedbackActions').and.returnValue(deferred.promise);
         spyOn(feedback, 'getCurrentFeedbackItemsForSelf').and.returnValue(deferred.promise);
         spyOn(feedback, 'getFeedbackHistoryForSelf').and.returnValue(deferred.promise);
-        spyOn(feedback, 'getFeedbackDetail').and.returnValue(deferred.promise);
+        spyOn(feedback, 'getFeedbackItem').and.returnValue(deferred.promise);
 
         questions = _Questions_;
         spyOn(questions, 'getQuestionSet').and.returnValue(deferred.promise);        
@@ -74,8 +74,8 @@ describe('service [Model]', function() {
             cacheTest(model.getQuestionSet, questions.getQuestionSet);
         });
 
-        it('should call the feedback.getFeedbackDetail service only once', function() {
-            cacheTest(model.getFeedbackDetail, feedback.getFeedbackDetail);
+        it('should call the feedback.getFeedbackItem service only once', function() {
+            cacheTest(model.getFeedbackDetail, feedback.getFeedbackItem);
         });
 
     });
@@ -119,8 +119,8 @@ describe('service [Model]', function() {
             flushTest(model.getQuestionSet, questions.getQuestionSet);
         });
 
-        it('should call the feedback.getFeedbackDetail service when flushed', function(){
-            flushTest(model.getFeedbackDetail, feedback.getFeedbackDetail);
+        it('should call the feedback.getFeedbackItem service when flushed', function(){
+            flushTest(model.getFeedbackDetail, feedback.getFeedbackItem);
         });
 
     });

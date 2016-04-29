@@ -30,8 +30,11 @@ describe('edit feedback detail controller [EditCtrl]', function() {
 
     	it('for global controller variables', function() {
             expect(editController).toBeDefined();
-            expect(editController.questions).toBeDefined();
-            expect(editController.feedbackId).not.toBeDefined();
+            expect(editController.questions).toEqual([]);
+            expect(editController.error).not.toBeDefined();
+            expect(editController.feedbackForName).not.toBeDefined();
+            expect(editController.managerName).not.toBeDefined();
+            expect(editController.shareFeedback).toBe(false);
     	});
 
     	// it('and calls the necessary services to pre-populate the model', function(){

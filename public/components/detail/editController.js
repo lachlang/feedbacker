@@ -6,20 +6,31 @@ fbControllers.controller('EditCtrl',  ['$scope', '$log', 'Model', 'uibButtonConf
 	btnConfig.activeClass = 'btn-primary';
 
 	var ctrl = this;
-	var feedbackId = undefined;
 
 	ctrl.questions = [];
+	ctrl.error = undefined;
+	ctrl.feedbackForName = undefined;
+	ctrl.managerName = undefined;
+	ctrl.shareFeedback = false;
 
 	ctrl.initialiseController = function() {
-		var feedbackId = $location.search()['id'];
+		var feedbackId = $location.search()["id"];
+
+		// TODO: fix this when I'm not on the plane
+		// if (feedbackId && Number.isInteger(feedbackId)) {
 		if (feedbackId) {
+
 			Model.getFeedbackDetail(feedbackId).then(function(response) {
-				ctrl.question = response;
+				$log.info(response)
+				ctrl.questions = response.questions;
+				ctrl.feedbackForName = response.feedbackForName;
+				ctrl.managerName = response.managerName;
+				if (response.shareFeedback) {
+					ctrl.shareFeedback = response.shareFeedback;
+				}
 			});
-		} else {	
-			Model.getQuestionSet().then(function(response) {
-				ctrl.questions = response;
-			});
+		} else {
+			error = "Invalid link."
 		}
 	}
 

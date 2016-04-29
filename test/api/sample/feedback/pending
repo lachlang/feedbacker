@@ -1,9 +1,9 @@
 {
 	"body": [
-		{ "status":"New", 		"name":"John Doe", 			"role":"Engineer"},
-		{ "status":"Submitted", "name":"Bandit Dan", 		"role":"Business Analyst",			"id":"12", "lastUpdated":"2016-04-22 14:32:23"},
-		{ "status":"New",		"name":"Jane Doe", 			"role":"Solution Delivery Manager"},
-		{ "status":"Closed",	"name":"Beverly Fixer", 	"role":"Engineer",					"id":"54", "lastUpdated":"2016-04-26 22:23:24"},
-		{ "status":"Submitted", "name":"Pointy Haired Bob",	"role":"Engineering Lead",			"id":"23", "lastUpdated":"2016-04-21 08:18:57"}
+		{ "status":"New", 		"name":"John Doe", 			"role":"Engineer",					"managerName": "Hugo Boss",	id":2},
+		{ "status":"Submitted", "name":"Bandit Dan", 		"role":"Business Analyst",			"managerName": "Hugo Boss",	"id":12, "lastUpdated":"2016-04-22 14:32:23"},
+		{ "status":"New",		"name":"Jane Doe", 			"role":"Solution Delivery Manager", "managerName": "Pointy Haired Bob",	"id":63},
+		{ "status":"Closed",	"name":"Beverly Fixer", 	"role":"Engineer",					"managerName": "Hugo Boss",	"id":54, "lastUpdated":"2016-04-26 22:23:24"},
+		{ "status":"Submitted", "name":"Pointy Haired Bob",	"role":"Engineering Lead",			"managerName": "Hugo Boss",	"id":23, "lastUpdated":"2016-04-21 08:18:57"}
 	]
 }
