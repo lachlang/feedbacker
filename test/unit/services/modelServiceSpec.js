@@ -33,6 +33,7 @@ describe('service [Model]', function() {
         expect(angular.isFunction(model.getFeedbackHistory)).toBe(true);
         expect(angular.isFunction(model.getQuestionSet)).toBe(true);
         expect(angular.isFunction(model.getFeedbackDetail)).toBe(true);
+        expect(angular.isFunction(model.saveFeedback)).toBe(true);
     });
 
     describe('caches data after the first call to server', function() {

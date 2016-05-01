@@ -72,6 +72,12 @@ fbServices.service('Model', ['$log', '$q', 'Feedback', 'Questions', function($lo
 									Feedback.getFeedbackItem,
 									"Feedback.getFeedbackItem",
 									feedbackId);
+		},
+
+		saveFeedback: function() {
+			var deferred = $q.defer;
+			deferred.resolve();
+			return $deferred.promise;
 		}
 	}
 	return model;

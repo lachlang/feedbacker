@@ -1,8 +1,8 @@
 {
 	"body": {
 		"id":2,
-		"feedbackForName":"John Doe",
-		"managerName":"Hugo Boss",
+		"feedbackForName":"Jane Doe",
+		"managerName":"Pointy Haired Bob",
 		"status":"New",
 		"shareFeedback":true,
 		"questions":

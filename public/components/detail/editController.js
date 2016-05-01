@@ -21,7 +21,6 @@ fbControllers.controller('EditCtrl',  ['$scope', '$log', 'Model', 'uibButtonConf
 		if (feedbackId) {
 
 			Model.getFeedbackDetail(feedbackId).then(function(response) {
-				$log.info(response)
 				ctrl.questions = response.questions;
 				ctrl.feedbackForName = response.feedbackForName;
 				ctrl.managerName = response.managerName;
@@ -37,13 +36,19 @@ fbControllers.controller('EditCtrl',  ['$scope', '$log', 'Model', 'uibButtonConf
 	ctrl.save = function(feedbackId) {
 		Model.saveFeedback().then(function(response) {
 
-			$location.path("/list");
+			ctrl.navigateToList();
 		});
 	};
 
 	ctrl.cancel = function() {
-		$location.path("/list");
+		ctrl.navigateToList();
 	}
 
 	ctrl.initialiseController();
+
+	ctrl.navigateToList = function() {
+		$location.search("id", undefined);
+		$location.path("/list");
+
+	}
 }]);
