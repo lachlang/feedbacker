@@ -10,6 +10,7 @@ fbControllers.controller('EditCtrl',  ['$scope', '$log', 'Model', 'uibButtonConf
 	ctrl.questions = [];
 	ctrl.error = undefined;
 	ctrl.feedbackForName = undefined;
+	ctrl.feedbackFromName = undefined;
 	ctrl.managerName = undefined;
 	ctrl.shareFeedback = false;
 
@@ -23,13 +24,17 @@ fbControllers.controller('EditCtrl',  ['$scope', '$log', 'Model', 'uibButtonConf
 			Model.getFeedbackDetail(feedbackId).then(function(response) {
 				ctrl.questions = response.questions;
 				ctrl.feedbackForName = response.feedbackForName;
+				ctrl.feedbackFromName = response.feedbackFromName;
 				ctrl.managerName = response.managerName;
 				if (response.shareFeedback) {
 					ctrl.shareFeedback = response.shareFeedback;
 				}
+			}, function(response) {
+				// error condition
+				ctrl.error = "Could not load feedback.  Please try again later.";
 			});
 		} else {
-			error = "Invalid link."
+			ctrl.error = "Couldn't load feedback."
 		}
 	}
 
@@ -41,14 +46,19 @@ fbControllers.controller('EditCtrl',  ['$scope', '$log', 'Model', 'uibButtonConf
 	};
 
 	ctrl.cancel = function() {
+
 		ctrl.navigateToList();
 	}
 
 	ctrl.initialiseController();
 
 	ctrl.navigateToList = function() {
+		ctrl.resetError();
 		$location.search("id", undefined);
 		$location.path("/list");
+	}
 
+	ctrl.resetError = function() {
+		ctrl.error = undefined;
 	}
 }]);

@@ -12,6 +12,10 @@ feedbackerApp.config(['$routeProvider',
 			templateUrl: 'components/landing/landing.html',
 			requireLogin: false
 		});
+		$routeProvider.when('/nomiate', {
+			templateUrl: 'components/nominate/nominate.html',
+			requireLogin: false
+		});
 		$routeProvider.when('/list', {
 			templateUrl: 'components/list/list.html',
 			requireLogin: true

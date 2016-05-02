@@ -7,6 +7,12 @@
   <div data-ng-controller="FeedbackActionCtrl as actions">
     <div class="row">
       <div class="col-md-12">
+        <p class="lead">Welcome <strong>Hiro Protagonist</strong></p>
+        <p>Nominate people to <a href="#/nominate">submit feedback.</a></p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
         <h3>Action Feedback</h3>
       </div>
     </div>
@@ -25,6 +31,7 @@
                 <th>Role</th>
                 <th>Manager</th>
                 <th>Status</th>
+                <th>Date</th>
                 <th>View</th>
               </tr>
             </thead>
@@ -33,8 +40,9 @@
                 <td>{{$index + 1}}</td>
                 <td>{{pending.name}}</td>
                 <td>{{pending.role}}</td>
-                <td>{{pending.manager}}</td>
+                <td>{{pending.managerName}}</td>
                 <td>{{pending.status}}</td>
+                <td>{{pending.lastUpdated}}</td>
                 <td>
                   <a data-ng-show="pending.status=='Closed'" href="#/detailView?id={{pending.id}}">View</a>
                   <a data-ng-show="pending.status!='Closed'" href="#/detailEdit?id={{pending.id}}">Edit</a>
@@ -44,40 +52,40 @@
           </table>
         </div>
       </div>
-    </div>
-  </div>
-  <div class="row" data-ng-if="actions.feedbackHistoryList">
-    <div class="col-md-12">
-      <h3>Your Feedback History</h3>
-    </div>
-  </div>
-  <div class="row" data-ng-if="actions.feedbackHistoryList">
-    <div class="col-md-12">
-      <div class="table-responsive">
-        <table class="table table-hover">
-          <caption class="lead">Feedback you have previously received</caption>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Colleague</th>
-              <th>Role</th>
-              <th>Status</th>
-              <th>View</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr data-ng-repeat="history in actions.feedbackHistoryList">
-              <td>{{$index + 1}}</td>
-              <td>{{history.name}}</td>
-              <td>{{history.role}}</td>
-              <td>{{history.status}}</td>
-              <td>
-                <a href="#/detailView/{{history.id}}">View</a>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+    </div> <!-- end row -->
+    <div class="row" data-ng-if="actions.feedbackHistoryList">
+      <div class="col-md-12">
+        <h3>Your Feedback History</h3>
       </div>
     </div>
-  </div>
+    <div class="row" data-ng-if="actions.feedbackHistoryList">
+      <div class="col-md-12">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <caption class="lead">Feedback you have previously received</caption>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Colleague</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>View</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr data-ng-repeat="history in actions.feedbackHistoryList">
+                <td>{{$index + 1}}</td>
+                <td>{{history.name}}</td>
+                <td>{{history.role}}</td>
+                <td>{{history.status}}</td>
+                <td>
+                  <a data-ng-if="history.shared" href="#/detailView?id={{history.id}}">View</a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div> <!-- end row -->
+  </div> <!-- end controller -->
 </div>

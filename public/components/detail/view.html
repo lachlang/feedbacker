@@ -1,7 +1,49 @@
-<div class="container-fluid">
+<div class="container-fluid" data-ng-controller="EditCtrl as edit">
   <div class="row">
     <div class="col-md-12">
       <h2>View Feedback</h2>
     </div>
+  </div>
+  <div data-ng-if="edit.error" class="row top-buffer">
+    <div class="col-md-12">
+      <p class="lead">{{edit.error}}</p>
+    </div>
+  </div>
+  <div data-ng-if="!edit.error">
+	  <div class="row top-buffer">
+	    <div class="col-md-12">
+	      <p class="lead">Feedback for <strong>{{edit.feedbackForName}}</strong> from <strong>{{edit.feedbackFromName}}</strong>.  Feedback is be visible by <em>{{edit.managerName}}</em></p>
+	    </div>
+	  </div>
+	  <div class="row top-buffer" data-ng-repeat="question in edit.questions">
+	  	<div class="col-md-1">
+	  		<span>Q{{$index +1}}</span>
+	  	</div>
+	  	<div class="col-md-4">
+	  		<span>{{question.text}}</span>
+	  	</div>
+	  	<div class="col-md-2">
+	  		<div class="btn-group" role="group" aria-label="Answer options">
+	<!--   			<button class="btn btn-default" 
+	  					data-ng-repeat="option in question.responseOptions" 
+	  					for="{{option}}" 
+	  					data-ng-model="question.response" 
+	  					uib-btn-radio="'{{option}}'">{{option}}</button> -->
+	<!-- 			<span data-ng-repeat="option in question.responseOption" class="btn" data-ng-class="{option==question.response ? 'btn-primary': 'btn-default'}">{{option}}</span> -->
+	<!-- 			<span data-ng-repeat="option in question.responseOption" class="btn" data-ng-class="{btn-primary: option == question.response}">{{option}}</span>
+	 -->			
+				<span data-ng-if="question.response" class="btn btn-primary">{{question.response}}</span>
+	  		</div>
+	  	</div>
+	  	<div class="col-md-5">
+	  		<p>{{question.comments}}</p>
+	  	</div>
+	  </div>
+  	</div>
+  <div class="row top-buffer">
+  	<div class="col-md-1">
+		<button class="btn btn-primary" data-ng-click="edit.cancel()">Done</button>  		
+  	</div>
+  	<div class="col-md-11"></div>
   </div>
 </div>
