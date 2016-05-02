@@ -31,7 +31,7 @@
                 <th>Role</th>
                 <th>Manager</th>
                 <th>Status</th>
-                <th>Date</th>
+                <th>Last Updated</th>
                 <th>View</th>
               </tr>
             </thead>
@@ -69,6 +69,7 @@
                 <th>Colleague</th>
                 <th>Role</th>
                 <th>Status</th>
+                <th>Submitted</th>
                 <th>View</th>
               </tr>
             </thead>
@@ -78,6 +79,7 @@
                 <td>{{history.name}}</td>
                 <td>{{history.role}}</td>
                 <td>{{history.status}}</td>
+                <td>{{history.lastUpdated}}</td>
                 <td>
                   <a data-ng-if="history.shared" href="#/detailView?id={{history.id}}">View</a>
                 </td>

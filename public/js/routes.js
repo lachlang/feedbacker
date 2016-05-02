@@ -8,25 +8,25 @@ feedbackerApp.config(['$routeProvider',
 		// 	templateUrl: 'components/error.html',
 		// 	requireLogin: false
 		// });
-		$routeProvider.when('/landing', {
-			templateUrl: 'components/landing/landing.html',
-			requireLogin: false
-		});
-		$routeProvider.when('/nomiate', {
-			templateUrl: 'components/nominate/nominate.html',
-			requireLogin: false
-		});
-		$routeProvider.when('/list', {
-			templateUrl: 'components/list/list.html',
+		$routeProvider.when('/detailEdit', {
+			templateUrl: 'components/detail/edit.html',
 			requireLogin: true
 		});
 		$routeProvider.when('/detailView', {
 			templateUrl: 'components/detail/view.html',
 			requireLogin: true
 		});
-		$routeProvider.when('/detailEdit', {
-			templateUrl: 'components/detail/edit.html',
+		$routeProvider.when('/landing', {
+			templateUrl: 'components/landing/landing.html',
+			requireLogin: false
+		});
+		$routeProvider.when('/list', {
+			templateUrl: 'components/list/list.html',
 			requireLogin: true
+		});
+		$routeProvider.when('/nominate', {
+			templateUrl: 'components/nominate/nominate.html',
+			requireLogin: false
 		});
 		$routeProvider.when('/signOut', {
 			templateUrl: 'components/landing/landing.html',

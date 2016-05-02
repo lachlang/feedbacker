@@ -48,7 +48,7 @@ fbControllers.controller('EditCtrl',  ['$scope', '$log', 'Model', 'uibButtonConf
 	ctrl.cancel = function() {
 
 		ctrl.navigateToList();
-	}
+	};
 
 	ctrl.initialiseController();
 
@@ -56,9 +56,9 @@ fbControllers.controller('EditCtrl',  ['$scope', '$log', 'Model', 'uibButtonConf
 		ctrl.resetError();
 		$location.search("id", undefined);
 		$location.path("/list");
-	}
+	};
 
 	ctrl.resetError = function() {
 		ctrl.error = undefined;
-	}
+	};
 }]);
