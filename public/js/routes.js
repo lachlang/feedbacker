@@ -4,6 +4,10 @@ feedbackerApp.config(['$routeProvider',
 			templateUrl: 'fragments/about.html',
 			requireLogin: false
 		});
+		$routeProvider.when('/activate', {
+			templateUrl: 'components/activate/activate.html',
+			requireLogin: false
+		});
   //       $routeProvider.when('/error', {
 		// 	templateUrl: 'components/error.html',
 		// 	requireLogin: false
@@ -26,6 +30,10 @@ feedbackerApp.config(['$routeProvider',
 		});
 		$routeProvider.when('/nominate', {
 			templateUrl: 'components/nominate/nominate.html',
+			requireLogin: false
+		});
+		$routeProvider.when('/reset', {
+			templateUrl: 'components/reset/reset.html',
 			requireLogin: false
 		});
 		$routeProvider.when('/signOut', {

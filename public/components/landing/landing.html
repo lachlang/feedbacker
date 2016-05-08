@@ -2,13 +2,40 @@
 <div class="jumbotron">
   <div class="container">
     <h1>Feedbacker!</h1>
-    <h2>Because feedback is a gift</h2>
     <div class="row">
       <div class="col-md-8">
+        <h2>Because feedback is a gift</h2>
         <p>Track the feedback you have been asked to provide...</p>
-        <p><a class="btn btn-primary btn-lg" href="#/about" role="button">Learn more &raquo;</a></p>
+        <!-- <p><a class="btn btn-primary btn-lg" href="#/about" role="button">Learn more &raquo;</a></p> -->
       </div>
-      <div class="col-md-4">
+      <div class="col-md-4" data-ng-controller="RegistrationCtrl as registration">
+        <form class="form-group" data-ng-sumbit="registration.register">
+          <div class="row">
+            <div class="col-sm-12">
+              <input type="text" class="form-control" placeholder="Name" required>
+            </div>
+          </div>
+          <div class="row top-buffer-small">
+            <div class="col-sm-12">
+              <input type="email" class="form-control" placeholder="Your Email" required>
+            </div>
+          </div>
+          <div class="row top-buffer-small">
+            <div class="col-sm-12">
+              <input type="email" class="form-control" placeholder="Boss's Email" required>
+            </div>
+          </div>
+          <div class="row top-buffer-small">
+            <div class="col-sm-12">
+              <input type="password" class="form-control" placeholder="Password" required minlength="8">
+            </div>
+          </div>
+          <div class="row top-buffer-small">
+            <div class="col-sm-12">
+              <button type="submit" class="btn btn-primary">Register</button>
+            </div>
+          </div>
+        </form>
       </div>
     </div>
   </div>
