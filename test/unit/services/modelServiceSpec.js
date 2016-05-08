@@ -2,12 +2,12 @@
 
 describe('service [Model]', function() {
 	
-	var feedback, questions, model;
+	var feedback, model;
 	var deferred, scope;
 	
 	beforeEach(module('feedbacker.services'));
 
-	beforeEach(inject(function($q, _Model_, _Feedback_, _Questions_, $rootScope) {
+	beforeEach(inject(function($q, _Model_, _Feedback_, $rootScope) {
 		scope = $rootScope.$new();
 		deferred = $q.defer();
 		model = _Model_;
@@ -17,9 +17,6 @@ describe('service [Model]', function() {
         spyOn(feedback, 'getCurrentFeedbackItemsForSelf').and.returnValue(deferred.promise);
         spyOn(feedback, 'getFeedbackHistoryForSelf').and.returnValue(deferred.promise);
         spyOn(feedback, 'getFeedbackItem').and.returnValue(deferred.promise);
-
-        questions = _Questions_;
-        spyOn(questions, 'getQuestionSet').and.returnValue(deferred.promise);        
 
 	}));
 
@@ -31,7 +28,6 @@ describe('service [Model]', function() {
         expect(angular.isFunction(model.getPendingFeedbackActions)).toBe(true);
         expect(angular.isFunction(model.getCurrentFeedback)).toBe(true);
         expect(angular.isFunction(model.getFeedbackHistory)).toBe(true);
-        expect(angular.isFunction(model.getQuestionSet)).toBe(true);
         expect(angular.isFunction(model.getFeedbackDetail)).toBe(true);
         expect(angular.isFunction(model.saveFeedback)).toBe(true);
     });
@@ -69,10 +65,6 @@ describe('service [Model]', function() {
 
         it('should call the feedback.getFeedbackHistoryForSelf service only once', function() {
             cacheTest(model.getFeedbackHistory, feedback.getFeedbackHistoryForSelf);
-        });
-
-        it('should call the questions.getQuestionSet service only once', function() {
-            cacheTest(model.getQuestionSet, questions.getQuestionSet);
         });
 
         it('should call the feedback.getFeedbackItem service only once', function() {
@@ -114,10 +106,6 @@ describe('service [Model]', function() {
 
         it('should call the feedback.getFeedbackHistoryForSelf service when flushed', function(){
             flushTest(model.getFeedbackHistory, feedback.getFeedbackHistoryForSelf);
-        });
-
-        it('should call the questions.getQuestionSet service when flushed', function(){
-            flushTest(model.getQuestionSet, questions.getQuestionSet);
         });
 
         it('should call the feedback.getFeedbackItem service when flushed', function(){
