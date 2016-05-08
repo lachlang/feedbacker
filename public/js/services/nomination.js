@@ -5,10 +5,15 @@ fbServices.service('Nomination', ['$log', '$http', function($log, $http) {
 			return $http.get("/api/nominations");
 		},
 
-		addNomination: function() {
-			// return $http({
-
-			// })
+		addNomination: function(nomination) {
+			$http({
+				method: "POST",
+				url: "/api/nominations",
+				data:{
+					apiVersion: "1.0",
+					body: nomination
+				}
+			})
 		},
 
 		cancelNomination: function(id) {
