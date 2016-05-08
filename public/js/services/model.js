@@ -1,9 +1,10 @@
-fbServices.service('Model', ['$log', '$q', 'Feedback', function($log, $q, Feedback) {
+fbServices.service('Model', ['$log', '$q', 'Feedback', 'Nomination', function($log, $q, Feedback, Nomination) {
 
 	var pendingActions = [];
 	var currentFeedbackList = [];
 	var feedbackHistoryList = [];
 	var feedbackDetail = {};
+	var currentNominations = [];
 	var errorResult = undefined;
 
 	var cacheServiceCall = function(mutateCache, updateRequired, getCache, serviceFunction, serviceCallName, mapKey) {
@@ -59,6 +60,16 @@ fbServices.service('Model', ['$log', '$q', 'Feedback', function($log, $q, Feedba
 									function(feedbackId) { return feedbackDetail[feedbackId] },
 									Feedback.getFeedbackItem,
 									"Feedback.getFeedbackItem",
+									feedbackId);
+		},
+
+
+		getCurrentNominations: function(feedbackId, flushCache) {
+			return cacheServiceCall(function(result, feedbackId) { currentNominations = result.data.body },
+									function(feedbackId) {return ( currentNominations.length == 0 || flushCache ) },
+									function(feedbackId) { return currentNominations },
+									Nomination.getCurrentNominations,
+									"Nomination.getCurrentNominations",
 									feedbackId);
 		},
 

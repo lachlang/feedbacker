@@ -1,9 +1,7 @@
 <div class="container-fluid" data-ng-controller="NominateCtrl as nominate">
 	<div class="row">
 		<div class="col-sm-12">
-			<h2>Nominate Peers to Provide you feedback</h2>
-			<p class="lead">Under construction.</p>
-			<p>Click <a href="#/list">here</a> to go back.</p>
+			<h2>Nominate Peers to Provide you Feedback</h2>
 		</div>
 	</div>
 	<div class="row">
@@ -12,10 +10,10 @@
 	</div>
 	<div class="row">
 		<div class="col-sm-12">
-			<div data-ng-hide="nominate.nominations">
+			<div data-ng-hide="nominate.nominations.length > 0">
 				<p class="lead">No colleages currently nominated to provide feedback.</p>
 			</div>
-			<div class="table-responsive" data-ng-show="nominate.nominations">
+			<div class="table-responsive" data-ng-show="nominate.nominations.length > 0">
 	          <table class="table table-hover">
 	            <caption class="lead">Colleages nominated to provide you feedback.</caption>
 	            <thead>
@@ -39,5 +37,12 @@
 	          </table>
 	        </div>
 		</div>
+	</div>
+	<div class="row top-buffer">
+		<div class="col-sm-12">
+			<p>Click <a href="#/list">here</a> to go back.</p>
+		</div>
+	</div>
+
 	</div>
 </div>
