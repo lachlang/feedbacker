@@ -1,0 +1,25 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Home page
+GET     /                           controllers.Assets.at(path="/public", file="index.html")
+
+#POST    /api/auth/login             au.com.feedbacker.controllers.Authentication.login
+#GET     /api/auth/logout            au.com.feedbacker.controllers.Authentication.logout
+
+POST    /api/register               au.com.feedbacker.controllers.Registration.register
+POST    /api/activate               au.com.feedbacker.controllers.Activation.activate
+POST    /api/activate/email         au.com.feedbacker.controllers.Activation.sendActivationEmail
+POST    /api/password/reset         au.com.feedbacker.controllers.ResetPassword.resetPassword
+POST    /api/password/reset/email   au.com.feedbacker.controllers.ResetPassword.sendPasswordResetEmail
+
+GET     /api/feedback/pending     	au.com.feedbacker.controllers.Feedback.getPendingFeedbackActions
+
+# Map static resources from the /public folder to the /assets URL path
+GET     /components/*file           controllers.Assets.at(path="/public/components", file)
+GET     /css/*file                  controllers.Assets.at(path="/public/css", file)
+GET     /images/*file               controllers.Assets.at(path="/public/images", file)
+GET     /fragments/*file            controllers.Assets.at(path="/public/fragments", file)
+GET     /js/*file                   controllers.Assets.at(path="/public/js", file)
+GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
