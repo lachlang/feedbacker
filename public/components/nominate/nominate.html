@@ -38,10 +38,10 @@
 			                <td>{{nominee.name}}</td>
 			                <td>{{nominee.role}}</td>
 			                <td>{{nominee.status}}</td>
-			                <td>{{nominee.lastUpdated</td>
+			                <td>{{nominee.lastUpdated}}</td>
 			                <td>
 			                  	<a data-ng-if="nominee.status == 'Pending'" class-"btn btn-default" data-ng-click="nominate.remove(nominee)">Remove</a>
-			                  	<a data-ng-if="nominee.status=='Submitted' && nominee.feedbackId" class-"btn btn-default" href="#/viewDetail/id={{nominee.feedbackId}}">view</a>
+			                  	<a data-ng-if="nominee.status=='Submitted' && nominee.feedbackId" class-"btn btn-default" href="#/viewDetail/id={{nominee.feedbackId}}">View</a>
 			                </td>
 	              		</tr>
 	            	</tbody>
