@@ -24,15 +24,7 @@
 	  	</div>
 	  	<div class="col-md-2">
 	  		<div class="btn-group" role="group" aria-label="Answer options">
-	<!--   			<button class="btn btn-default" 
-	  					data-ng-repeat="option in question.responseOptions" 
-	  					for="{{option}}" 
-	  					data-ng-model="question.response" 
-	  					uib-btn-radio="'{{option}}'">{{option}}</button> -->
-	<!-- 			<span data-ng-repeat="option in question.responseOption" class="btn" data-ng-class="{option==question.response ? 'btn-primary': 'btn-default'}">{{option}}</span> -->
-	<!-- 			<span data-ng-repeat="option in question.responseOption" class="btn" data-ng-class="{btn-primary: option == question.response}">{{option}}</span>
-	 -->			
-				<span data-ng-if="question.response" class="btn btn-primary">{{question.response}}</span>
+				<span data-ng-repeat="option in question.responseOptions" class="btn" data-ng-class="option==question.response ? 'btn-primary' : ['disabled', 'btn-default']">{{option}}</span>
 	  		</div>
 	  	</div>
 	  	<div class="col-md-5">
