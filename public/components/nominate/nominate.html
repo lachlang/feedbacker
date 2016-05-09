@@ -27,6 +27,8 @@
 			                <th>#</th>
 			                <th>Colleague</th>
 			                <th>Role</th>
+			                <th>Status</th>
+			                <th>Updated</th>
 			                <th></th>
 		              	</tr>
 		            </thead>
@@ -35,8 +37,11 @@
 			                <td>{{$index + 1}}</td>
 			                <td>{{nominee.name}}</td>
 			                <td>{{nominee.role}}</td>
+			                <td>{{nominee.status}}</td>
+			                <td>{{nominee.lastUpdated</td>
 			                <td>
-			                  	<a class-"btn btn-default" data-ng-click="nominate.remove(nominee)">Remove</a>
+			                  	<a data-ng-if="nominee.status == 'Pending'" class-"btn btn-default" data-ng-click="nominate.remove(nominee)">Remove</a>
+			                  	<a data-ng-if="nominee.status=='Submitted' && nominee.feedbackId" class-"btn btn-default" href="#/viewDetail/id={{nominee.feedbackId}}">view</a>
 			                </td>
 	              		</tr>
 	            	</tbody>
