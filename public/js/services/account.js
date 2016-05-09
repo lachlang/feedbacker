@@ -15,6 +15,7 @@ fbServices.service('Account', ['$log', '$http', '$q', function($log, $http, $q) 
 				method: "POST",
 				url: "/api/register",
 				data: {
+					apiVersion:"1.0",
 					body: {
 						name: name,
 						email: email,
@@ -31,42 +32,58 @@ fbServices.service('Account', ['$log', '$http', '$q', function($log, $http, $q) 
 			}
 			return $http({
 				method: "POST",
-				url: "/api/register/activate/" + feedbackId,
+				url: "/api/register/activate",
 				data:{
 					apiVersion: "1.0",
 					body: {
-						email: name,
+						email: email,
 						token: token
 					}
 				}
 			})
 		},
 
-		requestActivationEmail: function(email) {
+		sendActivationEmail: function(email) {
+			if (!email) {
+				return invalidRequestError();
+			}
 			return $http({
-				method:"PUT",
+				method:"POST",
 				url:"/api/register/activate/email",
 				data: {
+					apiVersion:"1.0",
 					body:{ email: email}
 				}
 			});
 		},
 
 		resetPassword: function(oldPassword, newPassword, token) {
+			if (!oldPassword || !newPassword || !token) {
+				return invalidRequestError();
+			}			
 			return $http({
-				method:"PUT",
+				method:"POST",
 				url:"/api/password/reset",
 				data: {
-					body: { email: email}
+					apiVersion:"1.0",
+					body: { 
+						oldPassword: oldPassword,
+						newPassword: newPassword,
+						token: token
+					}
 				}
 			});
 		},
 
-		requestPasswordResetEmail: function(email) {
+		sendPasswordResetEmail: function(email) {
+			if (!email) {
+				return invalidRequestError();
+			}
 			return $http({
-				method:"PUT",
+				method:"POST",
 				url:"/api/password/reset/email",
 				data: {
+					apiVersion:"1.0",
 					body:{ email: email}
 				}
 			});

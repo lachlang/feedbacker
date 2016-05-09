@@ -45,5 +45,6 @@ describe('service [Nomination]', function() {
     		expect(result).toBeDefined();
             expect(result).toEqual(dummyResult);
     	});
+
     });
 });
