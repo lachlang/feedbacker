@@ -5,21 +5,10 @@ fbServices.service('Feedback', ['$log','$http', function($log, $http) {
 			return $http.get("/api/feedback/pending");
 		},
 
-		createNewFeedbackItem: function(feedbackId, feedback) {
-			return $http({
-				method: "POST",
-				url: "/api/feedback/new/" + feedbackId,
-				data:{
-					apiVersion: "1.0",
-					body: feedback
-				}
-			});
-		},
-
 		updateFeedbackItem: function(feedbackId, feedback) {
 			return $http({
 				method:"PUT",
-				url:"/api/feedback/update/" + feedbackId,
+				url:"/api/feedback/item/" + feedbackId,
 				data: {
 					apiVersion: "1.0",
 					body: feedback

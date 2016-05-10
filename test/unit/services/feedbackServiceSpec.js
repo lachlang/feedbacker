@@ -23,7 +23,6 @@ describe('service [Feedback]', function() {
     
     it('has defined functions', function() {
         expect(angular.isFunction(feedback.getPendingFeedbackActions)).toBe(true);
-        expect(angular.isFunction(feedback.createNewFeedbackItem)).toBe(true);
         expect(angular.isFunction(feedback.updateFeedbackItem)).toBe(true);
         expect(angular.isFunction(feedback.getFeedbackItem)).toBe(true);
         expect(angular.isFunction(feedback.getCurrentFeedbackItemsForUser)).toBe(true);
@@ -51,26 +50,10 @@ describe('service [Feedback]', function() {
             expect(result).toEqual(dummyResult);
     	});
 
-        it('to create a new feedback item', function() {
-            var result, promise = feedback.createNewFeedbackItem(8, { stuff: "here"});
-
-            $httpBackend.expectPOST('/api/feedback/new/8', '{"apiVersion":"1.0","body":{"stuff":"here"}}').respond(200, dummyResult);
-            
-            // set the response value
-            promise.then(function(data) {
-                result = data.data;
-            });
-            expect(result).toBeUndefined(); // it really should at this point
-            $httpBackend.flush();
-
-            expect(result).toBeDefined();
-            expect(result).toEqual(dummyResult);
-        });
-
         it('to update a feedback item', function() {
             var result, promise = feedback.updateFeedbackItem(9, {stuff: "here"});
 
-            $httpBackend.expectPUT('/api/feedback/update/9', '{"apiVersion":"1.0","body":{"stuff":"here"}}').respond(200, dummyResult);
+            $httpBackend.expectPUT('/api/feedback/item/9', '{"apiVersion":"1.0","body":{"stuff":"here"}}').respond(200, dummyResult);
             
             // set the response value
             promise.then(function(data) {
