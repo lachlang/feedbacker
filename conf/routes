@@ -15,6 +15,13 @@ POST    /api/password/reset         au.com.feedbacker.controllers.ResetPassword.
 POST    /api/password/reset/email   au.com.feedbacker.controllers.ResetPassword.sendPasswordResetEmail
 
 GET     /api/feedback/pending     	au.com.feedbacker.controllers.Feedback.getPendingFeedbackActions
+POST	/api/feedback/new 			au.com.feedbacker.controllers.Feedback.createNewFeedbackItem
+PUT		/api/feedback/update/:id 	au.com.feedbacker.controllers.Feedback.updateFeedbackItem(id: Long)
+GET   	/api/feedback/item/:id   	au.com.feedbacker.controllers.Feedback.getFeedbackItem(id: Long)
+GET  	/api/feedback/current/:id 	au.com.feedbacker.controllers.Feedback.getCurrentFeedbackItemsForUser(id: Long)
+GET 	/api/feedback/current/self 	au.com.feedbacker.controllers.Feedback.getCurrentFeedbackItemsForSelf
+GET 	/api/feedback/history/:id 	au.com.feedbacker.controllers.Feedback.getFeedbackHistoryForUser(id: Long)
+GET 	/api/feedback/history/self 	au.com.feedbacker.controllers.Feedback.getFeedbackHistoryForSelf
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /components/*file           controllers.Assets.at(path="/public/components", file)

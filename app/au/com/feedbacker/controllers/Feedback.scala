@@ -11,8 +11,44 @@ import scala.concurrent.Future
  */
 class Feedback extends Controller {
 
-  def getPendingFeedbackActions = Action.async {
+  def getPendingFeedbackActions = Action.async { request =>
 
-      Future(Ok)
+    Future(Ok)
   }
+
+  def createNewFeedbackItem = Action.async { request =>
+
+    Future(Ok)
+  }
+
+  def updateFeedbackItem(id: Long) = Action.async { request =>
+
+    Future(Ok)
+  }
+
+  def getFeedbackItem(id: Long) = Action.async { request =>
+
+    Future(Ok)
+  }
+
+  def getCurrentFeedbackItemsForUser(id: Long) = Action.async { request =>
+
+    Future(Ok)
+  }
+
+  def getCurrentFeedbackItemsForSelf = Action.async { request =>
+
+    Future(Ok)
+  }
+
+  def getFeedbackHistoryForUser(id: Long) = Action.async { request =>
+
+    Future(Ok)
+  }
+
+  def getFeedbackHistoryForSelf = Action.async { request =>
+
+    Future(Ok)
+  }
+
 }
