@@ -30,7 +30,7 @@ describe('service [Session]', function() {
     describe("calls the appropriate server api", function() {
         var dummyResult = "dummyResult";
     	
-    	xit('to login a user', function() {
+    	it('to login a user', function() {
     		var result, promise = session.login("user","pass");
 
             $httpBackend.expectPUT('/api/session/login', '{"apiVersion":"1.0","body":{"username":"user","password":"pass"}}').respond(200, dummyResult);
@@ -81,11 +81,11 @@ describe('service [Session]', function() {
             expect(session.isLoggedIn()).toBe(false);
         });
 
-        xit('logging in a user', function() {
+        it('logging in a user', function() {
             doLogin();
         });
 
-        xit('logging out a user', function() {
+        it('logging out a user', function() {
             doLogin();
 
             session.logout();

@@ -30,21 +30,52 @@ describe('service [Nomination]', function() {
     describe("calls the appropriate server api", function() {
         var dummyResult = "dummyResult";
     	
-    	it('to retrieve current nomination list', function() {
-    		var result, promise = nomination.getCurrentNominations();
+        it('to retrieve current nomination list', function() {
+            var result, promise = nomination.getCurrentNominations();
 
             $httpBackend.expectGET('/api/nominations').respond(200, dummyResult);
-    		
-    		// set the response value
-    		promise.then(function(data) {
-    			result = data.data;
-    		});
-    		expect(result).toBeUndefined(); // it really should at this point
-    		$httpBackend.flush();
+            
+            // set the response value
+            promise.then(function(data) {
+                result = data.data;
+            });
+            expect(result).toBeUndefined(); // it really should at this point
+            $httpBackend.flush();
 
-    		expect(result).toBeDefined();
+            expect(result).toBeDefined();
             expect(result).toEqual(dummyResult);
-    	});
+        });
 
+        it('to add a nomination', function() {
+            var result, promise = nomination.addNomination({some:"stuff"});
+
+            $httpBackend.expectPOST('/api/nominations','{"apiVersion":"1.0","body":{"some":"stuff"}}').respond(200, dummyResult);
+            
+            // set the response value
+            promise.then(function(data) {
+                result = data.data;
+            });
+            expect(result).toBeUndefined(); // it really should at this point
+            $httpBackend.flush();
+
+            expect(result).toBeDefined();
+            expect(result).toEqual(dummyResult);
+        });
+
+        it('to cancel a nomination', function() {
+            var result, promise = nomination.cancelNomination(7);
+
+            $httpBackend.expectGET('/api/nominations/cancel/7').respond(200, dummyResult);
+            
+            // set the response value
+            promise.then(function(data) {
+                result = data.data;
+            });
+            expect(result).toBeUndefined(); // it really should at this point
+            $httpBackend.flush();
+
+            expect(result).toBeDefined();
+            expect(result).toEqual(dummyResult);
+        });
     });
 });

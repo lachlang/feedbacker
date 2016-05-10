@@ -5,8 +5,8 @@
 # Home page
 GET     /                           controllers.Assets.at(path="/public", file="index.html")
 
-#POST    /api/auth/login             au.com.feedbacker.controllers.Authentication.login
-#GET     /api/auth/logout            au.com.feedbacker.controllers.Authentication.logout
+PUT    	/api/session/login             au.com.feedbacker.controllers.Authentication.login
+GET     /api/session/logout            au.com.feedbacker.controllers.Authentication.logout
 
 POST    /api/register               au.com.feedbacker.controllers.Registration.register
 POST    /api/activate               au.com.feedbacker.controllers.Activation.activate

@@ -6,7 +6,7 @@ fbServices.service('Nomination', ['$log', '$http', function($log, $http) {
 		},
 
 		addNomination: function(nomination) {
-			$http({
+			return $http({
 				method: "POST",
 				url: "/api/nominations",
 				data:{
@@ -17,6 +17,8 @@ fbServices.service('Nomination', ['$log', '$http', function($log, $http) {
 		},
 
 		cancelNomination: function(id) {
+			// LG it would be better to use DELETE here but I'm not sure
+			// if it blocked by the firewall
 			return $http.get("/api/nominations/cancel/" + id);
 		}
 	}
