@@ -15,8 +15,7 @@ POST    /api/password/reset         au.com.feedbacker.controllers.ResetPassword.
 POST    /api/password/reset/email   au.com.feedbacker.controllers.ResetPassword.sendPasswordResetEmail
 
 GET     /api/feedback/pending     	au.com.feedbacker.controllers.Feedback.getPendingFeedbackActions
-POST	/api/feedback/new 			au.com.feedbacker.controllers.Feedback.createNewFeedbackItem
-PUT		/api/feedback/update/:id 	au.com.feedbacker.controllers.Feedback.updateFeedbackItem(id: Long)
+PUT		/api/feedback/item/:id 		au.com.feedbacker.controllers.Feedback.updateFeedbackItem(id: Long)
 GET   	/api/feedback/item/:id   	au.com.feedbacker.controllers.Feedback.getFeedbackItem(id: Long)
 GET  	/api/feedback/current/:id 	au.com.feedbacker.controllers.Feedback.getCurrentFeedbackItemsForUser(id: Long)
 GET 	/api/feedback/current/self 	au.com.feedbacker.controllers.Feedback.getCurrentFeedbackItemsForSelf

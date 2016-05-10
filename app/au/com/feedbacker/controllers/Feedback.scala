@@ -16,11 +16,6 @@ class Feedback extends Controller {
     Future(Ok)
   }
 
-  def createNewFeedbackItem = Action.async { request =>
-
-    Future(Ok)
-  }
-
   def updateFeedbackItem(id: Long) = Action.async { request =>
 
     Future(Ok)
