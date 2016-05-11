@@ -2,11 +2,13 @@ package au.com.feedbacker.models
 
 import org.joda.time.DateTime
 
-case class Person(id: Option[Long], credentials: Credentials, managerEmail: String, role: String)
-
-case class Credentials(email: String, token: String) 
-
-// case class Pending
+object CredentialStatus extends Enumeration {
+	type CredentialStatus = Value
+	val Active = Value("Active")
+	val Inactive = Value("Inactive")
+	val Restricted = Value("Restricted")
+}
+import CredentialStatus._
 
 object FeedbackStatus extends Enumeration {
 	type FeedbackStatus = Value
@@ -16,6 +18,10 @@ object FeedbackStatus extends Enumeration {
 	val Closed = Value("Closed")
 }
 import FeedbackStatus._
+
+case class Person(id: Option[Long], credentials: Credentials, managerEmail: String, role: String)
+
+case class Credentials(email: String, token: String, status: CredentialStatus) 
 
 case class Nomination (id: Option[Long], from: Person, to: Person, toManager: Person, status: FeedbackStatus, lastUpdated: DateTime, feedbackId: Option[Long])
 
