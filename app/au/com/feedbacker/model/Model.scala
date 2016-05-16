@@ -1,24 +1,26 @@
-package au.com.feedbacker.models
+package au.com.feedbacker.model
 
 import org.joda.time.DateTime
-// import java.util.{Date}
 
+import javax.inject.Inject
 import play.api.db._
-// import play.api.Play.current
+import play.api.Play.current
 
 import anorm._
 import anorm.SqlParser._
 
+import scala.concurrent.Future
+
 // import scala.language.postfixOps
 
-
-object CredentialStatus extends Enumeration {
-	type CredentialStatus = Value
-	val Active = Value("Active")
-	val Inactive = Value("Inactive")
-	val Restricted = Value("Restricted")
-}
-import CredentialStatus._
+//
+//object CredentialStatus extends Enumeration {
+//	type CredentialStatus = Value
+//	val Active = Value("Active")
+//	val Inactive = Value("Inactive")
+//	val Restricted = Value("Restricted")
+//}
+//import CredentialStatus._
 
 object FeedbackStatus extends Enumeration {
 	type FeedbackStatus = Value
@@ -30,7 +32,6 @@ object FeedbackStatus extends Enumeration {
 import FeedbackStatus._
 
 case class Person(id: Option[Long], name: String, role: String, credentials: Credentials, managerEmail: String)
-//case class Person(id: Option[Long], credentials: Credentials, managerEmail: String, role: String)
 
 object Person {
 
@@ -60,19 +61,102 @@ object Person {
   /**
    * Retrieve a person by email address.
    */
-//   def findByEmail(email: String): Option[Person] = {
-//     DB.withConnection { implicit connection =>
-//       SQL("select * from computer where email = {email}").on('email -> email).as(Person.simple.singleOpt)
-//     }
-//   }
+  def findById(id: Long): Option[Person] = DB.withConnection { implicit connection =>
+    SQL("select * from person where id = {id}").on('id -> id).as(Person.simple.singleOpt)
+  }
 
+  def findByEmail(email: String): Option[Person] = DB.withConnection { implicit connection =>
+    SQL("select * from person where email = {email}").on('email -> email).as(Person.simple.singleOpt)
+  }
+
+//  def create(person: Person): Future[Either[Throwable, Person]] = {
+  def create(person: Person): Either[Throwable, Person] = {
+    DB.withConnection { implicit connection =>
+      try {
+        SQL(
+          """
+              insert into person values (
+                {name},{role},{email},{pass_hash},{user_status},{manager_email}
+              )
+            """).on(
+              'name -> person.name,
+              'role -> person.role,
+              'email -> person.credentials.email,
+              'pass_hash -> person.credentials.token,
+              'user_status -> person.credentials.status,
+              'manager_email -> person.managerEmail
+            ).executeInsert() match {
+          case None => Left(new Exception("Could not insert."))
+          case Some(id) => findById(id) match {
+            case None => Left( new Exception("Could not insert."))
+            case Some(person) => Right(person)
+          }
+        }
+      } catch {
+        case e:Exception => Left(e)
+      }
+    }
+  }
+
+  def login(email: String, hash: String): Boolean = DB.withConnection{ implicit connection =>
+    SQL (
+      """
+        select count(*) from person where email = {email} and pass_hash = {pass_hash}
+      """).on(
+        'email -> email,
+        'pass_hash -> hash
+      ).execute()
+  }
+
+  def logout: Boolean = {
+    ???
+  }
+
+  def activate: Boolean = {
+    ???
+  }
+
+  def resetPassword: Boolean = {
+    ???
+  }
 }
 
 case class Credentials(email: String, token: String, status: String)
 
-case class Activations(token: String, email: String, created: DateTime, used: Boolean, expires: DateTime)
+case class Activation(token: String, email: String, created: DateTime, used: Boolean, expires: DateTime)
+
+object Activation {
+
+  val simple = {
+    get[String]("activation.token") ~
+    get[String]("activation.email") ~
+    get[DateTime]("activation.created") ~
+    get[Boolean]("activation.used") ~
+    get[DateTime]("activation.expires") map {
+      case token~email~created~used~expires => Activation(token, email, created, used, expires)
+    }
+  }
+
+  // Queries
+  def activate: Boolean = {
+    ???
+  }
+
+}
 
 case class Nomination (id: Option[Long], from: Person, to: Person, toManager: Person, status: FeedbackStatus, lastUpdated: DateTime, questions: Option[List[QuestionResponse]], shared: Option[Boolean])
+
+object Nomination {
+
+
+  def viewDetail: Nomination = {
+    ???
+  }
+
+  def cancelNomination: Boolean = {
+    ???
+  }
+}
 
 case class QuestionResponse(id: Option[Long], text: String, responseOptions: String, response: Option[String], comments: Option[String])
 
@@ -90,7 +174,7 @@ object QuestionResponse {
 }
 
 
-case class FeedbackCycle(id: Long, label: String, start_date: DateTime, end_date: DateTime, active: Boolean)
+case class FeedbackCycle(id: Long, label: String, start_date: DateTime, end_date: DateTime, active: Boolean)//, questions: List[QuestionTemplate])
 
 object FeedbackCycle {
 
