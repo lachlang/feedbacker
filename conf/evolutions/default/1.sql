@@ -3,7 +3,7 @@
 # --- !Ups
 
 create table person (
-  id                        serial,
+  id                        bigserial,
   name 		    	        varchar(255) not null,
   role     		            varchar(255) not null,
   email                     varchar(255) not null,
@@ -29,7 +29,7 @@ create table activations (
 create index idx_activation_email on activations (email);
 
 create table nominations (
-	id 						serial,
+	id 						bigserial,
 	from_id					bigint not null,
 	to_email				varchar(255) not null,
 	status					varchar(20) not null,
@@ -44,7 +44,7 @@ create index idx_nominations_from on nominations (from_id);
 create index idx_nominations_to on nominations (to_email);
 
 create table cycle (
-	id						serial,
+	id						bigserial,
 	label					varchar(50) not null,
 	start_date 				date not null,
 	end_date 				date not null,
@@ -55,7 +55,7 @@ create table cycle (
 create index cycle_label_idx on cycle (label);
 
 create table question_templates (
-	id 						serial,
+	id 						bigserial,
 	text					varchar(4096) not null,
 	response_options		varchar(1024) not null,
 	cycle_id				bigint not null,
@@ -63,7 +63,7 @@ create table question_templates (
 );
 
 create table question_response (
-	id 						serial,
+	id 						bigserial,
 	nomination_id			bigint not null,
 	text					varchar(4096) not null,
 	response_options		varchar(1024) not null,
@@ -86,3 +86,10 @@ drop table if exists nominations cascade;
 drop table if exists cycle cascade;
 drop table if exists question_templates cascade;
 drop table if exists question_response cascade;
+
+
+# ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO "feedback-service";
+# ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT INSERT ON TABLES TO "feedback-service";
+# ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT UPDATE ON TABLES TO "feedback-service";
+# ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON SEQUENCE TO "feedback-service";
+# ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT UPDATE ON SEQUENCE TO "feedback-service";

@@ -17,6 +17,13 @@ fbControllers.controller('RegistrationCtrl',  ['$scope', '$log', '$location', 'A
 
 	ctrl.forgotPassword = function() {
 		$log.info("forgotPassword");
+		Account.register("Lockers", "Boss", "a@b.c", "asdfasdf", "b@b.c").then(function(response) {
+			$log.info("great success")
+			$log.info(response)
+		}, function(response) {
+			$log.error("it failed")
+			$log.error(response)
+		});
 	};
 
 }]);

@@ -84,7 +84,7 @@ object Person {
       try {
         SQL(
           """
-              insert into person values (
+              insert into person (name, role, email, pass_hash, user_status, manager_email)values (
                 {name},{role},{email},{pass_hash},{user_status},{manager_email}
               )
             """).on(
