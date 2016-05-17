@@ -12,22 +12,27 @@
         <form class="form-group" data-ng-sumbit="registration.register">
           <div class="row">
             <div class="col-sm-12">
-              <input type="text" class="form-control" placeholder="Name" required>
+              <input type="text" class="form-control" placeholder="Name" data-ng-model="registration.name" required>
             </div>
           </div>
           <div class="row top-buffer-small">
             <div class="col-sm-12">
-              <input type="email" class="form-control" placeholder="Your Email" required>
+              <input type="email" class="form-control" placeholder="Your Email" data-ng-model="registration.role" required>
             </div>
           </div>
           <div class="row top-buffer-small">
             <div class="col-sm-12">
-              <input type="email" class="form-control" placeholder="Boss's Email" required>
+              <input type="text" class="form-control" placeholder="Your Role" data-ng-model="registration.email" required>
             </div>
           </div>
           <div class="row top-buffer-small">
             <div class="col-sm-12">
-              <input type="password" class="form-control" placeholder="Password" required minlength="8">
+              <input type="email" class="form-control" placeholder="Boss's Email" data-ng-model="registration.managerEmail" required>
+            </div>
+          </div>
+          <div class="row top-buffer-small">
+            <div class="col-sm-12">
+              <input type="password" class="form-control" placeholder="Password" data-ng-model="registration.password" required minlength="8">
             </div>
           </div>
           <div class="row top-buffer-small">

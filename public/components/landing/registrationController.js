@@ -7,7 +7,7 @@ fbControllers.controller('RegistrationCtrl',  ['$scope', '$log', '$location', 'A
 
 	var register = function() {
 		// validate 
-		Account.register(ctrl.name, ctrl.email, ctrl.managerEmail, ctrl.password).then(function(response) {
+		Account.register(ctrl.name, ctrl.role, ctrl.email, ctrl.password, ctrl.managerEmail).then(function(response) {
 			// success
 		}, function(response) {
 			// failure

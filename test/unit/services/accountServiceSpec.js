@@ -33,9 +33,9 @@ describe('service [Account]', function() {
         var dummyResult = "dummyResult";
     	
     	it('to register a user', function() {
-    		var result, promise = account.register("string1", "string2", "string3", "string4");
+    		var result, promise = account.register("string1", "string2", "string3", "string4", "string5");
 
-            $httpBackend.expectPOST('/api/register', '{"apiVersion":"1.0","body":{"name":"string1","email":"string2","managerEmail":"string3","password":"string4"}}').respond(200, dummyResult);
+            $httpBackend.expectPOST('/api/register', '{"apiVersion":"1.0","body":{"name":"string1","role":"string2","email":"string3","password":"string4","managerEmail":"string5"}}').respond(200, dummyResult);
     		
     		// set the response value
     		promise.then(function(data) {

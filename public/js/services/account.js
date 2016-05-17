@@ -7,8 +7,8 @@ fbServices.service('Account', ['$log', '$http', '$q', function($log, $http, $q) 
 	};
 
 	return {
-		register: function(name, email, managerEmail, password) {
-			if (!name || !email || !managerEmail || !password) {
+		register: function(name, role, email, password, managerEmail) {
+			if (!name || !email || !role || !managerEmail || !password) {
 				return invalidRequestError();
 			}
 			return $http({
@@ -18,9 +18,10 @@ fbServices.service('Account', ['$log', '$http', '$q', function($log, $http, $q) 
 					apiVersion:"1.0",
 					body: {
 						name: name,
+						role: role,
 						email: email,
-						managerEmail: managerEmail,
-						password: password
+						password: password,
+						managerEmail: managerEmail
 					}
 				}
 			});

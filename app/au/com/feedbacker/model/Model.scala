@@ -8,18 +8,20 @@ import play.api.Play.current
 
 import anorm._
 import anorm.SqlParser._
+import play.api.libs.functional.syntax._
+import play.api.libs.json.{JsPath, Format}
 
 import scala.concurrent.Future
 
 // import scala.language.postfixOps
 
 //
-//object CredentialStatus extends Enumeration {
-//	type CredentialStatus = Value
-//	val Active = Value("Active")
-//	val Inactive = Value("Inactive")
-//	val Restricted = Value("Restricted")
-//}
+object CredentialStatus extends Enumeration {
+	type CredentialStatus = Value
+	val Active = Value("Active")
+	val Inactive = Value("Inactive")
+	val Restricted = Value("Restricted")
+}
 //import CredentialStatus._
 
 object FeedbackStatus extends Enumeration {
@@ -56,6 +58,13 @@ object Person {
     }
   }
 
+  implicit val format: Format[Person] = (
+      (JsPath \ "body" \ "id").formatNullable[Long] and
+      (JsPath \ "body" \ "name").format[String] and
+      (JsPath \ "body" \ "role").format[String] and
+      (JsPath \ "body" \ "creds").format[Credentials] and
+      (JsPath \ "body" \ "managerEmail").format[String]
+    )(Person.apply, unlift(Person.unapply))
 
   // Queries
   /**
@@ -121,7 +130,16 @@ object Person {
   }
 }
 
-case class Credentials(email: String, token: String, status: String)
+case class Credentials(email: String, token: String, status: String = CredentialStatus.Inactive.toString)
+
+object Credentials {
+  implicit val format: Format[Credentials] = (
+      (JsPath \ "email").format[String] and
+      (JsPath \ "pass_hash").format[String] and
+      (JsPath \ "status").format[String]
+    )(Credentials.apply, unlift(Credentials.unapply))
+
+}
 
 case class Activation(token: String, email: String, created: DateTime, used: Boolean, expires: DateTime)
 
@@ -201,5 +219,3 @@ object QuestionTemplate {
     }
   }
 }
-
-case class SummaryItem(id: Option[Long], status: FeedbackStatus, name: String, role: String, managerName: String, lastUpdated: DateTime, shared: Option[Boolean])
