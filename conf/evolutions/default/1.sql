@@ -85,3 +85,4 @@ drop table if exists activations cascade;
 drop table if exists nominations cascade;
 drop table if exists cycle cascade;
 drop table if exists question_templates cascade;
+drop table if exists question_response cascade;

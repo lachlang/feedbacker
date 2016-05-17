@@ -5,17 +5,18 @@ fbControllers.controller('RegistrationCtrl',  ['$scope', '$log', '$location', 'A
 
 	var ctrl = this;
 
-	var register = function() {
-		// validate 
+	ctrl.register = function() {
 		Account.register(ctrl.name, ctrl.role, ctrl.email, ctrl.password, ctrl.managerEmail).then(function(response) {
-			// success
+			$log.info("great success")
+			$log.info(response)
 		}, function(response) {
-			// failure
+			$log.error("it failed")
+			$log.error(response)
 		});
 	};
 
-	var forgotPassword = function() {
-
+	ctrl.forgotPassword = function() {
+		$log.info("forgotPassword");
 	};
 
 }]);

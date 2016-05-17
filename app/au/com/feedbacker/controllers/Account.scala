@@ -19,10 +19,10 @@ class Registration extends Controller {
   def register = Action(parse.json(maxLength = 2000)) { request =>
 
     request.body.validate[RegistrationContent].asOpt match {
-      case None => BadRequest
+      case None => BadRequest("{ \"body\": { \"message\": \"Could not parse request.\"}} ")
       case Some(body) => Person.create(
         Person(None, body.name, body.role, Credentials(body.email, Registration.hash(body.password), CredentialStatus.Inactive.toString), body.managerEmail)) match {
-        case Left(e) => BadRequest
+        case Left(e) => println(e.getMessage); BadRequest("{ \"body\": { \"message\": \"Could not create user.\"}} ")
         case Right(p) => Ok(Json.toJson(p))
       }
     }

@@ -9,7 +9,7 @@
         <!-- <p><a class="btn btn-primary btn-lg" href="#/about" role="button">Learn more &raquo;</a></p> -->
       </div>
       <div class="col-md-4" data-ng-controller="RegistrationCtrl as registration">
-        <form class="form-group" data-ng-sumbit="registration.register">
+        <form class="form-group" data-ng-submit="registration.register()">
           <div class="row">
             <div class="col-sm-12">
               <input type="text" class="form-control" placeholder="Name" data-ng-model="registration.name" required>
@@ -36,8 +36,11 @@
             </div>
           </div>
           <div class="row top-buffer-small">
-            <div class="col-sm-12">
+            <div class="col-sm-6">
               <button type="submit" class="btn btn-primary">Register</button>
+            </div>
+            <div>
+              <a data-ng-click="registration.forgotPassword()">Forgot Password</a>
             </div>
           </div>
         </form>

@@ -14,7 +14,7 @@ fbControllers.controller('MenuCtrl', ['$scope', '$log', '$location', 'Session', 
 		Session.login().then(function(result) {
 			$location.path("/list");
 		}, function(result) {
-			$log.error("log in FAILED!")
+			$log.error("Login FAILED!")
 			ctrl.error = "Could not log in.  Please try again later.";
 		});
 		$log.debug("this is a test function which will print text to the browser console...");
