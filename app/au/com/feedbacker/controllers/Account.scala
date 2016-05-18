@@ -17,13 +17,17 @@ import scala.concurrent.Future
 class Registration extends Controller {
 
   def register = Action(parse.json(maxLength = 2000)) { request =>
+    def translateResult(result: Either[Throwable, Person]) : Result = result match {
+      case Left(e) => println(e.getMessage); BadRequest("{ \"body\": { \"message\": \"Could not create user.\"}} ")
+      case Right(p) => Ok(Json.toJson(p))
+    }
 
     request.body.validate[RegistrationContent].asOpt match {
       case None => BadRequest("{ \"body\": { \"message\": \"Could not parse request.\"}} ")
-      case Some(body) => Person.create(
-        Person(None, body.name, body.role, Credentials(body.email, Registration.hash(body.password), CredentialStatus.Inactive.toString), body.managerEmail)) match {
-        case Left(e) => println(e.getMessage); BadRequest("{ \"body\": { \"message\": \"Could not create user.\"}} ")
-        case Right(p) => Ok(Json.toJson(p))
+      case Some(body) => Credentials.findStatusByEmail(body.email) match {
+        case Some((id, CredentialStatus.Nominated)) => translateResult(Person.update(Person(Some(id), body.name, body.role, Credentials(body.email, Registration.hash(body.password), CredentialStatus.Inactive.toString), body.managerEmail)))
+        case Some((_, _)) => BadRequest("{ \"body\": { \"message\": \"User is already registered.\"}} ")
+        case None => translateResult(Person.create(Person(None, body.name, body.role, Credentials(body.email, Registration.hash(body.password), CredentialStatus.Inactive.toString), body.managerEmail)))
       }
     }
   }

@@ -18,11 +18,12 @@ import scala.concurrent.Future
 //
 object CredentialStatus extends Enumeration {
 	type CredentialStatus = Value
-	val Active = Value("Active")
+  val Active = Value("Active")
+  val Nominated = Value("Nominated")
 	val Inactive = Value("Inactive")
 	val Restricted = Value("Restricted")
 }
-//import CredentialStatus._
+import CredentialStatus._
 
 object FeedbackStatus extends Enumeration {
 	type FeedbackStatus = Value
@@ -107,6 +108,32 @@ object Person {
     }
   }
 
+  def update(person: Person): Either[Throwable, Person] = {
+    DB.withConnection { implicit connection =>
+      try {
+        SQL(
+          """
+              update into person (id, name, role, email, pass_hash, user_status, manager_email)values (
+                {name},{role},{email},{pass_hash},{user_status},{manager_email}
+              )
+          """).on(
+            'id -> person.id,
+            'name -> person.name,
+            'role -> person.role,
+            'email -> person.credentials.email,
+            'pass_hash -> person.credentials.token,
+            'user_status -> person.credentials.status,
+            'manager_email -> person.managerEmail
+          ).executeUpdate() match {
+          case 0 => Left(new Exception("Could not update."))
+          case _ => Right(person)
+        }
+      } catch {
+        case e:Exception => Left(e)
+      }
+    }
+  }
+
   def login(email: String, hash: String): Boolean = DB.withConnection{ implicit connection =>
     SQL (
       """
@@ -133,11 +160,24 @@ object Person {
 case class Credentials(email: String, token: String, status: String = CredentialStatus.Inactive.toString)
 
 object Credentials {
+
+  val status = {
+    get[Long]("id") ~
+    get[String]("status") map {
+      case id~status => (id, CredentialStatus.withName(status))
+    }
+  }
+
   implicit val format: Format[Credentials] = (
       (JsPath \ "email").format[String] and
       (JsPath \ "pass_hash").format[String] and
       (JsPath \ "status").format[String]
     )(Credentials.apply, unlift(Credentials.unapply))
+
+  def findStatusByEmail(email:String): Option[(Long, CredentialStatus)] = DB.withConnection { implicit connection =>
+    SQL("select id, status from person where email = {email}").on('email -> email).as(Credentials.status.singleOpt)
+  }
+
 
 }
 
