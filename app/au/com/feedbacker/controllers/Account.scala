@@ -7,6 +7,8 @@ import play.api.libs.json.{Json, Format, JsPath}
 import play.api.mvc._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
+import org.mindrot.jbcrypt.BCrypt
+
 import au.com.feedbacker.model._
 
 import scala.concurrent.Future
@@ -26,7 +28,7 @@ class Registration extends Controller {
       case None => BadRequest("{ \"body\": { \"message\": \"Could not parse request.\"}} ")
       case Some(body) => Credentials.findStatusByEmail(body.email) match {
         case Some((id, CredentialStatus.Nominated)) => translateResult(Person.update(Person(Some(id), body.name, body.role, Credentials(body.email, Registration.hash(body.password), CredentialStatus.Inactive.toString), body.managerEmail)))
-        case Some((_, _)) => BadRequest("{ \"body\": { \"message\": \"User is already registered.\"}} ")
+        case Some((_, _)) => Conflict("{ \"body\": { \"message\": \"User is already registered.\"}} ")
         case None => translateResult(Person.create(Person(None, body.name, body.role, Credentials(body.email, Registration.hash(body.password), CredentialStatus.Inactive.toString), body.managerEmail)))
       }
     }
@@ -34,7 +36,7 @@ class Registration extends Controller {
 }
 
 object Registration {
-  def hash(seed :String): String = seed
+  def hash(planetext :String): String = BCrypt.hashpw(planetext, BCrypt.gensalt())
 
   def validateEmailFormat = ???
 }

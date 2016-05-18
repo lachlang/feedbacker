@@ -33,7 +33,7 @@ create table nominations (
 	from_id					bigint not null,
 	to_email				varchar(255) not null,
 	status					varchar(20) not null,
-	lastUpdated				timestamp,
+	last_updated				timestamp,
 	cycle_id 				bigint not null,
 	shared 					boolean,
 	constraint ck_nominations_status check (status in ('Pending','Submitted','Closed')),

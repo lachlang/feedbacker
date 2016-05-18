@@ -2,7 +2,7 @@ package au.com.feedbacker.model
 
 import org.joda.time.DateTime
 
-import javax.inject.Inject
+// import javax.inject.Inject
 import play.api.db._
 import play.api.Play.current
 
@@ -11,11 +11,9 @@ import anorm.SqlParser._
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{JsPath, Format}
 
-import scala.concurrent.Future
-
+// import scala.concurrent.Future
 // import scala.language.postfixOps
 
-//
 object CredentialStatus extends Enumeration {
 	type CredentialStatus = Value
   val Active = Value("Active")
@@ -30,7 +28,8 @@ object FeedbackStatus extends Enumeration {
 	val New = Value("New")
 	val Pending = Value("Pending")
 	val Submitted = Value("Submitted")
-	val Closed = Value("Closed")
+  val Cancelled = Value("Cancelled")
+  val Closed = Value("Closed")
 }
 import FeedbackStatus._
 
@@ -38,12 +37,6 @@ case class Person(id: Option[Long], name: String, role: String, credentials: Cre
 
 object Person {
 
-  // implicit val format: Format[Person] = (
-  //   (JsPath \ "data" \ "id").formatNullable[Long] and
-  //   (JsPath \ "data" \ "name").format[String] and
-  //   (JsPath \ "data" \ "role").format[String] and
-  //   (JsPath \ "data" \ "email").format[HashedCredentials]
-  // )(Person.apply, unlift(Person.unapply))
   /**
    * Parse a Person from a ResultSet
    */
@@ -79,7 +72,6 @@ object Person {
     SQL("select * from person where email = {email}").on('email -> email).as(Person.simple.singleOpt)
   }
 
-//  def create(person: Person): Future[Either[Throwable, Person]] = {
   def create(person: Person): Either[Throwable, Person] = {
     DB.withConnection { implicit connection =>
       try {
@@ -163,7 +155,7 @@ object Credentials {
 
   val status = {
     get[Long]("id") ~
-    get[String]("status") map {
+    get[String]("user_status") map {
       case id~status => (id, CredentialStatus.withName(status))
     }
   }
@@ -171,14 +163,12 @@ object Credentials {
   implicit val format: Format[Credentials] = (
       (JsPath \ "email").format[String] and
       (JsPath \ "pass_hash").format[String] and
-      (JsPath \ "status").format[String]
+      (JsPath \ "user_status").format[String]
     )(Credentials.apply, unlift(Credentials.unapply))
 
   def findStatusByEmail(email:String): Option[(Long, CredentialStatus)] = DB.withConnection { implicit connection =>
-    SQL("select id, status from person where email = {email}").on('email -> email).as(Credentials.status.singleOpt)
+    SQL("select id, user_status from person where email = {email}").on('email -> email).as(Credentials.status.singleOpt)
   }
-
-
 }
 
 case class Activation(token: String, email: String, created: DateTime, used: Boolean, expires: DateTime)
@@ -206,8 +196,23 @@ case class Nomination (id: Option[Long], from: Person, to: Person, toManager: Pe
 
 object Nomination {
 
+  val simple = {
+//    get[Long]("nominations.id") ~
+//    get[Long]("nominations.from_id") ~
+//    get[String]("nominations.to_email") ~
+//    get[String]("nominations.status") ~
+//    get[DateTime]("nominations.last_updated") ~
+//    get[Long]("nominations.cycle_id") ~
+//    get[Boolean]("nominations.shared") map {
+//      case id~fromId~toEmail~status~lastUpdated~cycleId~shared => Nomination(Some(id), )
+//    }
+  }
 
-  def viewDetail: Nomination = {
+  val join = {
+
+  }
+  def viewDetail(id: Long): Option[Nomination] = {
+//    SQL("""SELECT * from NOMINATIONS where id = {id}""").on('id -> id).as(Nomination.simple.singleOpt)
     ???
   }
 
