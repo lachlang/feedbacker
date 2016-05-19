@@ -192,6 +192,25 @@ object Activation {
 
 }
 
+case class QuestionResponse(id: Option[Long], text: String, responseOptions: String, response: Option[String], comments: Option[String])
+
+object QuestionResponse {
+
+  val simple = {
+    get[Option[Long]]("question.id") ~
+      get[String]("question.text") ~
+      get[String]("question.responseOptions") ~
+      get[Option[String]]("question.response") ~
+      get[Option[String]]("question.comments") map {
+      case id~text~responseOptions~response~comments => QuestionResponse(id, text, responseOptions, response, comments)
+    }
+  }
+
+  def findForNomination(nominationId: Long): Seq[QuestionResponse] = DB.withConnection { implicit connection =>
+    SQL("""select * from question_response where nomination_id = {id}""").on('id -> nominationId).as(QuestionResponse.simple *).toSeq
+  }
+}
+
 case class Nomination (id: Option[Long], from: Option[Person], to: Option[Person], status: FeedbackStatus, lastUpdated: DateTime, questions: Seq[QuestionResponse], shared: Boolean)
 
 object Nomination {
@@ -206,47 +225,29 @@ object Nomination {
       case id~fromId~toEmail~status~lastUpdated~shared => (id, fromId, toEmail, FeedbackStatus.withName(status), lastUpdated, shared)
     }
   }
-//  case id~fromId~toEmail~status~lastUpdated~cycleId~shared => Nomination(Some(id), Person.findById(fromId), Person.findByEmail(toEmail), FeedbackStatus.withName(status), lastUpdated, None, shared)
-  //      case id~fromId~toEmail~status~lastUpdated~cycleId~shared => Nomination(Some(id), Person.findById(fromId), Person.findByEmail(toEmail), FeedbackStatus.withName(status), lastUpdated, if (getQuestions) QuestionResponses.getQuestionsForNomination(id) else None, shared)
 
   def enrich: Option[(Long, Long, String, FeedbackStatus, DateTime, Boolean)] => Option[Nomination] = _ match {
     case None => None
     case Some((id: Long, fromId: Long, toEmail: String, status: FeedbackStatus, lastUpdated: DateTime, shared: Boolean)) =>
-      Some(Nomination(Some(id), Person.findById(fromId), Person.findByEmail(toEmail), status, lastUpdated, QuestionResponse.findForNomination(id), shared))
+      Some(Nomination(Some(id), Person.findById(fromId), Person.findByEmail(toEmail), status, lastUpdated, Seq(), shared))
   }
 
   def getSummary(id: Long): Option[Nomination] = DB.withConnection { implicit connection =>
-    Nomination.enrich(SQL("""select * from nominations left join person on nominations.from_id = person.id where nominations.id = {id}""")
-    .on('id -> id).as(Nomination.simple.singleOpt))
+    Nomination.enrich(SQL("""select * from nominations left join person on nominations.from_id = person.id where nominations.id = {id} and status != {status}""")
+    .on('id -> id, 'status -> FeedbackStatus.Cancelled.toString).as(Nomination.simple.singleOpt))
 
   };
 
-//  def getDetail(id: Long): Option[Nomination] = DB.withConnection { implicit connection =>
-//    Nomination.getDetail(id).getOrElse(None).
-//    SQL("""select * from question_response where nomination_id = {id}""").on('id -> id).as(Nomination.simple.singleOpt)
-//  }
+  def getDetail(id: Long): Option[Nomination] = DB.withConnection { implicit connection =>
+    Nomination.getDetail(id).map{ case n => Nomination(n.id, n.from, n.to, n.status, n.lastUpdated, QuestionResponse.findForNomination(id), n.shared)}
+  }
 
-  def cancelNomination: Boolean = {
+  def createNomination(): Boolean = {
     ???
   }
-}
 
-case class QuestionResponse(id: Option[Long], text: String, responseOptions: String, response: Option[String], comments: Option[String])
-
-object QuestionResponse {
-
-  val simple = {
-    get[Option[Long]]("question.id") ~
-    get[String]("question.text") ~
-    get[String]("question.responseOptions") ~
-    get[Option[String]]("question.response") ~
-    get[Option[String]]("question.comments") map {
-      case id~text~responseOptions~response~comments => QuestionResponse(id, text, responseOptions, response, comments)
-    }
-  }
-
-  def findForNomination(nominationId: Long): Seq[QuestionResponse] = DB.withConnection { implicit connection =>
-    SQL("""select * from question_response where nomination_id = {id}""").on('id -> nominationId).as(QuestionResponse.simple *).toSeq
+  def cancelNomination(id: Long): Boolean = {
+    SQL("""update into nominations (status) values ({status}) id = {id}""").on('id -> id, 'status -> FeedbackStatus.Cancelled.toString) == 1
   }
 }
 
