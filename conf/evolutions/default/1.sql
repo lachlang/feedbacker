@@ -35,7 +35,7 @@ create table nominations (
 	status					varchar(20) not null,
 	last_updated				timestamp,
 	cycle_id 				bigint not null,
-	shared 					boolean,
+	shared 					boolean not null default false,
 	constraint ck_nominations_status check (status in ('Pending','Submitted','Closed')),
 	constraint pk_nominations primary key (id)
 );
@@ -62,6 +62,8 @@ create table question_templates (
 	constraint pk_question_templates primary key (id)
 );
 
+create index question_template_cycle_idx on question_templates (cycle_id);
+
 create table question_response (
 	id 						bigserial,
 	nomination_id			bigint not null,
@@ -71,6 +73,8 @@ create table question_response (
 	comments 				varchar(8192),
 	constraint pk_question_response primary key (id)
 );
+
+create index question_response_nomination_idx on question_response (nomination_id);
 
 alter table nominations add constraint fk_nominations_from foreign key (from_id) references person (id);
 alter table nominations add constraint fk_nominations_to foreign key (to_email) references person (email);

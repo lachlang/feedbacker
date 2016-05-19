@@ -192,29 +192,39 @@ object Activation {
 
 }
 
-case class Nomination (id: Option[Long], from: Person, to: Person, toManager: Person, status: FeedbackStatus, lastUpdated: DateTime, questions: Option[List[QuestionResponse]], shared: Option[Boolean])
+case class Nomination (id: Option[Long], from: Option[Person], to: Option[Person], status: FeedbackStatus, lastUpdated: DateTime, questions: Seq[QuestionResponse], shared: Boolean)
 
 object Nomination {
 
   val simple = {
-//    get[Long]("nominations.id") ~
-//    get[Long]("nominations.from_id") ~
-//    get[String]("nominations.to_email") ~
-//    get[String]("nominations.status") ~
-//    get[DateTime]("nominations.last_updated") ~
-//    get[Long]("nominations.cycle_id") ~
-//    get[Boolean]("nominations.shared") map {
-//      case id~fromId~toEmail~status~lastUpdated~cycleId~shared => Nomination(Some(id), )
-//    }
+    get[Long]("nominations.id") ~
+    get[Long]("nominations.from_id") ~
+    get[String]("nominations.to_email") ~
+    get[String]("nominations.status") ~
+    get[DateTime]("nominations.last_updated") ~
+    get[Boolean]("nominations.shared") map {
+      case id~fromId~toEmail~status~lastUpdated~shared => (id, fromId, toEmail, FeedbackStatus.withName(status), lastUpdated, shared)
+    }
+  }
+//  case id~fromId~toEmail~status~lastUpdated~cycleId~shared => Nomination(Some(id), Person.findById(fromId), Person.findByEmail(toEmail), FeedbackStatus.withName(status), lastUpdated, None, shared)
+  //      case id~fromId~toEmail~status~lastUpdated~cycleId~shared => Nomination(Some(id), Person.findById(fromId), Person.findByEmail(toEmail), FeedbackStatus.withName(status), lastUpdated, if (getQuestions) QuestionResponses.getQuestionsForNomination(id) else None, shared)
+
+  def enrich: Option[(Long, Long, String, FeedbackStatus, DateTime, Boolean)] => Option[Nomination] = _ match {
+    case None => None
+    case Some((id: Long, fromId: Long, toEmail: String, status: FeedbackStatus, lastUpdated: DateTime, shared: Boolean)) =>
+      Some(Nomination(Some(id), Person.findById(fromId), Person.findByEmail(toEmail), status, lastUpdated, QuestionResponse.findForNomination(id), shared))
   }
 
-  val join = {
+  def getSummary(id: Long): Option[Nomination] = DB.withConnection { implicit connection =>
+    Nomination.enrich(SQL("""select * from nominations left join person on nominations.from_id = person.id where nominations.id = {id}""")
+    .on('id -> id).as(Nomination.simple.singleOpt))
 
-  }
-  def viewDetail(id: Long): Option[Nomination] = {
-//    SQL("""SELECT * from NOMINATIONS where id = {id}""").on('id -> id).as(Nomination.simple.singleOpt)
-    ???
-  }
+  };
+
+//  def getDetail(id: Long): Option[Nomination] = DB.withConnection { implicit connection =>
+//    Nomination.getDetail(id).getOrElse(None).
+//    SQL("""select * from question_response where nomination_id = {id}""").on('id -> id).as(Nomination.simple.singleOpt)
+//  }
 
   def cancelNomination: Boolean = {
     ???
@@ -234,10 +244,13 @@ object QuestionResponse {
       case id~text~responseOptions~response~comments => QuestionResponse(id, text, responseOptions, response, comments)
     }
   }
+
+  def findForNomination(nominationId: Long): Seq[QuestionResponse] = DB.withConnection { implicit connection =>
+    SQL("""select * from question_response where nomination_id = {id}""").on('id -> nominationId).as(QuestionResponse.simple *).toSeq
+  }
 }
 
-
-case class FeedbackCycle(id: Long, label: String, start_date: DateTime, end_date: DateTime, active: Boolean)//, questions: List[QuestionTemplate])
+case class FeedbackCycle(id: Long, label: String, start_date: DateTime, end_date: DateTime, active: Boolean)
 
 object FeedbackCycle {
 
