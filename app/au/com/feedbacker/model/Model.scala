@@ -226,27 +226,44 @@ object Nomination {
     }
   }
 
-  def enrich: Option[(Long, Long, String, FeedbackStatus, DateTime, Boolean)] => Option[Nomination] = _ match {
-    case None => None
-    case Some((id: Long, fromId: Long, toEmail: String, status: FeedbackStatus, lastUpdated: DateTime, shared: Boolean)) =>
-      Some(Nomination(Some(id), Person.findById(fromId), Person.findByEmail(toEmail), status, lastUpdated, Seq(), shared))
+//  def enrich: Option[(Long, Long, String, FeedbackStatus, DateTime, Boolean)] => Option[Nomination] = _ match {
+//    case None => None
+//    case Some((id: Long, fromId: Long, toEmail: String, status: FeedbackStatus, lastUpdated: DateTime, shared: Boolean)) =>
+//      Some(Nomination(Some(id), Person.findById(fromId), Person.findByEmail(toEmail), status, lastUpdated, Seq(), shared))
+//  }
+//
+//  def getSummary(id: Long): Option[Nomination] = DB.withConnection { implicit connection =>
+//    Nomination.enrich(SQL("""select * from nominations left join person on nominations.from_id = person.id where nominations.id = {id} and status != {status}""")
+//    .on('id -> id, 'status -> FeedbackStatus.Cancelled.toString).as(Nomination.simple.singleOpt))
+//  }
+
+  def enrich: (Long, Long, String, FeedbackStatus, DateTime, Boolean) => Nomination = {
+    (id: Long, fromId: Long, toEmail: String, status: FeedbackStatus, lastUpdated: DateTime, shared: Boolean) =>
+    Nomination(Some(id), Person.findById(fromId), Person.findByEmail(toEmail), status, lastUpdated, Seq(), shared)
   }
 
   def getSummary(id: Long): Option[Nomination] = DB.withConnection { implicit connection =>
-    Nomination.enrich(SQL("""select * from nominations left join person on nominations.from_id = person.id where nominations.id = {id} and status != {status}""")
-    .on('id -> id, 'status -> FeedbackStatus.Cancelled.toString).as(Nomination.simple.singleOpt))
-
-  };
+    SQL("""select * from nominations left join person on nominations.from_id = person.id where nominations.id = {id} and status != {status}""")
+      .on('id -> id, 'status -> FeedbackStatus.Cancelled.toString).as(Nomination.simple.singleOpt) match {
+      case None => None
+      case Some((a,b,c,d,e,f)) => Some(Nomination.enrich(a,b,c,d,e,f))
+    }
+  }
 
   def getDetail(id: Long): Option[Nomination] = DB.withConnection { implicit connection =>
     Nomination.getDetail(id).map{ case n => Nomination(n.id, n.from, n.to, n.status, n.lastUpdated, QuestionResponse.findForNomination(id), n.shared)}
   }
 
-  def createNomination(): Boolean = {
+  def getPendingNominationsForUser(id: Long): Seq[Nomination] = DB.withConnection { implicit connection =>
+    val user: Person = Person.findById(id).get
+    SQL("""select * from nominations where to_email = {email}""").on('email -> user.credentials.email).as(Nomination.simple *).map{case (a,b,c,d,e,f) => Nomination.enrich(a,b,c,d,e,f)}
+  }
+
+  def createNomination(id: Long, email: String): Boolean = DB.withConnection { implicit connection =>
     ???
   }
 
-  def cancelNomination(id: Long): Boolean = {
+  def cancelNomination(id: Long): Boolean = DB.withConnection { implicit connection =>
     SQL("""update into nominations (status) values ({status}) id = {id}""").on('id -> id, 'status -> FeedbackStatus.Cancelled.toString) == 1
   }
 }
