@@ -209,6 +209,18 @@ object QuestionResponse {
   def findForNomination(nominationId: Long): Seq[QuestionResponse] = DB.withConnection { implicit connection =>
     SQL("""select * from question_response where nomination_id = {id}""").on('id -> nominationId).as(QuestionResponse.simple *).toSeq
   }
+
+  def updateResponses(responses :Seq[QuestionResponse]): Boolean = DB.withConnection { implicit connection =>
+    responses.map ( response =>
+    SQL("""update into question_response (response, comments) values ({response}, {comments})""")
+      .on('response -> response.response, 'comments -> response.comments).executeUpdate() == 1).foldLeft(true)( (a, b) => a&b)
+  }
+
+  def initialiseResponses(questions: Seq[QuestionResponse], nominationId :Long): Boolean = DB.withConnection { implicit connection =>
+    questions.map ( q =>
+    SQL("""insert into question_response (nomination_id, text, response_options) values ({nominationId}, {text}, {responseOptions})""")
+    .on('nominationId -> nominationId, 'text -> q.text, 'responseOptions -> q.responseOptions).execute()).foldLeft(true)((a,b) => a&b)
+  }
 }
 
 case class Nomination (id: Option[Long], from: Option[Person], to: Option[Person], status: FeedbackStatus, lastUpdated: DateTime, questions: Seq[QuestionResponse], shared: Boolean)
@@ -225,17 +237,6 @@ object Nomination {
       case id~fromId~toEmail~status~lastUpdated~shared => (id, fromId, toEmail, FeedbackStatus.withName(status), lastUpdated, shared)
     }
   }
-
-//  def enrich: Option[(Long, Long, String, FeedbackStatus, DateTime, Boolean)] => Option[Nomination] = _ match {
-//    case None => None
-//    case Some((id: Long, fromId: Long, toEmail: String, status: FeedbackStatus, lastUpdated: DateTime, shared: Boolean)) =>
-//      Some(Nomination(Some(id), Person.findById(fromId), Person.findByEmail(toEmail), status, lastUpdated, Seq(), shared))
-//  }
-//
-//  def getSummary(id: Long): Option[Nomination] = DB.withConnection { implicit connection =>
-//    Nomination.enrich(SQL("""select * from nominations left join person on nominations.from_id = person.id where nominations.id = {id} and status != {status}""")
-//    .on('id -> id, 'status -> FeedbackStatus.Cancelled.toString).as(Nomination.simple.singleOpt))
-//  }
 
   def enrich: (Long, Long, String, FeedbackStatus, DateTime, Boolean) => Nomination = {
     (id: Long, fromId: Long, toEmail: String, status: FeedbackStatus, lastUpdated: DateTime, shared: Boolean) =>
@@ -255,16 +256,43 @@ object Nomination {
   }
 
   def getPendingNominationsForUser(id: Long): Seq[Nomination] = DB.withConnection { implicit connection =>
-    val user: Person = Person.findById(id).get
-    SQL("""select * from nominations where to_email = {email}""").on('email -> user.credentials.email).as(Nomination.simple *).map{case (a,b,c,d,e,f) => Nomination.enrich(a,b,c,d,e,f)}
+     Person.findById(id) match {
+       case Some(user) => SQL("""select * from nominations where to_email = {email} and status != {status} and cycle_id in (select id from cycle where active = TRUE)""")
+         .on('email -> user.credentials.email, 'status -> FeedbackStatus.Cancelled.toString)
+         .as(Nomination.simple *).map{case (a,b,c,d,e,f) => Nomination.enrich(a,b,c,d,e,f)}
+       case None => Seq()
+     }
   }
 
-  def createNomination(id: Long, email: String): Boolean = DB.withConnection { implicit connection =>
+  def getCurrentFeedbackForUser(userId: Long): Seq[Nomination] = DB.withConnection { implicit connection =>
+    SQL("""select * from nominations where cycle_id in (select id from cycle where active = TRUE)""").as(Nomination.simple *)
+      .map { case (a,b,c,d,e,f) => enrich(a,b,c,d,e,f)}
+  }
+
+  def getHistoryFeedbackForUser(userId: Long): Seq[Nomination] = DB.withConnection { implicit connection =>
+    SQL("""select * from nominations where cycle_id not in (select id from cycle where active = TRUE) ORDER BY last_updated DESC NULLS LAST""").as(Nomination.simple *)
+      .map { case (a,b,c,d,e,f) => enrich(a,b,c,d,e,f)}
+  }
+
+  def createNomination(fromId: Long, toEmail: String, cycleId: Long): Boolean = DB.withConnection { implicit connection =>
+
+    val questions = QuestionTemplate.findQuestionsForCycle(cycleId)
+
     ???
   }
 
-  def cancelNomination(id: Long): Boolean = DB.withConnection { implicit connection =>
-    SQL("""update into nominations (status) values ({status}) id = {id}""").on('id -> id, 'status -> FeedbackStatus.Cancelled.toString) == 1
+  def submitFeedback(feedback: Nomination) : Boolean = DB.withConnection { implicit connection =>
+
+    QuestionResponse.updateResponses(feedback.questions) match {
+      case true =>
+        SQL("update into nominations (status, last_updated) values ({status}, {lastUpdated})")
+        .on('status -> FeedbackStatus.Submitted.toString, 'lastUpdated -> DateTime.now().getMillis).execute() == 1
+      case _ => false
+    }
+  }
+
+  def cancelNomination(nominationId: Long): Boolean = DB.withConnection { implicit connection =>
+    SQL("""update into nominations (status) values ({status}) id = {id}""").on('id -> nominationId, 'status -> FeedbackStatus.Cancelled.toString) == 1
   }
 }
 
@@ -293,5 +321,9 @@ object QuestionTemplate {
     get[String]("question.responseOptions") map {
       case id~text~responseOptions => QuestionTemplate(id, text, responseOptions)
     }
+  }
+
+  def findQuestionsForCycle(cycleId: Long): Seq[QuestionTemplate] = DB.withConnection { implicit connection =>
+    SQL("""select * from question_templates where cycle_id = {id}""").on('id -> cycleId).as(QuestionTemplate.simple *)
   }
 }
