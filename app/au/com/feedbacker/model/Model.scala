@@ -216,10 +216,27 @@ object QuestionResponse {
       .on('response -> response.response, 'comments -> response.comments).executeUpdate() == 1).foldLeft(true)( (a, b) => a&b)
   }
 
-  def initialiseResponses(questions: Seq[QuestionResponse], nominationId :Long): Boolean = DB.withConnection { implicit connection =>
+  def initialiseResponses(nominationId :Long, questions: Seq[QuestionTemplate]): Boolean = DB.withConnection { implicit connection =>
     questions.map ( q =>
     SQL("""insert into question_response (nomination_id, text, response_options) values ({nominationId}, {text}, {responseOptions})""")
     .on('nominationId -> nominationId, 'text -> q.text, 'responseOptions -> q.responseOptions).execute()).foldLeft(true)((a,b) => a&b)
+  }
+}
+
+case class QuestionTemplate(id: Option[Long], text: String, responseOptions: String)
+
+object QuestionTemplate {
+
+  val simple = {
+    get[Option[Long]]("question.id") ~
+      get[String]("question.text") ~
+      get[String]("question.responseOptions") map {
+      case id~text~responseOptions => QuestionTemplate(id, text, responseOptions)
+    }
+  }
+
+  def findQuestionsForCycle(cycleId: Long): Seq[QuestionTemplate] = DB.withConnection { implicit connection =>
+    SQL("""select * from question_templates where cycle_id = {id}""").on('id -> cycleId).as(QuestionTemplate.simple *)
   }
 }
 
@@ -274,11 +291,17 @@ object Nomination {
       .map { case (a,b,c,d,e,f) => enrich(a,b,c,d,e,f)}
   }
 
-  def createNomination(fromId: Long, toEmail: String, cycleId: Long): Boolean = DB.withConnection { implicit connection =>
+  def createNomination(fromId: Long, toEmail: String, cycleId: Long): Either[Throwable, Long] = DB.withConnection { implicit connection =>
 
-    val questions = QuestionTemplate.findQuestionsForCycle(cycleId)
-
-    ???
+    // status is new until email notification sent
+    SQL("""insert into nominations (from_id, to_email, status) values ({fromId},{toEmail},{status})""")
+      .on('fromId -> fromId, 'toEmail -> toEmail, 'status -> FeedbackStatus.New.toString).executeInsert() match {
+      case None => Left(new Exception("Could not create nomination."))
+      case Some(nominationId) => QuestionResponse.initialiseResponses(nominationId, QuestionTemplate.findQuestionsForCycle(cycleId)) match {
+        case false => Left(new Exception)
+        case true => Right(nominationId)
+      }
+    }
   }
 
   def submitFeedback(feedback: Nomination) : Boolean = DB.withConnection { implicit connection =>
@@ -308,22 +331,5 @@ object FeedbackCycle {
     get[Boolean]("cycle.active") map {
       case id~label~start_date~end_date~active => FeedbackCycle(id, label, start_date, end_date, active)
     }
-  }
-}
-
-case class QuestionTemplate(id: Option[Long], text: String, responseOptions: String)
-
-object QuestionTemplate {
-
-  val simple = {
-    get[Option[Long]]("question.id") ~
-    get[String]("question.text") ~
-    get[String]("question.responseOptions") map {
-      case id~text~responseOptions => QuestionTemplate(id, text, responseOptions)
-    }
-  }
-
-  def findQuestionsForCycle(cycleId: Long): Seq[QuestionTemplate] = DB.withConnection { implicit connection =>
-    SQL("""select * from question_templates where cycle_id = {id}""").on('id -> cycleId).as(QuestionTemplate.simple *)
   }
 }
