@@ -1,7 +1,6 @@
 package au.com.feedbacker.model
 
 import org.joda.time.DateTime
-import org.mindrot.jbcrypt.BCrypt
 
 // import javax.inject.Inject
 import play.api.db._
@@ -170,8 +169,6 @@ object Credentials {
       (JsPath \ "pass_hash").format[String] and
       (JsPath \ "user_status").format[String]
     )(Credentials.apply, unlift(Credentials.unapply))
-
-  def hash(planetext :String): String = BCrypt.hashpw(planetext, BCrypt.gensalt())
 
   def findStatusByEmail(email:String): Option[(Long, CredentialStatus)] = DB.withConnection { implicit connection =>
     SQL("select email, hash, user_status from person where email = {email}").on('email -> email).as(Credentials.status.singleOpt)

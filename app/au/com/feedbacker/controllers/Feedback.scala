@@ -1,8 +1,10 @@
 package au.com.feedbacker.controllers
 
+import au.com.feedbacker.util.AuthenticationUtil
 import play.api.libs.json.Json
 import play.api.mvc._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import au.com.feedbacker.model._
 
 import scala.concurrent.Future
 
@@ -12,7 +14,7 @@ import scala.concurrent.Future
 class Feedback extends Controller {
 
   def getPendingFeedbackActions = Action.async { request =>
-
+    val person: Option[Person] = AuthenticationUtil.getUser(request.session)
     Future(Ok)
   }
 
