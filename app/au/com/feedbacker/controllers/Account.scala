@@ -2,12 +2,10 @@ package au.com.feedbacker.controllers
 
 //import org.joda.time.DateTime
 import play.api.libs.functional.syntax._
-import play.api.libs.json.{Json, Format, JsPath}
+import play.api.libs.json.{Json, Format, JsPath, JsValue}
 //import play.api.libs.json.Format._
 import play.api.mvc._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
-
-import org.mindrot.jbcrypt.BCrypt
 
 import au.com.feedbacker.model._
 
@@ -18,7 +16,7 @@ import scala.concurrent.Future
  */
 class Registration extends Controller {
 
-  def register = Action(parse.json(maxLength = 2000)) { request =>
+  def register: Action[JsValue] = Action(parse.json(maxLength = 2000)) { request =>
     def translateResult(result: Either[Throwable, Person]) : Result = result match {
       case Left(e) => println(e.getMessage); BadRequest("{ \"body\": { \"message\": \"Could not create user.\"}} ")
       case Right(p) => Ok(Json.toJson(p))
@@ -27,17 +25,15 @@ class Registration extends Controller {
     request.body.validate[RegistrationContent].asOpt match {
       case None => BadRequest("{ \"body\": { \"message\": \"Could not parse request.\"}} ")
       case Some(body) => Credentials.findStatusByEmail(body.email) match {
-        case Some((id, CredentialStatus.Nominated)) => translateResult(Person.update(Person(Some(id), body.name, body.role, Credentials(body.email, Registration.hash(body.password), CredentialStatus.Inactive.toString), body.managerEmail)))
+        case Some((id, CredentialStatus.Nominated)) => translateResult(Person.update(Person(Some(id), body.name, body.role, Credentials(body.email, Credentials.hash(body.password), CredentialStatus.Inactive.toString), body.managerEmail)))
         case Some((_, _)) => Conflict("{ \"body\": { \"message\": \"User is already registered.\"}} ")
-        case None => translateResult(Person.create(Person(None, body.name, body.role, Credentials(body.email, Registration.hash(body.password), CredentialStatus.Inactive.toString), body.managerEmail)))
+        case None => translateResult(Person.create(Person(None, body.name, body.role, Credentials(body.email, Credentials.hash(body.password), CredentialStatus.Inactive.toString), body.managerEmail)))
       }
     }
   }
 }
 
 object Registration {
-  def hash(planetext :String): String = BCrypt.hashpw(planetext, BCrypt.gensalt())
-
   def validateEmailFormat = ???
 }
 

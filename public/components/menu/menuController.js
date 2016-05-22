@@ -11,12 +11,13 @@ fbControllers.controller('MenuCtrl', ['$scope', '$log', '$location', 'Session', 
 		ctrl.resetError();
 
 		// LG: 2016-04-26 use standard form validation only at this point
-		Session.login().then(function(result) {
+		Session.login(ctrl.username, ctrl.password).then(function(result) {
 			$location.path("/list");
 		}, function(result) {
 			$log.error("Login FAILED!")
 			ctrl.error = "Could not log in.  Please try again later.";
 		});
+		ctrl.password = undefined;
 		$log.debug("this is a test function which will print text to the browser console...");
 	};
 

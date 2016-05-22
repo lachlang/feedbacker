@@ -1,6 +1,7 @@
 package au.com.feedbacker.model
 
 import org.joda.time.DateTime
+import org.mindrot.jbcrypt.BCrypt
 
 // import javax.inject.Inject
 import play.api.db._
@@ -11,7 +12,7 @@ import anorm.SqlParser._
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{JsPath, Format}
 
-// import scala.concurrent.Future
+import scala.concurrent.{Future, Promise}
 // import scala.language.postfixOps
 
 object CredentialStatus extends Enumeration {
@@ -62,8 +63,12 @@ object Person {
 
   // Queries
   /**
-   * Retrieve a person by email address.
+   * Retrieve a person by id address.
    */
+//  def findById(id: Long): Future[Option[Person]] = DB.withConnection { implicit connection =>
+//    val p = Promise[Option[Person]]()
+//    p success SQL("select * from person where id = {id}").on('id -> id).as(Person.simple.singleOpt)
+//    p future
   def findById(id: Long): Option[Person] = DB.withConnection { implicit connection =>
     SQL("select * from person where id = {id}").on('id -> id).as(Person.simple.singleOpt)
   }
@@ -84,7 +89,7 @@ object Person {
               'name -> person.name,
               'role -> person.role,
               'email -> person.credentials.email,
-              'pass_hash -> person.credentials.token,
+              'pass_hash -> person.credentials.hash,
               'user_status -> person.credentials.status,
               'manager_email -> person.managerEmail
             ).executeInsert() match {
@@ -113,7 +118,7 @@ object Person {
             'name -> person.name,
             'role -> person.role,
             'email -> person.credentials.email,
-            'pass_hash -> person.credentials.token,
+            'pass_hash -> person.credentials.hash,
             'user_status -> person.credentials.status,
             'manager_email -> person.managerEmail
           ).executeUpdate() match {
@@ -149,7 +154,7 @@ object Person {
   }
 }
 
-case class Credentials(email: String, token: String, status: String = CredentialStatus.Inactive.toString)
+case class Credentials(email: String, hash: String, status: String = CredentialStatus.Inactive.toString)
 
 object Credentials {
 
@@ -166,8 +171,10 @@ object Credentials {
       (JsPath \ "user_status").format[String]
     )(Credentials.apply, unlift(Credentials.unapply))
 
+  def hash(planetext :String): String = BCrypt.hashpw(planetext, BCrypt.gensalt())
+
   def findStatusByEmail(email:String): Option[(Long, CredentialStatus)] = DB.withConnection { implicit connection =>
-    SQL("select id, user_status from person where email = {email}").on('email -> email).as(Credentials.status.singleOpt)
+    SQL("select email, hash, user_status from person where email = {email}").on('email -> email).as(Credentials.status.singleOpt)
   }
 }
 
