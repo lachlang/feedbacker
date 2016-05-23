@@ -9,7 +9,7 @@ import play.api.Play.current
 import anorm._
 import anorm.SqlParser._
 import play.api.libs.functional.syntax._
-import play.api.libs.json.{JsPath, Format}
+import play.api.libs.json._
 
 import scala.concurrent.{Future, Promise}
 // import scala.language.postfixOps
@@ -20,6 +20,10 @@ object CredentialStatus extends Enumeration {
   val Nominated = Value("Nominated")
 	val Inactive = Value("Inactive")
 	val Restricted = Value("Restricted")
+
+  implicit val writes: Writes[CredentialStatus] = new Writes[CredentialStatus] {
+    def writes(v: CredentialStatus): JsValue = JsString(v.toString)
+  }
 }
 import CredentialStatus._
 
@@ -31,9 +35,46 @@ object FeedbackStatus extends Enumeration {
   val Cancelled = Value("Cancelled")
   val Closed = Value("Closed")
 
-  implicit val format: Format[FeedbackStatus] = (
-      (JsPath \ "").format
-    )
+//  implicit def enumWrites[E <: Enumeration]: Writes[E#Value] = new Writes[E#Value] {
+//    def writes(v: E#Value): JsValue = JsString(v.toString)
+//  }
+//
+//  implicit def enumReads[E <: Enumeration](enum: E) : Reads[E#Value] = new Reads[E#Value] {
+//    def reads(json: JsValue): JsResult[E#Value] = json match {
+//      case JsString(s) => {
+//        try {
+//          JsSuccess(enum.withName(s))
+//        } catch {
+//          case _: NoSuchElementException => JsError(s"Enumeration expected of type: '${enum.getClass}', but it does not appear to contain the value: '$s'")
+//        }
+//      }
+//      case _ => JsError("String value expected")
+//    }
+//  }
+//
+//  implicit def enumFormat[E <: Enumeration](enum: E): Format[E#Value] = {
+//    Format(enumReads(enum), enumWrites)
+//  }
+
+  implicit val writes: Writes[FeedbackStatus] = new Writes[FeedbackStatus] {
+    def writes(v: FeedbackStatus): JsValue = JsString(v.toString)
+  }
+//
+//  implicit val reads(statusRead: FeedbackStatus) : Reads[FeedbackStatus] = new Reads[FeedbackStatus] {
+//    def reads(json: JsValue): JsResult[FeedbackStatus] = json match {
+//      case JsString(s) => {
+//        try {
+//          JsSuccess(FeedbackStatus.withName(s))
+//        } catch {
+//          case _: NoSuchElementException => JsError(s"Enumeration expected of type: 'FeedbackStatus', but it does not appear to contain the value: '$s'")
+//        }
+//      }
+//      case _ => JsError("String value expected")
+//    }
+//  }
+//  implicit val format(statusFormat: FeedbackStatus): Format[FeedbackStatus] = {
+//    Format(reads(statusFormat), writes)
+//  }
 }
 import FeedbackStatus._
 
@@ -214,6 +255,14 @@ object QuestionResponse {
     }
   }
 
+  implicit val format: Format[QuestionResponse] = (
+      (JsPath \ "id").formatNullable[Long] and
+      (JsPath \ "text").format[String] and
+      (JsPath \ "responseOptions").format[String] and
+      (JsPath \ "response").formatNullable[String] and
+      (JsPath \ "comments").formatNullable[String]
+    )(QuestionResponse.apply, unlift(QuestionResponse.unapply))
+
   def findForNomination(nominationId: Long): Seq[QuestionResponse] = DB.withConnection { implicit connection =>
     SQL("""select * from question_response where nomination_id = {id}""").on('id -> nominationId).as(QuestionResponse.simple *).toSeq
   }
@@ -262,6 +311,16 @@ object Nomination {
       case id~fromId~toEmail~status~lastUpdated~shared => (id, fromId, toEmail, FeedbackStatus.withName(status), lastUpdated, shared)
     }
   }
+
+  implicit val nominationWrites: Writes[Nomination] = (
+    (JsPath \ "id").writeNullable[Long] and
+      (JsPath \ "from").writeNullable[Person] and
+      (JsPath \ "to").writeNullable[Person] and
+      (JsPath \ "status").write[FeedbackStatus] and
+      (JsPath \ "lastUpdated").write[DateTime] and
+      (JsPath \ "questions").write[Seq[QuestionResponse]] and
+      (JsPath \ "shared").write[Boolean]
+    )(unlift(Nomination.unapply))
 
   def enrich: (Long, Long, String, FeedbackStatus, DateTime, Boolean) => Nomination = {
     (id: Long, fromId: Long, toEmail: String, status: FeedbackStatus, lastUpdated: DateTime, shared: Boolean) =>

@@ -37,28 +37,32 @@ class Feedback extends Controller {
   }
 
   def getFeedbackItem(id: Long) = Action { request =>
-
-    Ok
+    AuthenticationUtil.getUser(request.session) match {
+      case Some(_) => Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(Nomination.getDetail(id))))
+      case _ => Forbidden
+    }
   }
 
-  def getCurrentFeedbackItemsForUser(id: Long) = Action.async { request =>
-
-    Future(Ok)
+  def getCurrentFeedbackItemsForSelf = Action { request =>
+    AuthenticationUtil.getUser(request.session) match {
+      case Some(Person(Some(id), _, _, _, _)) => Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(Nomination.getCurrentFeedbackForUser(id))))
+      case _ => Forbidden
+    }
   }
 
-  def getCurrentFeedbackItemsForSelf = Action.async { request =>
-
-    Future(Ok)
+  def getFeedbackHistoryForSelf = Action { request =>
+    AuthenticationUtil.getUser(request.session) match {
+      case Some(Person(Some(id), _, _, _, _)) => Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(Nomination.getHistoryFeedbackForUser(id))))
+      case _ => Forbidden
+    }
   }
 
-  def getFeedbackHistoryForUser(id: Long) = Action.async { request =>
-
-    Future(Ok)
+  def getCurrentFeedbackItemsForUser(id: Long) = Action { request =>
+    ???
   }
 
-  def getFeedbackHistoryForSelf = Action.async { request =>
-
-    Future(Ok)
+  def getFeedbackHistoryForUser(id: Long) = Action { request =>
+    ???
   }
 
 }
