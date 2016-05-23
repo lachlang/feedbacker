@@ -30,6 +30,10 @@ object FeedbackStatus extends Enumeration {
 	val Submitted = Value("Submitted")
   val Cancelled = Value("Cancelled")
   val Closed = Value("Closed")
+
+  implicit val format: Format[FeedbackStatus] = (
+      (JsPath \ "").format
+    )
 }
 import FeedbackStatus._
 

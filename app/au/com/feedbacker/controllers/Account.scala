@@ -4,7 +4,7 @@ package au.com.feedbacker.controllers
 
 import au.com.feedbacker.util.AuthenticationUtil
 import play.api.libs.functional.syntax._
-import play.api.libs.json.{Json, Format, JsPath, JsValue}
+import play.api.libs.json._
 //import play.api.libs.json.Format._
 import play.api.mvc._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
@@ -16,20 +16,24 @@ import scala.concurrent.Future
 /**
  * Created by lachlang on 09/05/2016.
  */
+
+
 class Registration extends Controller {
 
+  def translateResult(result: Either[Throwable, Person], errorMessage: String) : Result = result match {
+    case Left(e) => println(e.getMessage); BadRequest("{ \"body\": { \"message\": \"" + errorMessage + "\"}} ")
+    case Right(p) => Ok(Json.toJson(p))
+  }
+
   def register: Action[JsValue] = Action(parse.json(maxLength = 2000)) { request =>
-    def translateResult(result: Either[Throwable, Person]) : Result = result match {
-      case Left(e) => println(e.getMessage); BadRequest("{ \"body\": { \"message\": \"Could not create user.\"}} ")
-      case Right(p) => Ok(Json.toJson(p))
-    }
+    val errorMessage = "Could not create user."
 
     request.body.validate[RegistrationContent].asOpt match {
       case None => BadRequest("{ \"body\": { \"message\": \"Could not parse request.\"}} ")
       case Some(body) => Credentials.findStatusByEmail(body.email) match {
-        case Some((id, CredentialStatus.Nominated)) => translateResult(Person.update(Person(Some(id), body.name, body.role, Credentials(body.email, AuthenticationUtil.hash(body.password), CredentialStatus.Inactive.toString), body.managerEmail)))
+        case Some((id, CredentialStatus.Nominated)) => translateResult(Person.update(Person(Some(id), body.name, body.role, Credentials(body.email, AuthenticationUtil.hash(body.password), CredentialStatus.Inactive.toString), body.managerEmail)), errorMessage)
         case Some((_, _)) => Conflict("{ \"body\": { \"message\": \"User is already registered.\"}} ")
-        case None => translateResult(Person.create(Person(None, body.name, body.role, Credentials(body.email, AuthenticationUtil.hash(body.password), CredentialStatus.Inactive.toString), body.managerEmail)))
+        case None => translateResult(Person.create(Person(None, body.name, body.role, Credentials(body.email, AuthenticationUtil.hash(body.password), CredentialStatus.Inactive.toString), body.managerEmail)), errorMessage)
       }
     }
   }
@@ -51,7 +55,6 @@ object RegistrationContent {
     (JsPath \ "body" \ "managerEmail").format[String]
   )(RegistrationContent.apply, unlift(RegistrationContent.unapply))
 }
-//case class SummaryItem(id: Option[Long], status: FeedbackStatus, name: String, role: String, managerName: String, lastUpdated: DateTime, shared: Option[Boolean])
 
 class Activation extends Controller {
 
