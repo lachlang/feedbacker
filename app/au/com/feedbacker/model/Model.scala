@@ -97,13 +97,7 @@ object Person {
     }
   }
 
-  implicit val format: Format[Person] = (
-      (JsPath \ "body" \ "id").formatNullable[Long] and
-      (JsPath \ "body" \ "name").format[String] and
-      (JsPath \ "body" \ "role").format[String] and
-      (JsPath \ "body" \ "creds").format[Credentials] and
-      (JsPath \ "body" \ "managerEmail").format[String]
-    )(Person.apply, unlift(Person.unapply))
+  implicit val format: Format[Person] = Json.format[Person]
 
   // Queries
   /**
@@ -209,11 +203,7 @@ object Credentials {
     }
   }
 
-  implicit val format: Format[Credentials] = (
-      (JsPath \ "email").format[String] and
-      (JsPath \ "pass_hash").format[String] and
-      (JsPath \ "user_status").format[String]
-    )(Credentials.apply, unlift(Credentials.unapply))
+  implicit val format: Format[Credentials] = Json.format[Credentials]
 
   def findStatusByEmail(email:String): Option[(Long, CredentialStatus)] = DB.withConnection { implicit connection =>
     SQL("select email, hash, user_status from person where email = {email}").on('email -> email).as(Credentials.status.singleOpt)

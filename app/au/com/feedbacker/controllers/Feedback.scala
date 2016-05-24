@@ -1,9 +1,9 @@
 package au.com.feedbacker.controllers
 
 import au.com.feedbacker.model.FeedbackStatus.FeedbackStatus
-import au.com.feedbacker.util.AuthenticationUtil
+import play.api.http.Writeable
 import play.api.libs.functional.syntax._
-import play.api.libs.json.{JsPath, Format, Json}
+import play.api.libs.json._
 import play.api.mvc._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import au.com.feedbacker.model._
@@ -17,7 +17,7 @@ import scala.concurrent.Future
 class Feedback extends Controller {
 
   def getPendingFeedbackActions = Action { request =>
-    AuthenticationUtil.getUser(request.session) match {
+    Authentication.getUser(request.session) match {
       case Some(Person(Some(id), _, _, _, _)) => {
         Ok(Json.toJson(Nomination.getPendingNominationsForUser(id) .map {
           case Nomination(id, _, Some(to), status, lastUpdated, _, shared) =>
@@ -37,21 +37,21 @@ class Feedback extends Controller {
   }
 
   def getFeedbackItem(id: Long) = Action { request =>
-    AuthenticationUtil.getUser(request.session) match {
+    Authentication.getUser(request.session) match {
       case Some(_) => Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(Nomination.getDetail(id))))
       case _ => Forbidden
     }
   }
 
   def getCurrentFeedbackItemsForSelf = Action { request =>
-    AuthenticationUtil.getUser(request.session) match {
+    Authentication.getUser(request.session) match {
       case Some(Person(Some(id), _, _, _, _)) => Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(Nomination.getCurrentFeedbackForUser(id))))
       case _ => Forbidden
     }
   }
 
   def getFeedbackHistoryForSelf = Action { request =>
-    AuthenticationUtil.getUser(request.session) match {
+    Authentication.getUser(request.session) match {
       case Some(Person(Some(id), _, _, _, _)) => Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(Nomination.getHistoryFeedbackForUser(id))))
       case _ => Forbidden
     }
@@ -70,14 +70,16 @@ class Feedback extends Controller {
 case class SummaryItem(id: Option[Long], status: String, name: String, role: String, managerName: String, lastUpdated: DateTime, shared: Boolean)
 
 object SummaryItem {
-  implicit val format: Format[SummaryItem] = (
-      (JsPath \ "id").formatNullable[Long] and
-      (JsPath \ "status").format[String] and
-      (JsPath \ "name").format[String] and
-      (JsPath \ "role").format[String] and
-      (JsPath \ "managerName").format[String] and
-      (JsPath \ "lastUpdated").format[DateTime] and
-      (JsPath \ "shared").format[Boolean]
-    )(SummaryItem.apply, unlift(SummaryItem.unapply))
+
+  implicit val format: Format[SummaryItem] = Json.format[SummaryItem]
 
 }
+
+//case class Response[T : Writes](apiVersion: String, body: T)
+//
+//object Response {
+//  implicit def writes[T: Writes] = Json.writes[Response[T]]
+//
+//  implicit def writable[Response](implicit codec: Codec): Writeable[Response] =
+//    Writeable(a => codec.encode(Json.stringify(Json.toJson(a))))
+//}

@@ -1,8 +1,5 @@
 package au.com.feedbacker.controllers
 
-//import org.joda.time.DateTime
-
-import au.com.feedbacker.util.AuthenticationUtil
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 //import play.api.libs.json.Format._
@@ -31,9 +28,9 @@ class Registration extends Controller {
     request.body.validate[RegistrationContent].asOpt match {
       case None => BadRequest("{ \"body\": { \"message\": \"Could not parse request.\"}} ")
       case Some(body) => Credentials.findStatusByEmail(body.email) match {
-        case Some((id, CredentialStatus.Nominated)) => translateResult(Person.update(Person(Some(id), body.name, body.role, Credentials(body.email, AuthenticationUtil.hash(body.password), CredentialStatus.Inactive.toString), body.managerEmail)), errorMessage)
+        case Some((id, CredentialStatus.Nominated)) => translateResult(Person.update(Person(Some(id), body.name, body.role, Credentials(body.email, Authentication.hash(body.password), CredentialStatus.Inactive.toString), body.managerEmail)), errorMessage)
         case Some((_, _)) => Conflict("{ \"body\": { \"message\": \"User is already registered.\"}} ")
-        case None => translateResult(Person.create(Person(None, body.name, body.role, Credentials(body.email, AuthenticationUtil.hash(body.password), CredentialStatus.Inactive.toString), body.managerEmail)), errorMessage)
+        case None => translateResult(Person.create(Person(None, body.name, body.role, Credentials(body.email, Authentication.hash(body.password), CredentialStatus.Inactive.toString), body.managerEmail)), errorMessage)
       }
     }
   }
