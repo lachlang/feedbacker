@@ -14,6 +14,7 @@ describe('feedback action controller [FeedbackActionCtrl]', function() {
 		deferred = $q.defer();
 
     	model = _Model_;
+        spyOn(model, 'getCurrentUser').and.returnValue(deferred.promise);
         spyOn(model, 'getPendingFeedbackActions').and.returnValue(deferred.promise);
         spyOn(model, 'getCurrentFeedback').and.returnValue(deferred.promise);
         spyOn(model, 'getFeedbackHistory').and.returnValue(deferred.promise);
@@ -21,7 +22,7 @@ describe('feedback action controller [FeedbackActionCtrl]', function() {
 		feedbackActionController = $controller('FeedbackActionCtrl',{$scope: scope });
 	}));
 
-    describe('has valid intiatialisation values', function() {
+    describe('has valid intialisation values', function() {
 
     	it('should define functions', function() {
     		expect(angular.isFunction(feedbackActionController.viewFeedbackDetail)).toBe(true);
@@ -33,6 +34,7 @@ describe('feedback action controller [FeedbackActionCtrl]', function() {
     	});
 
     	it('and calls the necessary services to pre-populate the model', function(){
+            expect(model.getCurrentUser).toHaveBeenCalled();
             expect(model.getPendingFeedbackActions).toHaveBeenCalled();
             expect(model.getCurrentFeedback).toHaveBeenCalled();
             expect(model.getFeedbackHistory).toHaveBeenCalled();

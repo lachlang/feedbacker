@@ -40,6 +40,18 @@ object Registration {
   def validateEmailFormat = ???
 }
 
+class Account extends Controller {
+
+  def getUser = Action { request =>
+    Authentication.getUser(request) match {
+      case Some(user) => Ok(Json.obj("body" -> Json.toJson(user)))
+      case _ => Forbidden
+    }
+  }
+
+  // TODO: add update functions here
+}
+
 case class RegistrationContent(name: String, role: String, email: String, password: String, managerEmail: String)
 
 object RegistrationContent {

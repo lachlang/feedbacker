@@ -5,11 +5,16 @@ fbControllers.controller('FeedbackActionCtrl',  ['$scope', '$log', 'Model', func
 
 	var ctrl = this;
 
+	ctrl.user = {};
 	ctrl.pendingActions = [];
 	ctrl.currentFeedbackList = [];
 	ctrl.feedbackHistoryList = [];
 
 	// get the pending actions
+	Model.getCurrentUser().then(function(response) {
+		ctrl.user = response;
+	});
+
 	Model.getPendingFeedbackActions().then(function(response) {
 		ctrl.pendingActions = response;
 	});

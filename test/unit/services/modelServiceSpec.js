@@ -2,15 +2,18 @@
 
 describe('service [Model]', function() {
 	
-	var feedback, model;
+	var account, feedback, model;
 	var deferred, scope;
 	
 	beforeEach(module('feedbacker.services'));
 
-	beforeEach(inject(function($q, _Model_, _Feedback_, $rootScope) {
+	beforeEach(inject(function($q, _Model_, _Account_, _Feedback_, $rootScope) {
 		scope = $rootScope.$new();
 		deferred = $q.defer();
 		model = _Model_;
+
+        account = _Account_;
+        spyOn(account, 'getCurrentUser').and.returnValue(deferred.promise)
 
 		feedback = _Feedback_;
         spyOn(feedback, 'getPendingFeedbackActions').and.returnValue(deferred.promise);
@@ -25,6 +28,7 @@ describe('service [Model]', function() {
     });
     
     it('has defined functions', function() {
+        expect(angular.isFunction(model.getCurrentUser)).toBe(true);
         expect(angular.isFunction(model.getPendingFeedbackActions)).toBe(true);
         expect(angular.isFunction(model.getCurrentFeedback)).toBe(true);
         expect(angular.isFunction(model.getFeedbackHistory)).toBe(true);
@@ -55,6 +59,10 @@ describe('service [Model]', function() {
             expect(result).toEqual(httpResponse);
         }
     	
+        it('should call the account.getCurrentUser service only once', function() {
+            cacheTest(model.getCurrentUser, account.getCurrentUser);
+        });
+
         it('should call the feedback.getPendingFeedbackActions service only once', function() {
             cacheTest(model.getPendingFeedbackActions, feedback.getPendingFeedbackActions);
         });
@@ -73,7 +81,7 @@ describe('service [Model]', function() {
 
     });
     
-    describe('flushes cached data when requestsed', function() {
+    describe('flushes cached data when requested', function() {
 
         var flushTest = function(modelFunction, cachedService) {
             var httpResponse = "dummy response", result;
@@ -95,6 +103,10 @@ describe('service [Model]', function() {
             scope.$digest();
             expect(result).toEqual(httpResponse);
         }
+
+        it('should call the account.getCurrentUser service when flushed', function(){
+            flushTest(model.getCurrentUser, account.getCurrentUser);
+        });
 
         it('should call the feedback.getPendingFeedbackActions service when flushed', function(){
             flushTest(model.getPendingFeedbackActions, feedback.getPendingFeedbackActions);

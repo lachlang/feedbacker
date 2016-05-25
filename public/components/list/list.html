@@ -7,7 +7,7 @@
   <div data-ng-controller="FeedbackActionCtrl as actions">
     <div class="row">
       <div class="col-md-12">
-        <p class="lead">Welcome <strong>Hiro Protagonist</strong></p>
+        <p class="lead">Welcome <strong>{{actions.user.name}}</strong></p>
         <p>Nominate people to <a href="#/nominate">submit feedback.</a></p>
       </div>
     </div>
@@ -18,7 +18,7 @@
     </div>
     <div class="row">
       <div class="col-md-12">
-        <div data-ng-if="!actions.pendingActions">
+        <div data-ng-if="!actions.pendingActions || actions.pendingActions.length = 0">
           <p class="lead">No pending actions</p>
         </div>
         <div class="table-responsive" data-ng-if="actions.pendingActions">
@@ -53,12 +53,12 @@
         </div>
       </div>
     </div> <!-- end row -->
-    <div class="row" data-ng-if="actions.feedbackHistoryList">
+    <div class="row" data-ng-if="actions.feedbackHistoryList && actions.feedbackHistoryList.length > 0">
       <div class="col-md-12">
         <h3>Your Feedback History</h3>
       </div>
     </div>
-    <div class="row" data-ng-if="actions.feedbackHistoryList">
+    <div class="row" data-ng-if="actions.feedbackHistoryList && actions.feedbackHistoryList.length > 0">
       <div class="col-md-12">
         <div class="table-responsive">
           <table class="table table-hover">

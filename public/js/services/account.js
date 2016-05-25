@@ -27,6 +27,10 @@ fbServices.service('Account', ['$log', '$http', '$q', function($log, $http, $q) 
 			});
 		},
 
+		getCurrentUser: function() {
+			return $http.get("/api/user")
+		},
+
 		activate: function(email, token) {
 			if (!email || !token) {
 				return invalidRequestError();

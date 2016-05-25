@@ -1,5 +1,6 @@
-fbServices.service('Model', ['$log', '$q', 'Feedback', 'Nomination', function($log, $q, Feedback, Nomination) {
+fbServices.service('Model', ['$log', '$q', 'Account', 'Feedback', 'Nomination', function($log, $q, Account, Feedback, Nomination) {
 
+	var self = undefined;
 	var pendingActions = [];
 	var currentFeedbackList = [];
 	var feedbackHistoryList = [];
@@ -29,6 +30,14 @@ fbServices.service('Model', ['$log', '$q', 'Feedback', 'Nomination', function($l
 	}
 
 	var model = {
+
+		getCurrentUser: function(flushCache) {
+			return cacheServiceCall(function(result) { self = result.data.body },
+									function() { return ( self == undefined || flushCache)},
+									function() { return self },
+									Account.getCurrentUser,
+									"Account.getCurrentUser");
+		},
 
 		getPendingFeedbackActions: function(flushCache) {
 			return cacheServiceCall(function(result) { pendingActions = result.data.body }, 
