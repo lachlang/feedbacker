@@ -41,7 +41,7 @@ fbServices.service('Model', ['$log', '$q', 'Account', 'Feedback', 'Nomination', 
 
 		getPendingFeedbackActions: function(flushCache) {
 			return cacheServiceCall(function(result) { pendingActions = result.data.body }, 
-									function() { return (pendingActions.length == 0 || flushCache)},
+									function() { return (!pendingActions || pendingActions.length == 0 || flushCache)},
 									function() { return pendingActions },
 									Feedback.getPendingFeedbackActions, 
 									"Feedback.getPendingFeedbackActions");
@@ -49,7 +49,7 @@ fbServices.service('Model', ['$log', '$q', 'Account', 'Feedback', 'Nomination', 
 
 		getCurrentFeedback: function(flushCache) {
 			return cacheServiceCall(function(result) { currentFeedbackList = result.data.body },
-									function() { return (currentFeedbackList.length == 0 || flushCache) },
+									function() { return (!currentFeedbackList || currentFeedbackList.length == 0 || flushCache) },
 									function() { return currentFeedbackList },
 									Feedback.getCurrentFeedbackItemsForSelf,
 									"Feedback.getCurrentFeedbackItemsForSelf");
@@ -57,7 +57,7 @@ fbServices.service('Model', ['$log', '$q', 'Account', 'Feedback', 'Nomination', 
 
 		getFeedbackHistory: function(flushCache) {
 			return cacheServiceCall(function(result) { feedbackHistoryList = result.data.body },
-									function() { return (feedbackHistoryList.length == 0 || flushCache)},
+									function() { return (!feedbackHistoryList || feedbackHistoryList.length == 0 || flushCache)},
 									function() { return feedbackHistoryList },
 									Feedback.getFeedbackHistoryForSelf,
 									"Feedback.getFeedbackHistoryForSelf");
@@ -75,7 +75,7 @@ fbServices.service('Model', ['$log', '$q', 'Account', 'Feedback', 'Nomination', 
 
 		getCurrentNominations: function(feedbackId, flushCache) {
 			return cacheServiceCall(function(result, feedbackId) { currentNominations = result.data.body },
-									function(feedbackId) {return ( currentNominations.length == 0 || flushCache ) },
+									function(feedbackId) {return ( !currentNominations || currentNominations.length == 0 || flushCache ) },
 									function(feedbackId) { return currentNominations },
 									Nomination.getCurrentNominations,
 									"Nomination.getCurrentNominations",
