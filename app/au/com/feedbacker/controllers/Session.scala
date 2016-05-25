@@ -1,6 +1,7 @@
 package au.com.feedbacker.controllers
 
 import java.security.SecureRandom
+import java.util.concurrent.{ConcurrentMap, ConcurrentHashMap}
 
 import au.com.feedbacker.model
 import org.mindrot.jbcrypt.BCrypt
@@ -23,7 +24,7 @@ class Authentication extends Controller {
 
     jsonBody.map { json => ((json \ "body" \ "username").asOpt[String], (json \ "body" \ "password").asOpt[String]) } match {
       case Some((Some(userName), Some(password))) => Person.findByEmail(userName) match {
-        case None => println("username not found");Forbidden
+        case None => Forbidden
         case Some(p) => if (Authentication.validatePassword(password, p.credentials.hash)) {
           // case Some(p) => if (BCrypt.checkpw(password, p.credentials.hash) && p.credentials.status == CredentialStatus.Active) {
           Ok(Json.obj("apiVersion" -> JsString("1.0"), "body" -> Json.toJson(p))).withCookies(SessionToken.initialiseToken(p.credentials.email))
@@ -49,13 +50,6 @@ object Authentication {
 
   def validatePassword(cleartext: String, hash: String): Boolean = BCrypt.checkpw(cleartext, hash)
 
-//  def initialiseSession(username: String, result: Result)(implicit requestHeader: RequestHeader): Result =
-//    SessionToken.setToken(SessionToken(username, SessionToken.generateToken), result)
-
-//  def registerSession(username: String, token:String): Unit = tokenMap + token -> username
-
-//  def invalidateSession(token: String) : Unit = tokenMap - token
-//
   def getUser(request: RequestHeader): Option[Person] = SessionToken.extractToken(request).flatMap(st => Person.findByEmail(st.username))
 
 }
@@ -71,31 +65,22 @@ object SessionToken {
   protected val secureOnly : Boolean = false
   protected val httpOnly: Boolean = true
 
-  private val tokenMap: Map[String, String] = Map()
+  private val tokenMap: ConcurrentMap[String, String] = new ConcurrentHashMap[String, String]
+
   private val tokenGenerator = SecureRandom.getInstanceStrong
 
   def extractToken(request: RequestHeader): Option[SessionToken] = request.cookies.get(cookieName).flatMap(c => validateToken(c.value))
 
-  def validateToken(token: String): Option[SessionToken] = {
-    tokenMap.get(token) match {
-      case (Some(u)) => Some(SessionToken(u,token))
-      case _ => None
-    }
-  }
+  def validateToken(token: String): Option[SessionToken] = Some(SessionToken(tokenMap.get(token),token))
 
   def initialiseToken(username: String): Cookie = {
     val token = generateToken
-    tokenMap + (token -> username)
+    tokenMap.put(token, username)
     Cookie(cookieName, token, cookieMaxAge, cookiePathOption, cookieDomainOption, secureOnly, httpOnly)
   }
-//  def setToken(token: SessionToken, result: Result)(implicit request: RequestHeader): Result = {
-//    tokenMap + (token.token -> token.username)
-//    val c: Cookie = Cookie(cookieName, token.token, cookieMaxAge, cookiePathOption, cookieDomainOption, secureOnly, httpOnly)
-//    result.withCookies(c)
-//  }
 
   def removeToken(token: SessionToken, result: Result): Result = {
-    tokenMap - token.token
+    tokenMap.remove(token.token)
     result.discardingCookies(DiscardingCookie(cookieName))
   }
 
