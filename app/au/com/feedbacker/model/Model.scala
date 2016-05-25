@@ -93,11 +93,11 @@ object Person {
     get[String]("person.pass_hash") ~
     get[String]("person.user_status") ~
     get[String]("person.manager_email") map {
-      case id~name~role~email~pass_hash~user_status~manager_email => Person(id, name, role, Credentials(email, pass_hash, user_status), manager_email)
+      case id~name~role~email~pass_hash~user_status~manager_email => Person(id, name, role, Credentials(email, pass_hash, CredentialStatus.withName(user_status)), manager_email)
     }
   }
 
-  implicit val format: Format[Person] = Json.format[Person]
+  implicit val writes: Writes[Person] = Json.writes[Person]
 
   // Queries
   /**
@@ -128,7 +128,7 @@ object Person {
               'role -> person.role,
               'email -> person.credentials.email,
               'pass_hash -> person.credentials.hash,
-              'user_status -> person.credentials.status,
+              'user_status -> person.credentials.status.toString,
               'manager_email -> person.managerEmail
             ).executeInsert() match {
           case None => Left(new Exception("Could not insert."))
@@ -157,7 +157,7 @@ object Person {
             'role -> person.role,
             'email -> person.credentials.email,
             'pass_hash -> person.credentials.hash,
-            'user_status -> person.credentials.status,
+            'user_status -> person.credentials.status.toString,
             'manager_email -> person.managerEmail
           ).executeUpdate() match {
           case 0 => Left(new Exception("Could not update."))
@@ -192,7 +192,7 @@ object Person {
   }
 }
 
-case class Credentials(email: String, hash: String, status: String = CredentialStatus.Inactive.toString)
+case class Credentials(email: String, hash: String, status: CredentialStatus = CredentialStatus.Inactive)
 
 object Credentials {
 
@@ -203,7 +203,7 @@ object Credentials {
     }
   }
 
-  implicit val format: Format[Credentials] = Json.format[Credentials]
+  implicit val writes: Writes[Credentials] = Json.writes[Credentials]
 
   def findStatusByEmail(email:String): Option[(Long, CredentialStatus)] = DB.withConnection { implicit connection =>
     SQL("select email, hash, user_status from person where email = {email}").on('email -> email).as(Credentials.status.singleOpt)
