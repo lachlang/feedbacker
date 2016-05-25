@@ -26,14 +26,8 @@ class Authentication extends Controller {
         case None => println("username not found");Forbidden
         case Some(p) => if (Authentication.validatePassword(password, p.credentials.hash)) {
           // case Some(p) => if (BCrypt.checkpw(password, p.credentials.hash) && p.credentials.status == CredentialStatus.Active) {
-          println(request.session.toString)
-          request.session + ("user", p.credentials.email)
-          val sessionKey = java.util.UUID.randomUUID.toString
-//          AuthenticationUtil.createSession(p.credentials.email, request.session) // mutate all the things?
-          println(request.session.toString)
-          Ok(Json.obj("apiVersion" -> JsString("1.0"), "body" -> Json.toJson(p))).withSession(request.session)
+          Ok(Json.obj("apiVersion" -> JsString("1.0"), "body" -> Json.toJson(p))).withCookies(SessionToken.initialiseToken(p.credentials.email))
         } else {
-          // set session cookie
           Forbidden
         }
       }
@@ -42,24 +36,27 @@ class Authentication extends Controller {
   }
 
   def logout = Action { request =>
-    Authentication.invalidateSession(request.session)
-    Ok
+    SessionToken.extractToken(request) match {
+      case Some(st) => SessionToken.removeToken(st, Ok)
+      case None => Ok
+    }
   }
 }
 
 object Authentication {
 
-  private val sessionUserKey: String = "user"
-
   def hash(planetext :String): String = BCrypt.hashpw(planetext, BCrypt.gensalt())
 
   def validatePassword(cleartext: String, hash: String): Boolean = BCrypt.checkpw(cleartext, hash)
 
-  def createSession(username: String, session: Session): Session = session + (sessionUserKey, username)
+//  def initialiseSession(username: String, result: Result)(implicit requestHeader: RequestHeader): Result =
+//    SessionToken.setToken(SessionToken(username, SessionToken.generateToken), result)
 
-  def invalidateSession(session: Session) : Session = session - sessionUserKey
+//  def registerSession(username: String, token:String): Unit = tokenMap + token -> username
 
-  def getUser(session: Session): Option[Person] = session.get(sessionUserKey).flatMap(Person.findByEmail(_))
+//  def invalidateSession(token: String) : Unit = tokenMap - token
+//
+  def getUser(request: RequestHeader): Option[Person] = SessionToken.extractToken(request).flatMap(st => Person.findByEmail(st.username))
 
 }
 
@@ -75,7 +72,6 @@ object SessionToken {
   protected val httpOnly: Boolean = true
 
   private val tokenMap: Map[String, String] = Map()
-
   private val tokenGenerator = SecureRandom.getInstanceStrong
 
   def extractToken(request: RequestHeader): Option[SessionToken] = request.cookies.get(cookieName).flatMap(c => validateToken(c.value))
@@ -87,38 +83,49 @@ object SessionToken {
     }
   }
 
-  def setToken(token: SessionToken, result: Result)(implicit request: RequestHeader): Result = {
-    tokenMap + (token.token -> token.username)
-    val c: Cookie = Cookie(cookieName, token.token, cookieMaxAge, cookiePathOption, cookieDomainOption, secureOnly, httpOnly)
-    result.withCookies(c)
+  def initialiseToken(username: String): Cookie = {
+    val token = generateToken
+    tokenMap + (token -> username)
+    Cookie(cookieName, token, cookieMaxAge, cookiePathOption, cookieDomainOption, secureOnly, httpOnly)
   }
+//  def setToken(token: SessionToken, result: Result)(implicit request: RequestHeader): Result = {
+//    tokenMap + (token.token -> token.username)
+//    val c: Cookie = Cookie(cookieName, token.token, cookieMaxAge, cookiePathOption, cookieDomainOption, secureOnly, httpOnly)
+//    result.withCookies(c)
+//  }
 
-  def removeToken(token: SessionToken, result: Result)(implicit request: RequestHeader): Result = {
+  def removeToken(token: SessionToken, result: Result): Result = {
     tokenMap - token.token
     result.discardingCookies(DiscardingCookie(cookieName))
   }
 
-  def generateToken = ???
-//  {
-//    var bytes = byte[]
-//    tokenGenerator.nextBytes()
+  def generateToken = BigInt(300, tokenGenerator).toString(32)
+}
+
+//class UserIdRequest[A](val username: Option[String], request: Request[A]) extends WrappedRequest[A](request)
+
+//class UserRequest[A](val user: Option[Person], request: UserIdRequest[A]) extends WrappedRequest[A](request) {
+//  def username = request.username
+//}
+//
+//object UserAction extends ActionBuilder[UserIdRequest] with ActionTransformer[Request, UserIdRequest] {
+//  def transform[A](request: Request[A]) = Future.successful {
+//    new UserIdRequest[A](SessionToken.extractToken(request).map(_.username), request)
 //  }
-}
-class UserIdRequest[A](val username: Option[String], request: Request[A]) extends WrappedRequest[A](request)
+//}
+//
+//object PermissionCheckAction extends ActionFilter[UserIdRequest] {
+//  def filter[A](request: UserIdRequest[A]): Future[Option[Result]] = Future.successful {
+//    request.username match {
+//      case Some(_) => None
+//      case None => Some(Results.Status(401))
+//    }
+//  }
+//}
 
-class UserRequest[A](val user: Option[Person], request: UserIdRequest[A]) extends WrappedRequest[A](request) {
-  def username = request.username
-}
-
-object UserAction extends ActionBuilder[UserIdRequest] with ActionTransformer[Request, UserIdRequest] {
-  def transform[A](request: Request[A]) = Future.successful {
-    new UserIdRequest[A](SessionToken.extractToken(request).map(_.username), request)
-  }
-}
-
-object PermissionCheckAction extends ActionFilter[UserIdRequest] {
-  def filter[A](request: UserIdRequest[A]): Future[Option[Result]] = Future.successful {
-    request.username match {
+object AuthenticatedAction extends ActionFilter[Request] {
+  def filter[A](request: Request[A]): Future[Option[Result]] = Future.successful {
+    SessionToken.extractToken(request) match {
       case Some(_) => None
       case None => Some(Results.Status(401))
     }

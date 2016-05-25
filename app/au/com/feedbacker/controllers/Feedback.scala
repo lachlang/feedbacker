@@ -1,8 +1,8 @@
 package au.com.feedbacker.controllers
 
-import au.com.feedbacker.model.FeedbackStatus.FeedbackStatus
-import play.api.http.Writeable
-import play.api.libs.functional.syntax._
+//import au.com.feedbacker.model.FeedbackStatus.FeedbackStatus
+//import play.api.http.Writeable
+//import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import play.api.mvc._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
@@ -17,7 +17,7 @@ import scala.concurrent.Future
 class Feedback extends Controller {
 
   def getPendingFeedbackActions = Action { request =>
-    Authentication.getUser(request.session) match {
+    Authentication.getUser(request) match {
       case Some(Person(Some(id), _, _, _, _)) => {
         Ok(Json.toJson(Nomination.getPendingNominationsForUser(id) .map {
           case Nomination(id, _, Some(to), status, lastUpdated, _, shared) =>
@@ -37,21 +37,21 @@ class Feedback extends Controller {
   }
 
   def getFeedbackItem(id: Long) = Action { request =>
-    Authentication.getUser(request.session) match {
+    Authentication.getUser(request) match {
       case Some(_) => Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(Nomination.getDetail(id))))
       case _ => Forbidden
     }
   }
 
   def getCurrentFeedbackItemsForSelf = Action { request =>
-    Authentication.getUser(request.session) match {
+    Authentication.getUser(request) match {
       case Some(Person(Some(id), _, _, _, _)) => Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(Nomination.getCurrentFeedbackForUser(id))))
       case _ => Forbidden
     }
   }
 
   def getFeedbackHistoryForSelf = Action { request =>
-    Authentication.getUser(request.session) match {
+    Authentication.getUser(request) match {
       case Some(Person(Some(id), _, _, _, _)) => Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(Nomination.getHistoryFeedbackForUser(id))))
       case _ => Forbidden
     }
