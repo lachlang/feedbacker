@@ -5,7 +5,8 @@ fbControllers.controller('MenuCtrl', ['$scope', '$log', '$location', 'Session', 
 
 	var ctrl = this;
 
-	ctrl.error = undefined;
+	ctrl.error = undefined;ctrl.isLoggedIn
+	ctrl.isLoggedIn = false;
 
 	ctrl.login = function() {
 		ctrl.resetError();
@@ -32,6 +33,7 @@ fbControllers.controller('MenuCtrl', ['$scope', '$log', '$location', 'Session', 
 	}
 
 	ctrl.isLoggedIn = function() {
-		return Session.isLoggedIn();
+		return Session.validSession();
 	}
+
 }]);

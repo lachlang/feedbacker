@@ -48,6 +48,17 @@ class Feedback extends Controller {
     }
   }
 
+  def AuthAction(body: (Person) => Result) = Action { request =>
+    Authentication.getUser(request) match {
+      case Some(person) => body(person)
+      case _ => Forbidden
+    }
+  }
+
+    def getFeedbackHistoryForSelf2 = AuthAction { person  =>
+       Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(Nomination.getHistoryFeedbackForUser(person.id.getOrElse(0)))))
+    }
+
   def getFeedbackHistoryForSelf = Action { request =>
     Authentication.getUser(request) match {
       case Some(Person(Some(id), _, _, _, _)) => Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(Nomination.getHistoryFeedbackForUser(id))))
@@ -73,6 +84,12 @@ object SummaryItem {
 
 }
 
+class Nominations extends Controller {
+
+  def getCurrentNominations = Action { request =>
+    Ok
+  }
+}
 //case class Response[T : Writes](apiVersion: String, body: T)
 //
 //object Response {

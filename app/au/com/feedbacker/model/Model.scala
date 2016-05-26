@@ -103,10 +103,6 @@ object Person {
   /**
    * Retrieve a person by id address.
    */
-//  def findById(id: Long): Future[Option[Person]] = DB.withConnection { implicit connection =>
-//    val p = Promise[Option[Person]]()
-//    p success SQL("select * from person where id = {id}").on('id -> id).as(Person.simple.singleOpt)
-//    p future
   def findById(id: Long): Option[Person] = DB.withConnection { implicit connection =>
     SQL("select * from person where id = {id}").on('id -> id).as(Person.simple.singleOpt)
   }
@@ -206,7 +202,7 @@ object Credentials {
   implicit val writes: Writes[Credentials] = Json.writes[Credentials]
 
   def findStatusByEmail(email:String): Option[(Long, CredentialStatus)] = DB.withConnection { implicit connection =>
-    SQL("select email, hash, user_status from person where email = {email}").on('email -> email).as(Credentials.status.singleOpt)
+    SQL("select email, pass_hash, user_status from person where email = {email}").on('email -> email).as(Credentials.status.singleOpt)
   }
 }
 

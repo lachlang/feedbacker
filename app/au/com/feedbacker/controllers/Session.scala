@@ -63,7 +63,7 @@ object SessionToken {
   protected val cookiePathOption: String = "/"
   protected val cookieDomainOption: Option[String] = None
   protected val secureOnly : Boolean = false
-  protected val httpOnly: Boolean = true
+  protected val httpOnly: Boolean = false
 
   private val tokenMap: ConcurrentMap[String, String] = new ConcurrentHashMap[String, String]
 

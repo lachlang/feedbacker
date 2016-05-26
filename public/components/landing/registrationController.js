@@ -7,8 +7,9 @@ fbControllers.controller('RegistrationCtrl',  ['$scope', '$log', '$location', 'A
 
 	ctrl.register = function() {
 		Account.register(ctrl.name, ctrl.role, ctrl.email, ctrl.password, ctrl.managerEmail).then(function(response) {
-			$log.info("great success")
-			$log.info(response)
+
+			$location.path("#/list");
+//			$location.path("#/activation");
 		}, function(response) {
 			$log.error("it failed")
 			$log.error(response)
@@ -17,13 +18,7 @@ fbControllers.controller('RegistrationCtrl',  ['$scope', '$log', '$location', 'A
 
 	ctrl.forgotPassword = function() {
 		$log.info("forgotPassword");
-		Account.register("Lockers", "Boss", "a@b.c", "asdfasdf", "b@b.c").then(function(response) {
-			$log.info("great success")
-			$log.info(response)
-		}, function(response) {
-			$log.error("it failed")
-			$log.error(response)
-		});
+		alert("This exciting new feature is coming soon :)");
 	};
 
 }]);

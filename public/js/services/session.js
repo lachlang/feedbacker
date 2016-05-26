@@ -1,6 +1,16 @@
-fbServices.service('Session', ['$log','$http', '$q', function($log, $http, $q) {
+fbServices.service('Session', ['$rootScope', '$location', '$log','$http', '$q', '$cookies', function($rootScope, $location, $log, $http, $q, $cookies) {
 
-	var validSession = false;
+	$rootScope.$on('unauthenticated', function() {
+		$log.error("[Session.$on.unauthenticated] UNAUTHENTICATED RESPONSE EVENT FROM SERVER. Destroying Session...");
+		callLogout();
+	});
+
+	var callLogout = function() {
+		$log.debug("[Session.logout] Ending session...");
+		$cookies.remove("FEEDBACKER_SESSION");
+		$location.path("#/landing");
+		return $http.get("/api/session/logout");
+	};
 
 	return {
 		login: function (username, password) {
@@ -17,23 +27,17 @@ fbServices.service('Session', ['$log','$http', '$q', function($log, $http, $q) {
 					}
 				}
 			}).then(function(result) {
-				//todo: do something with the token
-				validSession = true;
 				deferred.resolve(result)
 			}, function() {
-				validSession = false;
 				deferred.reject();
 			});
 			return deferred.promise;
 		},
 
-		logout: function() {
-			validSession = false;
-			return $http.get("/api/session/logout");
-		},
+		logout: callLogout,
 
-		isLoggedIn: function() {
-			return validSession;
+		validSession: function() {
+			return $cookies.get("FEEDBACKER_SESSION") != undefined;
 		}
 	}
 }]);
