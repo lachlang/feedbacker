@@ -17,6 +17,16 @@ import scala.concurrent.Future
  * Created by lachlang on 09/05/2016.
  */
 
+trait AuthenticatedController extends Controller {
+
+  def AuthenticatedAction(body: (Person) => Result) = Action { request =>
+    Authentication.getUser(request) match {
+      case Some(person) => body(person)
+      case _ => Forbidden
+    }
+  }
+}
+
 class Authentication extends Controller {
 
   def login = Action { request =>

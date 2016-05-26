@@ -12,12 +12,12 @@ import scala.concurrent.Future
 /**
  * Created by lachlang on 09/05/2016.
  */
-class Feedback extends Controller {
+class Feedback extends AuthenticatedController {
 
   def getPendingFeedbackActions = Action { request =>
     Authentication.getUser(request) match {
-      case Some(Person(Some(id), _, _, _, _)) => {
-        Ok(Json.toJson(Nomination.getPendingNominationsForUser(id) .map {
+      case Some(p) => {
+        Ok(Json.toJson(Nomination.getPendingNominationsForUser(p.credentials.email) .map {
           case Nomination(id, _, Some(to), status, lastUpdated, _, shared) =>
             val managerName: String = Person.findByEmail(to.managerEmail) match {
               case Some(p) => p.name
@@ -29,48 +29,27 @@ class Feedback extends Controller {
     }
   }
 
-  def updateFeedbackItem(id: Long) = Action.async { request =>
-
-    Future(Ok)
-  }
-
-  def getFeedbackItem(id: Long) = Action { request =>
-    Authentication.getUser(request) match {
-      case Some(_) => Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(Nomination.getDetail(id))))
-      case _ => Forbidden
-    }
-  }
-
-  def getCurrentFeedbackItemsForSelf = Action { request =>
-    Authentication.getUser(request) match {
-      case Some(Person(Some(id), _, _, _, _)) => Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(Nomination.getCurrentFeedbackForUser(id))))
-      case _ => Forbidden
-    }
-  }
-
-  def AuthAction(body: (Person) => Result) = Action { request =>
-    Authentication.getUser(request) match {
-      case Some(person) => body(person)
-      case _ => Forbidden
-    }
-  }
-
-    def getFeedbackHistoryForSelf2 = AuthAction { person  =>
-       Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(Nomination.getHistoryFeedbackForUser(person.id.getOrElse(0)))))
-    }
-
-  def getFeedbackHistoryForSelf = Action { request =>
-    Authentication.getUser(request) match {
-      case Some(Person(Some(id), _, _, _, _)) => Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(Nomination.getHistoryFeedbackForUser(id))))
-      case _ => Forbidden
-    }
-  }
-
-  def getCurrentFeedbackItemsForUser(id: Long) = Action { request =>
+  def updateFeedbackItem(id: Long) = Action { request =>
     ???
   }
 
-  def getFeedbackHistoryForUser(id: Long) = Action { request =>
+  def getFeedbackItem(id: Long) = Action { person =>
+    Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(Nomination.getDetail(id))))
+  }
+
+  def getCurrentFeedbackItemsForSelf = AuthenticatedAction { person =>
+      Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(Nomination.getCurrentFeedbackForUser(person.credentials.email))))
+  }
+
+  def getFeedbackHistoryForSelf = AuthenticatedAction { person  =>
+     Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(Nomination.getHistoryFeedbackForUser(person.credentials.email))))
+  }
+
+  def getCurrentFeedbackItemsForUser(id: Long) = AuthenticatedAction { person =>
+    ???
+  }
+
+  def getFeedbackHistoryForUser(id: Long) = AuthenticatedAction { person =>
     ???
   }
 
@@ -84,10 +63,10 @@ object SummaryItem {
 
 }
 
-class Nominations extends Controller {
+class Nominations extends AuthenticatedController {
 
-  def getCurrentNominations = Action { request =>
-    Ok
+  def getCurrentNominations = AuthenticatedAction { person =>
+    Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(Nomination.getCurrentNominationsFromUser(person.credentials.email))))
   }
 }
 //case class Response[T : Writes](apiVersion: String, body: T)

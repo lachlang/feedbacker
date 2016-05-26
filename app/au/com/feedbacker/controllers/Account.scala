@@ -40,7 +40,7 @@ object Registration {
   def validateEmailFormat = ???
 }
 
-class Account extends Controller {
+class Account extends AuthenticatedController {
 
   def getUser = Action { request =>
     Authentication.getUser(request) match {

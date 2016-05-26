@@ -325,22 +325,30 @@ object Nomination {
     Nomination.getDetail(id).map{ case n => Nomination(n.id, n.from, n.to, n.status, n.lastUpdated, QuestionResponse.findForNomination(id), n.shared)}
   }
 
-  def getPendingNominationsForUser(id: Long): Seq[Nomination] = DB.withConnection { implicit connection =>
-     Person.findById(id) match {
-       case Some(user) => SQL("""select * from nominations where to_email = {email} and status != {status} and cycle_id in (select id from cycle where active = TRUE)""")
-         .on('email -> user.credentials.email, 'status -> FeedbackStatus.Cancelled.toString)
-         .as(Nomination.simple *).map{case (a,b,c,d,e,f) => Nomination.enrich(a,b,c,d,e,f)}
-       case None => Seq()
-     }
+  def getPendingNominationsForUser(username: String): Seq[Nomination] = DB.withConnection { implicit connection =>
+      SQL("""select * from nominations where to_email = {email} and status != {status} and cycle_id in (select id from cycle where active = TRUE)""")
+        .on('email -> username, 'status -> FeedbackStatus.Cancelled.toString)
+        .as(Nomination.simple *).map{case (a,b,c,d,e,f) => Nomination.enrich(a,b,c,d,e,f)}
   }
 
-  def getCurrentFeedbackForUser(userId: Long): Seq[Nomination] = DB.withConnection { implicit connection =>
-    SQL("""select * from nominations where cycle_id in (select id from cycle where active = TRUE)""").as(Nomination.simple *)
+  def getCurrentNominationsFromUser(username: String): Seq[Nomination] = DB.withConnection { implicit connection =>
+    Person.findByEmail(username) match {
+      case Some(p) => SQL( """select * from nominations where from_id = {id} and status = {status} and cycle_id in (select id from cycle where active = TRUE)""")
+        .on('email -> p.id.get, 'status -> FeedbackStatus.New.toString)
+        .as(Nomination.simple *).map { case (a, b, c, d, e, f) => Nomination.enrich(a, b, c, d, e, f) }
+      case None => Seq()
+    }
+  }
+
+  def getCurrentFeedbackForUser(username: String): Seq[Nomination] = DB.withConnection { implicit connection =>
+    SQL("""select * from nominations where to_email = {email} and cycle_id in (select id from cycle where active = TRUE)""")
+      .on('email -> username).as(Nomination.simple *)
       .map { case (a,b,c,d,e,f) => enrich(a,b,c,d,e,f)}
   }
 
-  def getHistoryFeedbackForUser(userId: Long): Seq[Nomination] = DB.withConnection { implicit connection =>
-    SQL("""select * from nominations where cycle_id not in (select id from cycle where active = TRUE) ORDER BY last_updated DESC NULLS LAST""").as(Nomination.simple *)
+  def getHistoryFeedbackForUser(username: String): Seq[Nomination] = DB.withConnection { implicit connection =>
+    SQL("""select * from nominations where to_email = {email} cycle_id not in (select id from cycle where active = TRUE) ORDER BY last_updated DESC NULLS LAST""")
+      .on('email -> username).as(Nomination.simple *)
       .map { case (a,b,c,d,e,f) => enrich(a,b,c,d,e,f)}
   }
 
