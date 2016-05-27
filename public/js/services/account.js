@@ -62,7 +62,7 @@ fbServices.service('Account', ['$log', '$http', '$q', function($log, $http, $q) 
 			});
 		},
 
-		resetPassword: function(oldPassword, newPassword, token) {
+		resetPassword: function(oldPassword, newPassword, token, username) {
 			if (!oldPassword || !newPassword || !token) {
 				return invalidRequestError();
 			}			
@@ -74,7 +74,8 @@ fbServices.service('Account', ['$log', '$http', '$q', function($log, $http, $q) 
 					body: { 
 						oldPassword: oldPassword,
 						newPassword: newPassword,
-						token: token
+						token: token,
+						username
 					}
 				}
 			});

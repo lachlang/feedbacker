@@ -33,7 +33,11 @@ feedbackerApp.config(['$routeProvider',
 			requireLogin: false
 		});
 		$routeProvider.when('/reset', {
-			templateUrl: 'components/reset/reset.html',
+			templateUrl: 'components/reset/resetPassword.html',
+			requireLogin: false
+		});
+		$routeProvider.when('/resetEmail', {
+			templateUrl: 'components/reset/resetPasswordEmail.html',
 			requireLogin: false
 		});
 		$routeProvider.when('/signOut', {

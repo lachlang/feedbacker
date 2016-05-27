@@ -98,9 +98,9 @@ describe('service [Account]', function() {
         });
 
         it('to reset a password', function() {
-            var result, promise = account.resetPassword("string1", "string2", "string3");
+            var result, promise = account.resetPassword("string1", "string2", "string3", "string4");
 
-            $httpBackend.expectPOST('/api/password/reset', '{"apiVersion":"1.0","body":{"oldPassword":"string1","newPassword":"string2","token":"string3"}}').respond(200, dummyResult);
+            $httpBackend.expectPOST('/api/password/reset', '{"apiVersion":"1.0","body":{"oldPassword":"string1","newPassword":"string2","token":"string3","username":"string4"}}').respond(200, dummyResult);
             
             // set the response value
             promise.then(function(data) {
