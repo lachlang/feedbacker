@@ -14,19 +14,14 @@ import scala.concurrent.Future
  */
 class Feedback extends AuthenticatedController {
 
-  def getPendingFeedbackActions = Action { request =>
-    Authentication.getUser(request) match {
-      case Some(p) => {
-        Ok(Json.toJson(Nomination.getPendingNominationsForUser(p.credentials.email) .map {
-          case Nomination(id, _, Some(to), status, lastUpdated, _, shared) =>
-            val managerName: String = Person.findByEmail(to.managerEmail) match {
-              case Some(p) => p.name
-              case None => to.managerEmail
-            }
-            SummaryItem(id, status.toString, to.name, to.role, managerName, lastUpdated, shared) } ))
-      }
-      case _ => Forbidden
-    }
+  def getPendingFeedbackActions = AuthenticatedAction { person =>
+    Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(Nomination.getPendingNominationsForUser(person.credentials.email) .map {
+      case Nomination(id, _, Some(to), status, lastUpdated, _, shared) =>
+        val managerName: String = Person.findByEmail(to.managerEmail) match {
+          case Some(p) => p.name
+          case None => to.managerEmail
+        }
+        SummaryItem(id, status.toString, to.name, to.role, managerName, lastUpdated, shared) } )))
   }
 
   def updateFeedbackItem(id: Long) = Action { request =>
@@ -38,11 +33,11 @@ class Feedback extends AuthenticatedController {
   }
 
   def getCurrentFeedbackItemsForSelf = AuthenticatedAction { person =>
-      Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(Nomination.getCurrentFeedbackForUser(person.credentials.email))))
+    Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(Nomination.getCurrentFeedbackForUser(person.credentials.email))))
   }
 
   def getFeedbackHistoryForSelf = AuthenticatedAction { person  =>
-     Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(Nomination.getHistoryFeedbackForUser(person.credentials.email))))
+    Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(Nomination.getHistoryFeedbackForUser(person.credentials.email))))
   }
 
   def getCurrentFeedbackItemsForUser(id: Long) = AuthenticatedAction { person =>
@@ -53,6 +48,10 @@ class Feedback extends AuthenticatedController {
     ???
   }
 
+}
+
+object Feedback {
+  def checkPermission(user: Person, targetId: Long) : Boolean = ??? //if (user.id.get == targetId) true else Person.findBy
 }
 
 case class SummaryItem(id: Option[Long], status: String, name: String, role: String, managerName: String, lastUpdated: DateTime, shared: Boolean)

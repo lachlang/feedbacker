@@ -3,11 +3,10 @@ package au.com.feedbacker.controllers
 import java.security.SecureRandom
 import java.util.concurrent.{ConcurrentMap, ConcurrentHashMap}
 
-import au.com.feedbacker.model
+import java.util.Base64
 import org.mindrot.jbcrypt.BCrypt
 import play.api.libs.json.{JsString, Json, JsValue}
 import play.api.mvc._
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
 import au.com.feedbacker.model._
 
@@ -94,7 +93,12 @@ object SessionToken {
     result.discardingCookies(DiscardingCookie(cookieName))
   }
 
-  def generateToken = BigInt(300, tokenGenerator).toString(32)
+//  def generateToken = BigInt(300, tokenGenerator).toString(32)
+  def generateToken: String = {
+    val bytes = new Array[Byte](64)
+    tokenGenerator.nextBytes(bytes)
+    Base64.getEncoder.encodeToString(bytes)
+  }
 }
 
 //class UserIdRequest[A](val username: Option[String], request: Request[A]) extends WrappedRequest[A](request)

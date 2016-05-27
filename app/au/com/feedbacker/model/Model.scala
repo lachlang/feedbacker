@@ -347,7 +347,7 @@ object Nomination {
   }
 
   def getHistoryFeedbackForUser(username: String): Seq[Nomination] = DB.withConnection { implicit connection =>
-    SQL("""select * from nominations where to_email = {email} cycle_id not in (select id from cycle where active = TRUE) ORDER BY last_updated DESC NULLS LAST""")
+    SQL("""select * from nominations where to_email = {email} and cycle_id not in (select id from cycle where active = TRUE) ORDER BY last_updated DESC NULLS LAST""")
       .on('email -> username).as(Nomination.simple *)
       .map { case (a,b,c,d,e,f) => enrich(a,b,c,d,e,f)}
   }

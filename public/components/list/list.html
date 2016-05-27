@@ -18,10 +18,10 @@
     </div>
     <div class="row">
       <div class="col-md-12">
-        <div data-ng-if="!actions.pendingActions || actions.pendingActions.length = 0">
+        <div data-ng-if="!actions.pendingActions || actions.pendingActions.length == 0">
           <p class="lead">No pending actions</p>
         </div>
-        <div class="table-responsive" data-ng-if="actions.pendingActions">
+        <div class="table-responsive" data-ng-if="actions.pendingActions && actions.pendingActions.length > 0">
           <table class="table table-hover">
             <caption class="lead">Feedback you need to action</caption>
             <thead>
