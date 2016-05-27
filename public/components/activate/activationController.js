@@ -8,25 +8,29 @@ fbControllers.controller('ActivationCtrl',  ['$scope', '$log', '$location', 'Acc
     ctrl.error = undefined;
     ctrl.message = undefined;
 
-	ctrl.sendActivationEmail = function() {
-		$log.info("forgotPassword");
-		alert("This exciting new feature is coming soon :)");
+	ctrl.sendActivationEmail = function(email) {
+        ctrl.error = undefined;
+        ctrl.message = undefined;
+        Account.sendActivationEmail(email).then(function() {
+            ctrl.error = "Password reset email sent."
+        }, function() {
+            ctrl.error = "Could not send password reset email.  Please try again later.";
+        });
 	};
 
-    ctrl.activate() = function() {
+    ctrl.activate = function(username, token) {
         ctrl.error = undefined;
         var username = $location.search("username");
         var token = $location.search("token");
-        if (currentPassword != currentPasswordCheck) {
-            ctrl.error = "Passwords must match.";
-            return;
-        } else if (!token || ! username) {
+        if (!token || ! username) {
             ctrl.error = "Invalid credentials.";
             return;
         }
 
-        Account.changePassword()
-
-
-    }
+        Account.activate(username, token).then(function() {
+            $location.path("#/list");
+        }, function() {
+            ctrl.error = "Could not activate accounts.";
+        });
+    };
 }]);

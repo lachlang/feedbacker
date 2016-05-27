@@ -12,7 +12,7 @@ fbControllers.controller('ResetCtrl',  ['$scope', '$log', '$location', 'Account'
         ctrl.error = undefined;
         ctrl.message = undefined;
         Account.sendPasswordResetEmail(email).then(function() {
-            ctrl.error = "Password reset email sent."
+            ctrl.message = "Password reset email sent."
         }, function() {
             ctrl.error = "Could not send password reset email.  Please try again later.";
         });
@@ -29,7 +29,7 @@ fbControllers.controller('ResetCtrl',  ['$scope', '$log', '$location', 'Account'
         } else if (!token || ! username) {
             ctrl.error = "Invalid credentials. Unable to reset your password.";
             return;
-        } else if (!ctrl.newPassword || ctrl.newPassword.length < 8) {
+        } else if (!newPassword || newPassword.length < 8) {
             ctrl.error = "Please choose a password of minimum 8 characters in length."
         }
 
