@@ -16,8 +16,4 @@ fbControllers.controller('RegistrationCtrl',  ['$scope', '$log', '$location', 'A
 		});
 	};
 
-	ctrl.forgotPassword = function() {
-		$location.path("#resetPasswordEmail");
-	};
-
 }]);
