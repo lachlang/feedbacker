@@ -333,8 +333,8 @@ object Nomination {
 
   def getCurrentNominationsFromUser(username: String): Seq[Nomination] = DB.withConnection { implicit connection =>
     Person.findByEmail(username) match {
-      case Some(p) => SQL( """select * from nominations where from_id = {id} and status = {status} and cycle_id in (select id from cycle where active = TRUE)""")
-        .on('email -> p.id.get, 'status -> FeedbackStatus.New.toString)
+      case Some(Person(Some(id), _, _, _, _)) => SQL( """select * from nominations where from_id = {id} and status = {status} and cycle_id in (select id from cycle where active = TRUE)""")
+        .on('id -> id, 'status -> FeedbackStatus.New.toString)
         .as(Nomination.simple *).map { case (a, b, c, d, e, f) => Nomination.enrich(a, b, c, d, e, f) }
       case None => Seq()
     }
