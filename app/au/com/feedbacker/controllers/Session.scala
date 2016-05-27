@@ -5,7 +5,7 @@ import java.util.concurrent.{ConcurrentMap, ConcurrentHashMap}
 
 import java.util.Base64
 import org.mindrot.jbcrypt.BCrypt
-import play.api.libs.json.{JsString, Json, JsValue}
+import play.api.libs.json.{Format, JsString, Json, JsValue}
 import play.api.mvc._
 
 import au.com.feedbacker.model._
@@ -66,6 +66,9 @@ object Authentication {
 case class SessionToken(username: String, token: String)
 
 object SessionToken {
+
+  implicit val format: Format[SessionToken] = Json.format[SessionToken]
+
   // TODO: pull this out into config
   protected val cookieName: String = "FEEDBACKER_SESSION"
   protected val cookieMaxAge: Option[Int] = Some(3600)

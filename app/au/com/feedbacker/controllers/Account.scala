@@ -67,23 +67,29 @@ object RegistrationContent {
 
 class Activation extends Controller {
 
-  def activate = Action.async { request =>
-
-    Future(Ok)
+  def activate = Action(parse.json(maxLength = 100)) { request =>
+    request.body.validate[SessionToken].asOpt match {
+      case None => Forbidden
+      case Some(st) => ???
+    }
   }
 
-  def sendActivationEmail = Action.async { request =>
-    Future(Ok)
+  def sendActivationEmail = Action { request =>
+    Ok
   }
 }
 
 class ResetPassword extends Controller {
 
-  def resetPassword = Action.async { request =>
-    Future(Ok)
+  def resetPassword = Action(parse.json(maxLength = 100)) { request =>
+    request.body.validate[SessionToken].asOpt match {
+      case None => Forbidden
+      case Some(st) => ???
+    }
   }
 
-  def sendPasswordResetEmail = Action.async { request =>
-    Future(Ok)
+  def sendPasswordResetEmail = Action { request =>
+
+    Ok
   }
 }

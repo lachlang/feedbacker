@@ -1,8 +1,8 @@
 package au.com.feedbacker.model
 
+import au.com.feedbacker.controllers.SessionToken
 import org.joda.time.DateTime
 
-// import javax.inject.Inject
 import play.api.db._
 import play.api.Play.current
 
@@ -11,7 +11,6 @@ import anorm.SqlParser._
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
-import scala.concurrent.{Future, Promise}
 // import scala.language.postfixOps
 
 object CredentialStatus extends Enumeration {
@@ -175,16 +174,21 @@ object Person {
       ).execute()
   }
 
-  def logout: Boolean = {
-    ???
-  }
-
-  def activate: Boolean = {
-    ???
-  }
-
-  def resetPassword: Boolean = {
-    ???
+  /**
+   * validates the token exists, belongs to the correct user, has not been used and has not expired,
+   * then invalidates the token and updates the user status
+   * @param st: SessionToken
+   * @return
+   */
+  def resetPassword(st: SessionToken, passwordHash: String): Boolean = DB.withConnection { implicit connection =>
+    Activation.validateToken(st) match {
+      case None => false
+      case Some(_) => Activation.expireToken(st.token) &&
+          SQL("update into person (user_status, pass_hash) values ({status}, {hash}) where email = {email}")
+            .on('status -> CredentialStatus.Active.toString,
+                'hash -> passwordHash,
+                'email -> st.username).execute()
+    }
   }
 }
 
@@ -210,6 +214,8 @@ case class Activation(token: String, email: String, created: DateTime, used: Boo
 
 object Activation {
 
+  private val tokenExpiryInSeconds = 3600
+
   val simple = {
     get[String]("activation.token") ~
     get[String]("activation.email") ~
@@ -221,10 +227,41 @@ object Activation {
   }
 
   // Queries
-  def activate: Boolean = {
-    ???
+  /**
+   * validates the token exists, belongs to the correct user, has not been used and has not expired,
+   * then invalidates the token and updates the user status
+   * @param st: SessionToken
+   * @return
+   */
+
+  def validateToken(st: SessionToken): Option[Activation] = DB.withConnection { implicit connection =>
+    SQL("select * from activations where token = {token} and email = {email} and used = false and expires < {time}")
+      .on('token -> st.token, 'email -> st.username, 'time -> DateTime.now().getMillis).as(Activation.simple.singleOpt)
   }
 
+  def expireToken(token: String): Boolean = DB.withConnection { implicit connection =>
+    SQL("update into activations (used) values (true) where token = {token} and expires < {time}")
+      .on('token -> token).execute()
+  }
+  def activate(st: SessionToken): Boolean = DB.withConnection { implicit connection =>
+    validateToken(st) match {
+      case None => false
+      case Some(_) => expireToken(st.token) &&
+        SQL("update into person (user_status) values ({status}) where email = {email}")
+          .on('status -> CredentialStatus.Active.toString, 'email -> st.username).execute()
+    }
+  }
+
+  def createActivationToken(username: String): Boolean = DB.withConnection { implicit connection =>
+    val token = SessionToken.generateToken
+    SQL(
+      """insert into activations (token, email, expires, created, used) values
+        |({token}, {email}, {created}, {expires}, false) """)
+      .on('token -> token,
+        'email -> username,
+        'created -> DateTime.now().getMillis,
+        'expires -> (DateTime.now().getMillis + tokenExpiryInSeconds* 1000)).execute()
+  }
 }
 
 case class QuestionResponse(id: Option[Long], text: String, responseOptions: String, response: Option[String], comments: Option[String])
