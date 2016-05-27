@@ -62,8 +62,8 @@ fbServices.service('Account', ['$log', '$http', '$q', function($log, $http, $q) 
 			});
 		},
 
-		resetPassword: function(oldPassword, newPassword, token, username) {
-			if (!oldPassword || !newPassword || !token) {
+		resetPassword: function(password, token, username) {
+			if (!password || !username || !token) {
 				return invalidRequestError();
 			}			
 			return $http({
@@ -72,8 +72,7 @@ fbServices.service('Account', ['$log', '$http', '$q', function($log, $http, $q) 
 				data: {
 					apiVersion:"1.0",
 					body: { 
-						oldPassword: oldPassword,
-						newPassword: newPassword,
+						password: password,
 						token: token,
 						username
 					}

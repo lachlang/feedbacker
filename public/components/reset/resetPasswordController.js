@@ -8,41 +8,37 @@ fbControllers.controller('ResetCtrl',  ['$scope', '$log', '$location', 'Account'
     ctrl.error = undefined;
     ctrl.message = undefined;
 
-	ctrl.sendPasswordResetEmail = function() {
-		$log.info("forgotPassword");
-		alert("This exciting new feature is coming soon :)");
+	ctrl.sendPasswordResetEmail = function(email) {
+        ctrl.error = undefined;
+        ctrl.message = undefined;
+        Account.sendPasswordResetEmail(email).then(function() {
+            ctrl.error = "Password reset email sent."
+        }, function() {
+            ctrl.error = "Could not send password reset email.  Please try again later.";
+        });
 	};
 
-    ctrl.changePassword = function(currentPassword, currentPasswordCheck, newPassword) {
+    ctrl.resetPassword = function(newPassword, passwordCheck) {
         ctrl.error = undefined;
+        ctrl.message = undefined;
         var username = $location.search("username");
         var token = $location.search("token");
-        if (currentPassword != currentPasswordCheck) {
-            ctrl.error = "Passwords must match.";
-            return;
-        }
-
-        Account.changePassword(currentPassword, newPassword).then(function() {
-            ctrl.message = "Password updated."
-        }, function(){
-            ctrl.error = "Could not change password."
-        });
-    }
-
-    ctrl.resetPassword = function() {
-        ctrl.error = undefined;
-        var username = $location.search("username");
-        var token = $location.search("token");
-        if (currentPassword != currentPasswordCheck) {
+        if (newPassword != passwordCheck) {
             ctrl.error = "Passwords must match.";
             return;
         } else if (!token || ! username) {
-            ctrl.error = "Invalid credentials.";
+            ctrl.error = "Invalid credentials. Unable to reset your password.";
             return;
+        } else if (!ctrl.newPassword || ctrl.newPassword.length < 8) {
+            ctrl.error = "Please choose a password of minimum 8 characters in length."
         }
 
-//        Account.changePassword()
-
-
+        Account.resetPassword(ctrl.newPassword, token, username).then(function() {
+            $location.search("username", null);
+            $location.search("token", null);
+            $location.path('#/list');
+        }, function() {
+            ctrl.error = "Could not reset your password.  Please try again later."
+        });
     }
 }]);
