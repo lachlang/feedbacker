@@ -143,28 +143,28 @@ object Person {
   }
 
   def update(person: Person): Either[Throwable, Person] = {
-    DB.withConnection { implicit connection =>
-      try {
-        SQL(
-          """
-              update into person (id, name, role, email, pass_hash, user_status, manager_email)values (
-                {name},{role},{email},{pass_hash},{user_status},{manager_email}
-              )
-          """).on(
-            'id -> person.id,
-            'name -> person.name,
-            'role -> person.role,
-            'email -> person.credentials.email,
-            'pass_hash -> person.credentials.hash,
-            'user_status -> person.credentials.status.toString,
-            'manager_email -> person.managerEmail
-          ).executeUpdate() match {
-          case 0 => Left(new Exception("Could not update."))
-          case _ => Right(person)
-        }
-      } catch {
-        case e:Exception => Left(e)
-      }
+    DB.withConnection { implicit connection => ???
+//      try {
+//        SQL(
+//          """
+//              update person SET id={id}, name, role, email, pass_hash, user_status, manager_email)values (
+//                {name},{role},{email},{pass_hash},{user_status},{manager_email} where
+//              )
+//          """).on(
+//            'id -> person.id,
+//            'name -> person.name,
+//            'role -> person.role,
+//            'email -> person.credentials.email,
+//            'pass_hash -> person.credentials.hash,
+//            'user_status -> person.credentials.status.toString,
+//            'manager_email -> person.managerEmail
+//          ).executeUpdate() match {
+//          case 0 => Left(new Exception("Could not update."))
+//          case _ => Right(person)
+//        }
+//      } catch {
+//        case e:Exception => Left(e)
+//      }
     }
   }
 
@@ -264,14 +264,14 @@ object Activation {
   }
 
   def expireToken(token: String): Boolean = DB.withConnection { implicit connection =>
-    SQL("update into activations (used) values (true) where token = {token} and expires < {time}")
+    SQL("update activations used = true where token = {token} and expires < {time}")
       .on('token -> token).execute()
   }
   def activate(st: SessionToken): Boolean = DB.withConnection { implicit connection =>
     validateToken(st) match {
       case None => false
       case Some(_) => expireToken(st.token) &&
-        SQL("update into person (user_status) values ({status}) where email = {email}")
+        SQL("update person user_status = {status} where email = {email}")
           .on('status -> CredentialStatus.Active.toString, 'email -> st.username).execute()
     }
   }
@@ -316,8 +316,8 @@ object QuestionResponse {
 
   def updateResponses(responses :Seq[QuestionResponse]): Boolean = DB.withConnection { implicit connection =>
     responses.map ( response =>
-    SQL("""update into question_response (response, comments) values ({response}, {comments})""")
-      .on('response -> response.response, 'comments -> response.comments).executeUpdate() == 1).foldLeft(true)( (a, b) => a&b)
+    SQL("""update question_response response={response}, comments={comments} where id={id}""")
+      .on('response -> response.response, 'comments -> response.comments, 'id-> response.id).executeUpdate() == 1).foldLeft(true)( (a, b) => a&b)
   }
 
   def initialiseResponses(nominationId :Long, questions: Seq[QuestionTemplate]): Boolean = DB.withConnection { implicit connection =>
@@ -430,14 +430,14 @@ object Nomination {
 
     QuestionResponse.updateResponses(feedback.questions) match {
       case true =>
-        SQL("update into nominations (status, last_updated) values ({status}, {lastUpdated})")
-        .on('status -> FeedbackStatus.Submitted.toString, 'lastUpdated -> DateTime.now().getMillis).execute() == 1
+        SQL("update nominations status={status}, last_updated= {lastUpdated} where id={id}")
+        .on('status -> FeedbackStatus.Submitted.toString, 'lastUpdated -> DateTime.now().getMillis, 'id->feedback.id).execute() == 1
       case _ => false
     }
   }
 
   def cancelNomination(nominationId: Long): Boolean = DB.withConnection { implicit connection =>
-    SQL("""update into nominations (status) values ({status}) id = {id}""").on('id -> nominationId, 'status -> FeedbackStatus.Cancelled.toString) == 1
+    SQL("""update nominations status={status} id = {id}""").on('id -> nominationId, 'status -> FeedbackStatus.Cancelled.toString) == 1
   }
 }
 
