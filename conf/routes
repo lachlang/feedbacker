@@ -25,6 +25,7 @@ GET 	/api/feedback/history/self 	au.com.feedbacker.controllers.Feedback.getFeedb
 GET 	/api/feedback/history/:id 	au.com.feedbacker.controllers.Feedback.getFeedbackHistoryForUser(id: Long)
 
 GET     /api/nominations            au.com.feedbacker.controllers.Nominations.getCurrentNominations
+GET     /api/nominations/candidates au.com.feedbacker.controllers.Nominations.getNomineeCandidates
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /components/*file           controllers.Assets.at(path="/public/components", file)

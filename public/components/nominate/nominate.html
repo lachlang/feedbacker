@@ -9,7 +9,7 @@
 			<span class="lead">Search for colleagues</span>
 		</div>
 		<div class="col-sm-3">
-			<input class="form-control" placeholder="Name or Email">
+			<input class="form-control" ng-model="nominate.nominee" uib-typeahead="nominee for nominee in nominate.nomineeCandidates | filter:$viewValue | limitTo:8" placeholder="Name or Email">
 		</div>
 		<div class="col-sm-7">
 		</div>
@@ -17,11 +17,11 @@
 	<div class="row top-buffer">
 		<div class="col-sm-12">
 			<div data-ng-hide="nominate.nominations.length > 0">
-				<p class="lead">No colleages currently nominated to provide feedback.</p>
+				<p class="lead">No colleagues currently nominated to provide feedback.</p>
 			</div>
 			<div class="table-responsive" data-ng-show="nominate.nominations.length > 0">
 	          	<table class="table table-hover">
-	            	<caption class="lead">Colleages nominated to provide you feedback.</caption>
+	            	<caption class="lead">Colleagues nominated to provide you feedback.</caption>
 		            <thead>
 		              	<tr>
 			                <th>#</th>

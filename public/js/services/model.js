@@ -6,6 +6,7 @@ fbServices.service('Model', ['$log', '$q', 'Account', 'Feedback', 'Nomination', 
 	var feedbackHistoryList = [];
 	var feedbackDetail = {};
 	var currentNominations = [];
+	var nomineeCandidates = [];
 	var errorResult = undefined;
 
 	var cacheServiceCall = function(mutateCache, updateRequired, getCache, serviceFunction, serviceCallName, mapKey) {
@@ -72,6 +73,13 @@ fbServices.service('Model', ['$log', '$q', 'Account', 'Feedback', 'Nomination', 
 									feedbackId);
 		},
 
+		getNomineeCandidates: function(flushCache) {
+			return cacheServiceCall(function(result) { nomineeCandidates = result.data.body },
+									function(feedbackId) {return ( !nomineeCandidates || nomineeCandidates.length == 0 || flushCache ) },
+									function(feedbackId) { return nomineeCandidates },
+									Nomination.getNomineeCandidates,
+									"Nomination.getNomineeCandidates");
+		},
 
 		getCurrentNominations: function(feedbackId, flushCache) {
 			return cacheServiceCall(function(result, feedbackId) { currentNominations = result.data.body },

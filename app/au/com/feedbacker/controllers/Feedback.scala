@@ -1,6 +1,8 @@
 package au.com.feedbacker.controllers
 
 //import play.api.http.Writeable
+
+import play.api.http.Writeable
 import play.api.libs.json._
 import play.api.mvc._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
@@ -66,6 +68,10 @@ class Nominations extends AuthenticatedController {
 
   def getCurrentNominations = AuthenticatedAction { person =>
     Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(Nomination.getCurrentNominationsFromUser(person.credentials.email))))
+  }
+
+  def getNomineeCandidates = AuthenticatedAction { person =>
+    Ok(Json.obj("body" -> Json.toJson(Nominee.findNomineeCandidates)))
   }
 }
 //case class Response[T : Writes](apiVersion: String, body: T)

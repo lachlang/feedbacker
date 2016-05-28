@@ -81,14 +81,18 @@ case class Person(id: Option[Long], name: String, role: String, credentials: Cre
 
 object Person {
 
+  type Id = Long
+  type Name = String
+  type Username = String
+
   /**
    * Parse a Person from a ResultSet
    */
   val simple = {
-    get[Option[Long]]("person.id") ~
-    get[String]("person.name") ~
+    get[Option[Id]]("person.id") ~
+    get[Name]("person.name") ~
     get[String]("person.role") ~
-    get[String]("person.email") ~
+    get[Username]("person.email") ~
     get[String]("person.pass_hash") ~
     get[String]("person.user_status") ~
     get[String]("person.manager_email") map {
@@ -190,6 +194,26 @@ object Person {
                 'email -> st.username).execute()
     }
   }
+}
+
+case class Nominee(name: Person.Name, email: Person.Username, role: String)
+
+object Nominee {
+
+  implicit val writes: Writes[Nominee] = Json.writes[Nominee]
+
+  val simple = {
+    get[String]("name") ~
+    get[String]("email") ~
+    get[String]("role") map {
+      case name~email~role => Nominee(name, email, role)
+    }
+  }
+  def findNomineeCandidates: Seq[Nominee] = DB.withConnection { implicit connection =>
+    SQL("select name, email, role from person where user_status = {status}").on('status -> CredentialStatus.Active.toString).as(Nominee.simple *)
+  }
+
+
 }
 
 case class Credentials(email: String, hash: String, status: CredentialStatus = CredentialStatus.Inactive)
