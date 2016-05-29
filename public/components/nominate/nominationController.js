@@ -10,7 +10,13 @@ fbControllers.controller('NominationCtrl',  ['$scope', '$log', 'Model', function
 
 	// get the pending actions
 	Model.getNomineeCandidates().then(function(response) {
-		ctrl.nomineeCandidates = response
+		ctrl.nomineeCandidates = response.map(function(item){
+			item.display = item.name + ", " + item.email;
+			return item;
+		});
+		ctrl.nomineeCandidates = response;
+		$log.info(response);
+		$log.info(ctrl.nomineeCandidates);
 	});
 
 	Model.getCurrentNominations().then(function(response) {

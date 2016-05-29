@@ -9,7 +9,8 @@
 			<span class="lead">Search for colleagues</span>
 		</div>
 		<div class="col-sm-3">
-			<input class="form-control" ng-model="nominate.nominee" uib-typeahead="nominee for nominee in nominate.nomineeCandidates | filter:$viewValue | limitTo:8" placeholder="Name or Email">
+			<input class="form-control" ng-model="nominate.nominee" uib-typeahead="nominee.email as nominee.display for nominee in nominate.nomineeCandidates | filter:$viewValue | limitTo:8" placeholder="Name or Email">
+			<!--<input class="form-control" ng-model="nominate.nominee" uib-typeahead="nominee for nominee in nominate.nomineeCandidates | filter:$viewValue | limitTo:8" typeahead-template-url="components/nominate/nomineeTemplate.html" placeholder="Name or Email">-->
 		</div>
 		<div class="col-sm-7">
 		</div>
