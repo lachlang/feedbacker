@@ -18,9 +18,16 @@ import scala.concurrent.Future
 
 trait AuthenticatedController extends Controller {
 
-  def AuthenticatedAction(body: (Person) => Result) = Action { request =>
+  def AuthenticatedAction(body: Person => Result) = Action { request =>
     Authentication.getUser(request) match {
       case Some(person) => body(person)
+      case _ => Forbidden
+    }
+  }
+
+  def AuthenticatedRequestAction(body: (Person, JsValue) => Result) = Action { request =>
+    (Authentication.getUser(request), request.body.asJson) match {
+      case (Some(person), Some(requestBody)) => body(person, requestBody)
       case _ => Forbidden
     }
   }

@@ -397,7 +397,7 @@ object Nomination {
       case Some(Person(Some(id), _, _, _, _)) => SQL( """select * from nominations where from_id = {id} and status = {status} and cycle_id in (select id from cycle where active = TRUE)""")
         .on('id -> id, 'status -> FeedbackStatus.New.toString)
         .as(Nomination.simple *).map { case (a, b, c, d, e, f) => Nomination.enrich(a, b, c, d, e, f) }
-      case None => Seq()
+      case _ => Seq()
     }
   }
 
@@ -431,13 +431,13 @@ object Nomination {
     QuestionResponse.updateResponses(feedback.questions) match {
       case true =>
         SQL("update nominations status={status}, last_updated= {lastUpdated} where id={id}")
-        .on('status -> FeedbackStatus.Submitted.toString, 'lastUpdated -> DateTime.now().getMillis, 'id->feedback.id).execute() == 1
+        .on('status -> FeedbackStatus.Submitted.toString, 'lastUpdated -> DateTime.now().getMillis, 'id->feedback.id).execute
       case _ => false
     }
   }
 
   def cancelNomination(nominationId: Long): Boolean = DB.withConnection { implicit connection =>
-    SQL("""update nominations status={status} id = {id}""").on('id -> nominationId, 'status -> FeedbackStatus.Cancelled.toString) == 1
+    SQL("""update nominations status={status} id = {id}""").on('id -> nominationId, 'status -> FeedbackStatus.Cancelled.toString).execute
   }
 }
 
@@ -453,5 +453,9 @@ object FeedbackCycle {
     get[Boolean]("cycle.active") map {
       case id~label~start_date~end_date~active => FeedbackCycle(id, label, start_date, end_date, active)
     }
+  }
+
+  def findById(id: Long): Option[FeedbackCycle] = DB.withConnection { implicit connection =>
+    SQL("""select * from cycle where id = {id}""").on('id -> id).as(FeedbackCycle.simple.singleOpt)
   }
 }

@@ -18,7 +18,7 @@ import scala.concurrent.Future
 class Registration extends Controller {
 
   def translateResult(result: Either[Throwable, Person], errorMessage: String) : Result = result match {
-    case Left(e) => println(e.getMessage); BadRequest("{ \"body\": { \"message\": \"" + errorMessage + "\"}} ")
+    case Left(e) => BadRequest("{ \"body\": { \"message\": \"" + errorMessage + "\"}} ")
     case Right(p) => Ok(Json.toJson(p))
   }
 

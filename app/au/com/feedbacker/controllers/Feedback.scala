@@ -26,7 +26,7 @@ class Feedback extends AuthenticatedController {
         SummaryItem(id, status.toString, to.name, to.role, managerName, lastUpdated, shared) } )))
   }
 
-  def updateFeedbackItem(id: Long) = Action { request =>
+  def updateFeedbackItem(id: Long) = AuthenticatedRequestAction { (person, request) =>
     ???
   }
 
@@ -72,6 +72,29 @@ class Nominations extends AuthenticatedController {
 
   def getNomineeCandidates = AuthenticatedAction { person =>
     Ok(Json.obj("body" -> Json.toJson(Nominee.findNomineeCandidates)))
+  }
+
+  def createNomination = AuthenticatedRequestAction { (person, json) =>
+    val username: JsResult[String] = json.validate[String]((JsPath \ "body" \ "username").read[String](Reads.email))
+    val cycleId: JsResult[Long] = json.validate[Long]((JsPath \ "body" \ "cycleId").read[Long])
+    (person.id, username, cycleId) match {
+      case (Some(id), name: JsSuccess[String], cycle: JsSuccess[Long]) => Nomination.createNomination(id, name.get, cycle.get) match {
+        case Left => BadRequest
+        case Right(n) => Created
+      }
+      case _ => BadRequest
+    }
+  }
+
+  def cancelNomination(id: Long) = AuthenticatedAction { person =>
+    val genericFail: JsValue = Json.obj("message" -> "Could not cancel nomination.")
+    Nomination.getSummary(id) match {
+      case Some(Nomination(_, _, _,status, _, _, _)) if status == FeedbackStatus.New || status == FeedbackStatus.Pending =>
+        BadRequest(Json.obj("message" -> "Can only cancel nominations with a 'New' or 'Pending' status."))
+      case Some(Nomination(_, Some(p), _, _, _, _, _))
+        if p.credentials.email == person.credentials.email => if (Nomination.cancelNomination(id)) Ok else BadRequest(genericFail)
+      case None => BadRequest(genericFail)
+    }
   }
 }
 //case class Response[T : Writes](apiVersion: String, body: T)
