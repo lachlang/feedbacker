@@ -66,7 +66,7 @@ describe('service [Nomination]', function() {
         it('to add a nomination', function() {
             var result, promise = nomination.addNomination({some:"stuff"});
 
-            $httpBackend.expectPOST('/api/nominations','{"apiVersion":"1.0","body":{"some":"stuff"}}').respond(200, dummyResult);
+            $httpBackend.expectPOST('/api/nominations','{"apiVersion":"1.0","body":{"username":{"some":"stuff"}}}').respond(200, dummyResult);
             
             // set the response value
             promise.then(function(data) {

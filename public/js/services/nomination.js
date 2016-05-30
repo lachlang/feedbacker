@@ -10,13 +10,13 @@ fbServices.service('Nomination', ['$log', '$http', function($log, $http) {
 			return $http.get("/api/nominations");
 		},
 
-		addNomination: function(nomination) {
+		addNomination: function(username) {
 			return $http({
 				method: "POST",
 				url: "/api/nominations",
 				data:{
 					apiVersion: "1.0",
-					body: nomination
+					body: { username: username}
 				}
 			})
 		},

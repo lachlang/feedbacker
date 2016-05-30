@@ -74,20 +74,23 @@ fbServices.service('Model', ['$log', '$q', 'Account', 'Feedback', 'Nomination', 
 		},
 
 		getNomineeCandidates: function(flushCache) {
-			return cacheServiceCall(function(result) { nomineeCandidates = result.data.body },
+			return cacheServiceCall(function(result) { nomineeCandidates = result.data.body.map(function(item){
+											item.display = item.name + ", " + item.email;
+											return item;
+										});
+									},
 									function(feedbackId) {return ( !nomineeCandidates || nomineeCandidates.length == 0 || flushCache ) },
 									function(feedbackId) { return nomineeCandidates },
 									Nomination.getNomineeCandidates,
 									"Nomination.getNomineeCandidates");
 		},
 
-		getCurrentNominations: function(feedbackId, flushCache) {
+		getCurrentNominations: function(flushCache) {
 			return cacheServiceCall(function(result, feedbackId) { currentNominations = result.data.body },
 									function(feedbackId) {return ( !currentNominations || currentNominations.length == 0 || flushCache ) },
 									function(feedbackId) { return currentNominations },
 									Nomination.getCurrentNominations,
-									"Nomination.getCurrentNominations",
-									feedbackId);
+									"Nomination.getCurrentNominations");
 		},
 
 		saveFeedback: function() {

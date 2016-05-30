@@ -6,13 +6,23 @@
 	</div>
 	<div class="row top-buffer">
 		<div class="col-sm-2">
-			<span class="lead">Search for colleagues</span>
+			<span class="lead">Search for colleagues:</span>
 		</div>
 		<div class="col-sm-3">
 			<input class="form-control" ng-model="nominate.nominee" uib-typeahead="nominee.email as nominee.display for nominee in nominate.nomineeCandidates | filter:$viewValue | limitTo:8" placeholder="Name or Email">
-			<!--<input class="form-control" ng-model="nominate.nominee" uib-typeahead="nominee for nominee in nominate.nomineeCandidates | filter:$viewValue | limitTo:8" typeahead-template-url="components/nominate/nomineeTemplate.html" placeholder="Name or Email">-->
 		</div>
 		<div class="col-sm-7">
+		</div>
+	</div>
+	<div class="row top-buffer">
+		<div class="col-sm-4">
+			<p class="lead">Nominate <strong data-ng-show="nominate.nominee" class="strong">{{nominate.nominee}}</strong><strong data-ng-hide="nominate.nominee">nobody</strong> to provide feedback for yourself?</p>
+		</div>
+		<div class="col-sm-2">
+			<a class="btn btn-primary" data-ng-click="nominate.add(nominate.nominee)">Create Nomination</a>
+		</div>
+		<div class="col-sm-2">
+
 		</div>
 	</div>
 	<div class="row top-buffer">
