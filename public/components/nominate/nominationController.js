@@ -7,6 +7,8 @@ fbControllers.controller('NominationCtrl',  ['$scope', '$log', 'Model', 'Nominat
 
 	ctrl.nomineeCandidates = [];
 	ctrl.nominations = [];
+	ctrl.cycles = [];
+	ctrl.selectedCycle = undefined;
 	ctrl.nominee = undefined;
 	ctrl.error = undefined;
 
@@ -19,22 +21,32 @@ fbControllers.controller('NominationCtrl',  ['$scope', '$log', 'Model', 'Nominat
 		ctrl.nominations = response;
 	});
 
+	Model.getActiveFeedbackCycles().then(function(response) {
+		ctrl.cycles = response;
+		if (ctrl.cycles && ctrl.cycles.length >= 1) {
+			ctrl.selectedCycle = ctrl.cycles[0];
+		}
+	});
+
 	// TODO: pull this out into a utils service
 	var validateEmail = function(word) {
 		var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 		return re.test(word);
 	}
 
-	ctrl.addNomination = function(emailAddress) {
+	ctrl.addNomination = function(emailAddress, cycleId) {
 		ctrl.error = undefined;
 
 		// validate email
 		if (!emailAddress || !validateEmail(emailAddress)) {
 			ctrl.error = "Must send a nomination to a valid email address.";
 			return;
+		} else if (!cycleId) {
+			ctrl.error = "You must select a feedback cycle for your nomination.";
+			return;
 		}
 		// update model
-		Nomination.addNomination(emailAddress).then(function() {
+		Nomination.addNomination(emailAddress, cycleId).then(function() {
 			Model.getCurrentNominations(true).then(function(response) {
 				ctrl.nominations = response;
 			});

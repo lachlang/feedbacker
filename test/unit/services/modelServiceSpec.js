@@ -20,6 +20,7 @@ describe('service [Model]', function() {
         spyOn(feedback, 'getCurrentFeedbackItemsForSelf').and.returnValue(deferred.promise);
         spyOn(feedback, 'getFeedbackHistoryForSelf').and.returnValue(deferred.promise);
         spyOn(feedback, 'getFeedbackItem').and.returnValue(deferred.promise);
+        spyOn(feedback, 'getActiveFeedbackCycles').and.returnValue(deferred.promise);
 
 	}));
 
@@ -79,6 +80,10 @@ describe('service [Model]', function() {
             cacheTest(model.getFeedbackDetail, feedback.getFeedbackItem);
         });
 
+        it('should call the feedback.getActiveFeedbackCycles service only once', function() {
+            cacheTest(model.getActiveFeedbackCycles, feedback.getActiveFeedbackCycles);
+        });
+
     });
     
     describe('flushes cached data when requested', function() {
@@ -124,6 +129,9 @@ describe('service [Model]', function() {
             flushTest(model.getFeedbackDetail, feedback.getFeedbackItem);
         });
 
+        it('should call the feedback.getActiveFeedbackCycles service when flushed', function(){
+            flushTest(model.getActiveFeedbackCycles, feedback.getActiveFeedbackCycles);
+        });
     });
 
 });

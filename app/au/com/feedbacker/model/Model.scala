@@ -293,11 +293,11 @@ case class QuestionResponse(id: Option[Long], text: String, responseOptions: Str
 object QuestionResponse {
 
   val simple = {
-    get[Option[Long]]("question.id") ~
-      get[String]("question.text") ~
-      get[String]("question.responseOptions") ~
-      get[Option[String]]("question.response") ~
-      get[Option[String]]("question.comments") map {
+    get[Option[Long]]("question_response.id") ~
+      get[String]("question_response.text") ~
+      get[String]("question_response.response_options") ~
+      get[Option[String]]("question_response.response") ~
+      get[Option[String]]("question_response.comments") map {
       case id~text~responseOptions~response~comments => QuestionResponse(id, text, responseOptions, response, comments)
     }
   }
@@ -321,9 +321,13 @@ object QuestionResponse {
   }
 
   def initialiseResponses(nominationId :Long, questions: Seq[QuestionTemplate]): Boolean = DB.withConnection { implicit connection =>
-    questions.map ( q =>
+    questions.map { q =>
     SQL("""insert into question_response (nomination_id, text, response_options) values ({nominationId}, {text}, {responseOptions})""")
-    .on('nominationId -> nominationId, 'text -> q.text, 'responseOptions -> q.responseOptions).execute()).foldLeft(true)((a,b) => a&b)
+      .on('nominationId -> nominationId, 'text -> q.text, 'responseOptions -> q.responseOptions).executeInsert() match {
+        case Some(_) => true
+        case None => false
+      }
+    }.foldLeft(true)( _ && _)
   }
 }
 
@@ -332,9 +336,9 @@ case class QuestionTemplate(id: Option[Long], text: String, responseOptions: Str
 object QuestionTemplate {
 
   val simple = {
-    get[Option[Long]]("question.id") ~
-      get[String]("question.text") ~
-      get[String]("question.responseOptions") map {
+    get[Option[Long]]("question_templates.id") ~
+      get[String]("question_templates.text") ~
+      get[String]("question_templates.response_options") map {
       case id~text~responseOptions => QuestionTemplate(id, text, responseOptions)
     }
   }
@@ -344,7 +348,7 @@ object QuestionTemplate {
   }
 }
 
-case class Nomination (id: Option[Long], from: Option[Person], to: Option[Person], status: FeedbackStatus, lastUpdated: DateTime, questions: Seq[QuestionResponse], shared: Boolean)
+case class Nomination (id: Option[Long], from: Option[Person], to: Option[Person], status: FeedbackStatus, lastUpdated: Option[DateTime], questions: Seq[QuestionResponse], shared: Boolean)
 
 object Nomination {
 
@@ -353,7 +357,7 @@ object Nomination {
     get[Long]("nominations.from_id") ~
     get[String]("nominations.to_email") ~
     get[String]("nominations.status") ~
-    get[DateTime]("nominations.last_updated") ~
+    get[Option[DateTime]]("nominations.last_updated") ~
     get[Boolean]("nominations.shared") map {
       case id~fromId~toEmail~status~lastUpdated~shared => (id, fromId, toEmail, FeedbackStatus.withName(status), lastUpdated, shared)
     }
@@ -364,26 +368,26 @@ object Nomination {
       (JsPath \ "from").writeNullable[Person] and
       (JsPath \ "to").writeNullable[Person] and
       (JsPath \ "status").write[FeedbackStatus] and
-      (JsPath \ "lastUpdated").write[DateTime] and
+      (JsPath \ "lastUpdated").writeNullable[DateTime] and
       (JsPath \ "questions").write[Seq[QuestionResponse]] and
       (JsPath \ "shared").write[Boolean]
     )(unlift(Nomination.unapply))
 
-  def enrich: (Long, Long, String, FeedbackStatus, DateTime, Boolean) => Nomination = {
-    (id: Long, fromId: Long, toEmail: String, status: FeedbackStatus, lastUpdated: DateTime, shared: Boolean) =>
+  def enrich: (Long, Long, String, FeedbackStatus, Option[DateTime], Boolean) => Nomination = {
+    (id: Long, fromId: Long, toEmail: String, status: FeedbackStatus, lastUpdated: Option[DateTime], shared: Boolean) =>
     Nomination(Some(id), Person.findById(fromId), Person.findByEmail(toEmail), status, lastUpdated, Seq(), shared)
   }
 
   def getSummary(id: Long): Option[Nomination] = DB.withConnection { implicit connection =>
     SQL("""select * from nominations left join person on nominations.from_id = person.id where nominations.id = {id} and status != {status}""")
       .on('id -> id, 'status -> FeedbackStatus.Cancelled.toString).as(Nomination.simple.singleOpt) match {
-      case None => None
       case Some((a,b,c,d,e,f)) => Some(Nomination.enrich(a,b,c,d,e,f))
+      case _ => None
     }
   }
 
   def getDetail(id: Long): Option[Nomination] = DB.withConnection { implicit connection =>
-    Nomination.getDetail(id).map{ case n => Nomination(n.id, n.from, n.to, n.status, n.lastUpdated, QuestionResponse.findForNomination(id), n.shared)}
+    Nomination.getSummary(id).map{ case n => Nomination(n.id, n.from, n.to, n.status, n.lastUpdated, QuestionResponse.findForNomination(id), n.shared)}
   }
 
   def getPendingNominationsForUser(username: String): Seq[Nomination] = DB.withConnection { implicit connection =>
@@ -415,14 +419,20 @@ object Nomination {
 
   def createNomination(fromId: Long, toEmail: String, cycleId: Long): Either[Throwable, Long] = DB.withConnection { implicit connection =>
 
-    // status is new until email notification sent
-    SQL("""insert into nominations (from_id, to_email, status) values ({fromId},{toEmail},{status})""")
-      .on('fromId -> fromId, 'toEmail -> toEmail, 'status -> FeedbackStatus.New.toString).executeInsert() match {
-      case None => Left(new Exception("Could not create nomination."))
-      case Some(nominationId) => QuestionResponse.initialiseResponses(nominationId, QuestionTemplate.findQuestionsForCycle(cycleId)) match {
-        case false => Left(new Exception)
-        case true => Right(nominationId)
-      }
+    SQL("""select * from nominations where from_id = {fromId} and to_email = {toEmail} and cycle_id = {cycleId}""")
+      .on('fromId -> fromId, 'toEmail -> toEmail, 'cycleId -> cycleId).as(Nomination.simple.singleOpt) match {
+      case Some(_) => Left(new Exception("Nomination already exists."))
+      case None =>
+        // status is new until email notification sent
+        SQL( """insert into nominations (from_id, to_email, status, cycle_id) values ({fromId},{toEmail},{status}, {cycle_id})""")
+          .on('fromId -> fromId, 'toEmail -> toEmail, 'status -> FeedbackStatus.New.toString, 'cycle_id -> cycleId).executeInsert() match {
+          case None => Left(new Exception("Could not create nomination."))
+          case Some(nominationId) =>
+            QuestionResponse.initialiseResponses(nominationId, QuestionTemplate.findQuestionsForCycle(cycleId)) match {
+              case false => Left(new Exception("Could not initialise questions."))
+              case true => Right(nominationId)
+            }
+        }
     }
   }
 
@@ -445,6 +455,8 @@ case class FeedbackCycle(id: Long, label: String, start_date: DateTime, end_date
 
 object FeedbackCycle {
 
+  implicit val writes: Writes[FeedbackCycle] = Json.writes[FeedbackCycle]
+
   val simple = {
     get[Long]("cycle.id") ~
     get[String]("cycle.label") ~
@@ -457,5 +469,9 @@ object FeedbackCycle {
 
   def findById(id: Long): Option[FeedbackCycle] = DB.withConnection { implicit connection =>
     SQL("""select * from cycle where id = {id}""").on('id -> id).as(FeedbackCycle.simple.singleOpt)
+  }
+
+  def findActiveCycles: Seq[FeedbackCycle] = DB.withConnection { implicit connection =>
+    SQL("""select * from cycle where active = true""").as(FeedbackCycle.simple *)
   }
 }

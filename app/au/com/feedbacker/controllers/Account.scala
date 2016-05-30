@@ -59,9 +59,9 @@ object RegistrationContent {
   implicit val format: Format[RegistrationContent] = (
     (JsPath \ "body" \ "name").format[String] and
     (JsPath \ "body" \ "role").format[String] and
-    (JsPath \ "body" \ "email").format[String] and
+    (JsPath \ "body" \ "email").format[String](Reads.email) and
     (JsPath \ "body" \ "password").format[String] and
-    (JsPath \ "body" \ "managerEmail").format[String]
+    (JsPath \ "body" \ "managerEmail").format[String](Reads.email)
   )(RegistrationContent.apply, unlift(RegistrationContent.unapply))
 }
 

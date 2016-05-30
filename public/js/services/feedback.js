@@ -34,6 +34,10 @@ fbServices.service('Feedback', ['$log','$http', function($log, $http) {
 
 		getFeedbackHistoryForSelf: function() {
 			return $http.get("/api/feedback/history/self");
+		},
+
+		getActiveFeedbackCycles: function() {
+			return $http.get("/api/cycle/active");
 		}
 	}
 }]);

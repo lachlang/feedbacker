@@ -28,6 +28,7 @@ GET     /api/nominations            au.com.feedbacker.controllers.Nominations.ge
 GET     /api/nominations/candidates au.com.feedbacker.controllers.Nominations.getNomineeCandidates
 POST    /api/nominations            au.com.feedbacker.controllers.Nominations.createNomination
 GET     /api/nominations/cancel/:id au.com.feedbacker.controllers.Nominations.cancelNomination(id: Long)
+GET     /api/cycle/active           au.com.feedbacker.controllers.Nominations.getActiveFeedbackCycles
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /components/*file           controllers.Assets.at(path="/public/components", file)

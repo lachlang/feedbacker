@@ -17,6 +17,7 @@ describe('nomination controller [NominationCtrl]', function() {
     	model = _Model_;
         spyOn(model, 'getNomineeCandidates').and.returnValue(deferred.promise);
         spyOn(model, 'getCurrentNominations').and.returnValue(deferred.promise);
+        spyOn(model, 'getActiveFeedbackCycles').and.returnValue(deferred.promise);
 
 		nomination = _Nomination_;
 		spyOn(nomination, 'addNomination').and.returnValue(deferredNom.promise);
@@ -42,6 +43,7 @@ describe('nomination controller [NominationCtrl]', function() {
     	it('and calls the necessary services to pre-populate the model', function(){
             expect(model.getCurrentNominations).toHaveBeenCalled();
             expect(model.getNomineeCandidates).toHaveBeenCalled();
+            expect(model.getActiveFeedbackCycles).toHaveBeenCalled();
     	});
 
 	});
@@ -49,14 +51,14 @@ describe('nomination controller [NominationCtrl]', function() {
 	describe('when creating a nomination', function() {
 
 		it('should call nomination.addNomination', function() {
-			nominationController.addNomination("a@b.co");
+			nominationController.addNomination("a@b.co", 1);
 			expect(nomination.addNomination).toHaveBeenCalled();
 		});
 
 		it('should call clear error messages', function() {
 			nominationController.error = "some value";
 
-			nominationController.addNomination("a@b.co");
+			nominationController.addNomination("a@b.co", 1);
 			expect(nominationController.error).toBeUndefined();
 		});
 
@@ -64,12 +66,12 @@ describe('nomination controller [NominationCtrl]', function() {
 			nominationController.addNomination();
 			expect(nominationController.error).toEqual("Must send a nomination to a valid email address.");
 
-			nominationController.addNomination("a@b");
+			nominationController.addNomination("a@b", 1);
 			expect(nominationController.error).toEqual("Must send a nomination to a valid email address.");
 		});
 
 		it('should call model.getCurrentNominations when successful', function() {
-			nominationController.addNomination("a@b.co");
+			nominationController.addNomination("a@b.co", 1);
 
 			deferredNom.resolve();
 			scope.$digest();
@@ -78,7 +80,7 @@ describe('nomination controller [NominationCtrl]', function() {
 		});
 
 		it('should call set and error message when unsuccessful', function() {
-			nominationController.addNomination("a@b.co");
+			nominationController.addNomination("a@b.co", 1);
 
 			deferredNom.reject();
 			scope.$digest();

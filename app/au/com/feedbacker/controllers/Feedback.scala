@@ -56,7 +56,7 @@ object Feedback {
   def checkPermission(user: Person, targetId: Long) : Boolean = ??? //if (user.id.get == targetId) true else Person.findBy
 }
 
-case class SummaryItem(id: Option[Long], status: String, name: String, role: String, managerName: String, lastUpdated: DateTime, shared: Boolean)
+case class SummaryItem(id: Option[Long], status: String, name: String, role: String, managerName: String, lastUpdated: Option[DateTime], shared: Boolean)
 
 object SummaryItem {
 
@@ -78,10 +78,15 @@ class Nominations extends AuthenticatedController {
     val username: JsResult[String] = json.validate[String]((JsPath \ "body" \ "username").read[String](Reads.email))
     val cycleId: JsResult[Long] = json.validate[Long]((JsPath \ "body" \ "cycleId").read[Long])
     (person.id, username, cycleId) match {
-      case (Some(id), name: JsSuccess[String], cycle: JsSuccess[Long]) => Nomination.createNomination(id, name.get, cycle.get) match {
-        case Left => BadRequest
-        case Right(n) => Created
-      }
+      case (Some(id), name: JsSuccess[String], cycle: JsSuccess[Long]) =>
+        if (person.credentials.email == name.get) {
+          BadRequest(Json.obj("message" -> "You cannot nominate yourself."))
+        } else {
+          Nomination.createNomination(id, name.get, cycle.get) match {
+            case Left(e) => BadRequest(Json.obj("message" -> e.getMessage))
+            case Right(n) => Created
+          }
+        }
       case _ => BadRequest
     }
   }
@@ -95,6 +100,10 @@ class Nominations extends AuthenticatedController {
         if p.credentials.email == person.credentials.email => if (Nomination.cancelNomination(id)) Ok else BadRequest(genericFail)
       case None => BadRequest(genericFail)
     }
+  }
+
+  def getActiveFeedbackCycles = AuthenticatedAction { person =>
+    Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(FeedbackCycle.findActiveCycles)))
   }
 }
 //case class Response[T : Writes](apiVersion: String, body: T)
