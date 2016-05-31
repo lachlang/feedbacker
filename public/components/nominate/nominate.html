@@ -39,20 +39,23 @@
 			                <th>Colleague</th>
 			                <th>Role</th>
 			                <th>Status</th>
-			                <th>Updated</th>
-			                <th></th>
+			                <th>Last Updated</th>
+			                <th>Action</th>
 		              	</tr>
 		            </thead>
 	            	<tbody>
 		              	<tr data-ng-repeat="nominee in nominate.nominations">
 			                <td>{{$index + 1}}</td>
-			                <td>{{nominee.name}}</td>
-			                <td>{{nominee.role}}</td>
+			                <td>{{nominee.from.name}}</td>
+			                <td>{{nominee.from.role}}</td>
 			                <td>{{nominee.status}}</td>
-			                <td>{{nominee.lastUpdated}}</td>
+							<td>
+								<span data-ng-show="nominee.lastUpdated">{{nominee.lastUpdated}}</span>
+								<span data-ng-hide="nominee.lastUpdated">--</span>
+							</td>
 			                <td>
-			                  	<a data-ng-if="nominee.status == 'Pending'" class-"btn btn-default" data-ng-click="nominate.remove(nominee)">Remove</a>
-			                  	<a data-ng-if="nominee.status=='Submitted' && nominee.feedbackId" class-"btn btn-default" href="#/viewDetail/id={{nominee.feedbackId}}">View</a>
+			                  	<a data-ng-show="nominee.status == 'New' || nominee.status == 'Pending'" class="btn btn-info" data-ng-click="nominate.cancelNomination(nominee.id)">Remove</a>
+			                  	<a data-ng-show="nominee.status=='Submitted' && nominee.feedbackId" class="btn btn-info" href="#/viewDetail/id={{nominee.feedbackId}}">View</a>
 			                </td>
 	              		</tr>
 	            	</tbody>

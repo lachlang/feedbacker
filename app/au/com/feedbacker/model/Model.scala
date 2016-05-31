@@ -417,10 +417,26 @@ object Nomination {
       .map { case (a,b,c,d,e,f) => enrich(a,b,c,d,e,f)}
   }
 
+  def findNominationByToFromCycle(fromId: Long, toEmail: String, cycleId: Long): Option[(Long, FeedbackStatus)] = DB.withConnection { implicit connection =>
+    SQL("""select * from nominations where from_id = {fromId} and to_email = {toEmail} and cycle_id = {cycleId}""")
+      .on('fromId -> fromId, 'toEmail -> toEmail, 'cycleId -> cycleId)
+//      .as(Option[(Some[Long], Long, String, String, DateTime, Boolean)])
+      .as(Nomination.simple.singleOpt)
+      .map{ case (a,b,c,d,e,f) => (a, d)}
+  }
+
+  def reenableNomination(nominationId: Long): Either[Throwable, Long] = DB.withConnection { implicit connection =>
+    SQL("""update nominations SET status = {status} where id = {id}""")
+      .on('status -> FeedbackStatus.New.toString, 'id -> nominationId).execute match {
+      case true => Right(nominationId)
+      case false => Left(new Exception("Could not re-enable existing nomination."))
+    }
+  }
+
   def createNomination(fromId: Long, toEmail: String, cycleId: Long): Either[Throwable, Long] = DB.withConnection { implicit connection =>
 
-    SQL("""select * from nominations where from_id = {fromId} and to_email = {toEmail} and cycle_id = {cycleId}""")
-      .on('fromId -> fromId, 'toEmail -> toEmail, 'cycleId -> cycleId).as(Nomination.simple.singleOpt) match {
+    findNominationByToFromCycle(fromId, toEmail, cycleId) match {
+      case Some((id, FeedbackStatus.Cancelled)) => reenableNomination(id)
       case Some(_) => Left(new Exception("Nomination already exists."))
       case None =>
         // status is new until email notification sent
@@ -447,7 +463,7 @@ object Nomination {
   }
 
   def cancelNomination(nominationId: Long): Boolean = DB.withConnection { implicit connection =>
-    SQL("""update nominations status={status} id = {id}""").on('id -> nominationId, 'status -> FeedbackStatus.Cancelled.toString).execute
+    SQL("""update nominations SET status = {status} where id = {id}""").on('id -> nominationId, 'status -> FeedbackStatus.Cancelled.toString).execute
   }
 }
 
@@ -473,5 +489,12 @@ object FeedbackCycle {
 
   def findActiveCycles: Seq[FeedbackCycle] = DB.withConnection { implicit connection =>
     SQL("""select * from cycle where active = true""").as(FeedbackCycle.simple *)
+  }
+
+  def validateCycle(cycleId: Long) : Boolean = DB.withConnection { implicit connection =>
+    SQL("""select * from cycle where id = {id} and active = true""").on('id -> cycleId).as(FeedbackCycle.simple.singleOpt) match {
+      case Some(_) => true
+      case None => false
+    }
   }
 }
