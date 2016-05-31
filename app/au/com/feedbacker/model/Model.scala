@@ -175,7 +175,7 @@ object Person {
       """).on(
         'email -> email,
         'pass_hash -> hash
-      ).execute()
+      ).as(scalar[Long].single) == 1
   }
 
   /**
@@ -191,7 +191,7 @@ object Person {
           SQL("update into person (user_status, pass_hash) values ({status}, {hash}) where email = {email}")
             .on('status -> CredentialStatus.Active.toString,
                 'hash -> passwordHash,
-                'email -> st.username).execute()
+                'email -> st.username).execute == 1
     }
   }
 }
@@ -264,15 +264,16 @@ object Activation {
   }
 
   def expireToken(token: String): Boolean = DB.withConnection { implicit connection =>
-    SQL("update activations used = true where token = {token} and expires < {time}")
-      .on('token -> token).execute()
+    SQL("update activations used = true where token = {token}")
+      .on('token -> token).executeUpdate == 1
   }
+
   def activate(st: SessionToken): Boolean = DB.withConnection { implicit connection =>
     validateToken(st) match {
       case None => false
       case Some(_) => expireToken(st.token) &&
         SQL("update person user_status = {status} where email = {email}")
-          .on('status -> CredentialStatus.Active.toString, 'email -> st.username).execute()
+          .on('status -> CredentialStatus.Active.toString, 'email -> st.username).executeUpdate == 1
     }
   }
 
@@ -284,11 +285,11 @@ object Activation {
       .on('token -> token,
         'email -> username,
         'created -> DateTime.now().getMillis,
-        'expires -> (DateTime.now().getMillis + tokenExpiryInSeconds* 1000)).execute()
+        'expires -> (DateTime.now().getMillis + tokenExpiryInSeconds* 1000)).executeUpdate == 1
   }
 }
 
-case class QuestionResponse(id: Option[Long], text: String, responseOptions: String, response: Option[String], comments: Option[String])
+case class QuestionResponse(id: Option[Long], text: String, responseOptions: Seq[String], response: Option[String], comments: Option[String])
 
 object QuestionResponse {
 
@@ -298,14 +299,14 @@ object QuestionResponse {
       get[String]("question_response.response_options") ~
       get[Option[String]]("question_response.response") ~
       get[Option[String]]("question_response.comments") map {
-      case id~text~responseOptions~response~comments => QuestionResponse(id, text, responseOptions, response, comments)
+      case id~text~responseOptions~response~comments => QuestionResponse(id, text, responseOptions.split(","), response, comments)
     }
   }
 
   implicit val format: Format[QuestionResponse] = (
       (JsPath \ "id").formatNullable[Long] and
       (JsPath \ "text").format[String] and
-      (JsPath \ "responseOptions").format[String] and
+      (JsPath \ "responseOptions").format[Seq[String]] and
       (JsPath \ "response").formatNullable[String] and
       (JsPath \ "comments").formatNullable[String]
     )(QuestionResponse.apply, unlift(QuestionResponse.unapply))
@@ -323,7 +324,7 @@ object QuestionResponse {
   def initialiseResponses(nominationId :Long, questions: Seq[QuestionTemplate]): Boolean = DB.withConnection { implicit connection =>
     questions.map { q =>
     SQL("""insert into question_response (nomination_id, text, response_options) values ({nominationId}, {text}, {responseOptions})""")
-      .on('nominationId -> nominationId, 'text -> q.text, 'responseOptions -> q.responseOptions).executeInsert() match {
+      .on('nominationId -> nominationId, 'text -> q.text, 'responseOptions -> q.responseOptions.mkString(",")).executeInsert() match {
         case Some(_) => true
         case None => false
       }
@@ -331,7 +332,7 @@ object QuestionResponse {
   }
 }
 
-case class QuestionTemplate(id: Option[Long], text: String, responseOptions: String)
+case class QuestionTemplate(id: Option[Long], text: String, responseOptions: Seq[String])
 
 object QuestionTemplate {
 
@@ -339,7 +340,7 @@ object QuestionTemplate {
     get[Option[Long]]("question_templates.id") ~
       get[String]("question_templates.text") ~
       get[String]("question_templates.response_options") map {
-      case id~text~responseOptions => QuestionTemplate(id, text, responseOptions)
+      case id~text~responseOptions => QuestionTemplate(id, text, responseOptions.split(","))
     }
   }
 
@@ -427,7 +428,7 @@ object Nomination {
 
   def reenableNomination(nominationId: Long): Either[Throwable, Long] = DB.withConnection { implicit connection =>
     SQL("""update nominations SET status = {status} where id = {id}""")
-      .on('status -> FeedbackStatus.New.toString, 'id -> nominationId).execute match {
+      .on('status -> FeedbackStatus.New.toString, 'id -> nominationId).executeUpdate == 1 match {
       case true => Right(nominationId)
       case false => Left(new Exception("Could not re-enable existing nomination."))
     }
@@ -457,13 +458,15 @@ object Nomination {
     QuestionResponse.updateResponses(feedback.questions) match {
       case true =>
         SQL("update nominations status={status}, last_updated= {lastUpdated} where id={id}")
-        .on('status -> FeedbackStatus.Submitted.toString, 'lastUpdated -> DateTime.now().getMillis, 'id->feedback.id).execute
+        .on('status -> FeedbackStatus.Submitted.toString, 'lastUpdated -> DateTime.now().getMillis, 'id->feedback.id)
+          .executeUpdate == feedback.questions.length
       case _ => false
     }
   }
 
   def cancelNomination(nominationId: Long): Boolean = DB.withConnection { implicit connection =>
-    SQL("""update nominations SET status = {status} where id = {id}""").on('id -> nominationId, 'status -> FeedbackStatus.Cancelled.toString).execute
+    SQL("""update nominations SET status = {status} where id = {id}""")
+      .on('id -> nominationId, 'status -> FeedbackStatus.Cancelled.toString).executeUpdate == 1
   }
 }
 
@@ -492,7 +495,8 @@ object FeedbackCycle {
   }
 
   def validateCycle(cycleId: Long) : Boolean = DB.withConnection { implicit connection =>
-    SQL("""select * from cycle where id = {id} and active = true""").on('id -> cycleId).as(FeedbackCycle.simple.singleOpt) match {
+    SQL("""select * from cycle where id = {id} and active = true""").on('id -> cycleId)
+      .as(FeedbackCycle.simple.singleOpt) match {
       case Some(_) => true
       case None => false
     }
