@@ -4,6 +4,11 @@
 			<h2>Nominate Peers to Provide you Feedback</h2>
 		</div>
 	</div>
+	<div data-ng-if="nominate.error" class="row top-buffer">
+		<div class="col-md-12">
+			<div class="alert alert-danger" role="alert">{{nominate.error}}</div>
+		</div>
+	</div>
 	<div class="row top-buffer">
 		<div class="col-sm-2">
 			<span class="lead">Search for colleagues:</span>

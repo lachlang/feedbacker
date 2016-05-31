@@ -2,6 +2,7 @@ package au.com.feedbacker.controllers
 
 //import play.api.http.Writeable
 
+import au.com.feedbacker.model.FeedbackStatus.FeedbackStatus
 import play.api.http.Writeable
 import play.api.libs.json._
 import play.api.mvc._
@@ -30,8 +31,13 @@ class Feedback extends AuthenticatedController {
     ???
   }
 
-  def getFeedbackItem(id: Long) = Action { person =>
-    Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(Nomination.getDetail(id))))
+  def getFeedbackItem(id: Long) = AuthenticatedAction { person =>
+    val nomination: Option[Nomination] = Nomination.getDetail(id)
+    (nomination.flatMap(DetailItem.detailFromNomination(_)), nomination.flatMap(_.to)) match {
+      case (Some(detail), Some(p)) if person.credentials.email == p.credentials.email =>
+        Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(detail)))
+      case _ => NotFound(Json.obj("message" -> "Could not find feedback detail."))
+    }
   }
 
   def getCurrentFeedbackItemsForSelf = AuthenticatedAction { person =>
@@ -62,6 +68,25 @@ object SummaryItem {
 
   implicit val format: Format[SummaryItem] = Json.format[SummaryItem]
 
+}
+
+case class DetailItem(id: Long,
+                      status: FeedbackStatus,
+                      fromName: String,
+                      toName: String,
+                      bossName: Option[String],
+                      bossEmail: String,
+                      questions: Seq[QuestionResponse],
+                      shareFeedback: Boolean)
+
+object DetailItem {
+  implicit val writes: Writes[DetailItem] = Json.writes[DetailItem]
+
+  def detailFromNomination(nomination: Nomination): Option[DetailItem] = nomination match {
+    case Nomination(Some(id), Some(fromPerson), Some(toPerson), status, _, questions, shared) =>
+      Some(DetailItem(id, status, fromPerson.name, toPerson.name, None, fromPerson.managerEmail, questions, shared))
+    case _ => None
+  }
 }
 
 class Nominations extends AuthenticatedController {

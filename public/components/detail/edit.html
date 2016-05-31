@@ -6,34 +6,34 @@
   </div>
   <div data-ng-if="edit.error" class="row top-buffer">
     <div class="col-md-12">
-      <p class="lead">{{edit.error}}</p>
+      <div class="alert alert-danger" role="alert">{{edit.error}}</div>
     </div>
   </div>
   <div data-ng-if="!edit.error">
     <div class="row top-buffer">
       <div class="col-md-12">
-        <p class="lead">Feedback for <strong>{{edit.feedbackForName}}</strong> from <strong>{{edit.feedbackFromName}}</strong>.  Feedback will be visible by <em>{{edit.managerName}}</em></p>
+        <p class="lead">Feedback for <strong>{{edit.feedback.feedbackForName}}</strong> from <strong>{{edit.feedback.feedbackFromName}}</strong>.  Feedback will be visible by <em>{{edit.feedback.managerName}}</em></p>
       </div>
     </div>
     <div class="row top-buffer">
       <div class="col-md-1"></div>
       <div class="col-md-4">
-        <p>Make feedback visible to {{edit.feedbackForName}}?</p>
+        <p>Make feedback visible to {{edit.feedback.feedbackForName}}?</p>
       </div>
       <div class="col-md-2">
         <div class="btn-group" role="group" aria-label="Answer options">
           <button class="btn btn-default" 
               for="shareFeedback"
-              data-ng-model="edit.shareFeedback" 
+              data-ng-model="edit.feedback.shareFeedback"
               uib-btn-radio="false">No</button>
           <button class="btn btn-default" 
               for="shareFeedback"
-              data-ng-model="edit.shareFeedback" 
+              data-ng-model="edit.feedback.shareFeedback"
               uib-btn-radio="true">Yes</button>
         </div>      
       </div>
     </div>
-    <div class="row top-buffer" data-ng-repeat="question in edit.questions">
+    <div class="row top-buffer" data-ng-repeat="question in edit.feedback.questions">
     	<div class="col-md-1">
     		<span>Q{{$index +1}}</span>
     	</div>
@@ -55,11 +55,14 @@
     </div>
   </div>
   <div class="row top-buffer">
+    <div class="col-md-2">
+      <button class="btn btn-primary" data-ng-click="edit.save(true)">Save and Submit</button>
+    </div>
+    <div class="col-md-1">
+      <button class="btn btn-success" data-ng-click="edit.save(false)">Save</button>
+    </div>
   	<div class="col-md-1">
-		<button class="btn btn-primary" data-ng-click="edit.save()">Save</button>  		
-  	</div>
-  	<div class="col-md-1">
-		<button class="btn btn-default" data-ng-click="edit.cancel()">Cancel</button>  		
+		<a class="btn btn-default" data-ng-click="edit.cancel()">Cancel</a>
   	</div>
   	<div class="col-md-10"></div>
   </div>

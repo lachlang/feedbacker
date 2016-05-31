@@ -7,12 +7,8 @@ fbControllers.controller('EditCtrl',  ['$scope', '$log', 'Model', 'uibButtonConf
 
 	var ctrl = this;
 
-	ctrl.questions = [];
 	ctrl.error = undefined;
-	ctrl.feedbackForName = undefined;
-	ctrl.feedbackFromName = undefined;
-	ctrl.managerName = undefined;
-	ctrl.shareFeedback = false;
+	ctrl.feedback = {questions: []};
 
 	ctrl.initialiseController = function() {
 		var feedbackId = $location.search()["id"];
@@ -22,12 +18,11 @@ fbControllers.controller('EditCtrl',  ['$scope', '$log', 'Model', 'uibButtonConf
 		if (feedbackId) {
 
 			Model.getFeedbackDetail(feedbackId).then(function(response) {
-				ctrl.questions = response.questions;
-				ctrl.feedbackForName = response.feedbackForName;
-				ctrl.feedbackFromName = response.feedbackFromName;
-				ctrl.managerName = response.managerName;
-				if (response.shareFeedback) {
-					ctrl.shareFeedback = response.shareFeedback;
+				ctrl.feedback = response;
+				$log.info(response)
+				$log.info(ctrl.feedback)
+				if (!ctrl.feedback.shareFeedback) {
+					ctrl.feedback.shareFeedback = false;
 				}
 			}, function(response) {
 				// error condition
@@ -38,24 +33,27 @@ fbControllers.controller('EditCtrl',  ['$scope', '$log', 'Model', 'uibButtonConf
 		}
 	}
 
-	ctrl.save = function(feedbackId) {
-		Model.saveFeedback().then(function(response) {
+	ctrl.save = function(submit) {
+		ctrl.resetError();
 
-			ctrl.navigateToList();
+		Model.saveFeedback(submit).then(function(response) {
+			if (submit) {
+				ctrl.navigateToList();
+			}
+		}, function() {
+			ctrl.error = "Could not save feedback.  Please try again later."
 		});
 	};
 
 	ctrl.cancel = function() {
-
 		ctrl.navigateToList();
 	};
 
 	ctrl.initialiseController();
 
 	ctrl.navigateToList = function() {
-		ctrl.resetError();
 		$location.search("id", undefined);
-		$location.path("/list");
+		$location.path("#/list");
 	};
 
 	ctrl.resetError = function() {
