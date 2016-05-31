@@ -355,7 +355,7 @@ object Nomination {
 
   val simple = {
     get[Long]("nominations.id") ~
-    get[Long]("nominations.from_id") ~
+    get[String]("nominations.from_email") ~
     get[String]("nominations.to_email") ~
     get[String]("nominations.status") ~
     get[Option[DateTime]]("nominations.last_updated") ~
@@ -374,13 +374,13 @@ object Nomination {
       (JsPath \ "shared").write[Boolean]
     )(unlift(Nomination.unapply))
 
-  def enrich: (Long, Long, String, FeedbackStatus, Option[DateTime], Boolean) => Nomination = {
-    (id: Long, fromId: Long, toEmail: String, status: FeedbackStatus, lastUpdated: Option[DateTime], shared: Boolean) =>
-    Nomination(Some(id), Person.findById(fromId), Person.findByEmail(toEmail), status, lastUpdated, Seq(), shared)
+  def enrich: (Long, String, String, FeedbackStatus, Option[DateTime], Boolean) => Nomination = {
+    (id: Long, fromEmail: String, toEmail: String, status: FeedbackStatus, lastUpdated: Option[DateTime], shared: Boolean) =>
+    Nomination(Some(id), Person.findByEmail(fromEmail), Person.findByEmail(toEmail), status, lastUpdated, Seq(), shared)
   }
 
   def getSummary(id: Long): Option[Nomination] = DB.withConnection { implicit connection =>
-    SQL("""select * from nominations left join person on nominations.from_id = person.id where nominations.id = {id} and status != {status}""")
+    SQL("""select * from nominations left join person on nominations.from_email = person.email where nominations.id = {id} and status != {status}""")
       .on('id -> id, 'status -> FeedbackStatus.Cancelled.toString).as(Nomination.simple.singleOpt) match {
       case Some((a,b,c,d,e,f)) => Some(Nomination.enrich(a,b,c,d,e,f))
       case _ => None
@@ -392,15 +392,15 @@ object Nomination {
   }
 
   def getPendingNominationsForUser(username: String): Seq[Nomination] = DB.withConnection { implicit connection =>
-      SQL("""select * from nominations where to_email = {email} and status != {status} and cycle_id in (select id from cycle where active = TRUE)""")
+      SQL("""select * from nominations where to_email = {email} and initiated_by != {email} and status != {status} and cycle_id in (select id from cycle where active = TRUE)""")
         .on('email -> username, 'status -> FeedbackStatus.Cancelled.toString)
         .as(Nomination.simple *).map{case (a,b,c,d,e,f) => Nomination.enrich(a,b,c,d,e,f)}
   }
 
   def getCurrentNominationsFromUser(username: String): Seq[Nomination] = DB.withConnection { implicit connection =>
     Person.findByEmail(username) match {
-      case Some(Person(Some(id), _, _, _, _)) => SQL( """select * from nominations where from_id = {id} and status = {status} and cycle_id in (select id from cycle where active = TRUE)""")
-        .on('id -> id, 'status -> FeedbackStatus.New.toString)
+      case Some(_) => SQL( """select * from nominations where from_email = {email} and initiated_by = {email} and status = {status} and cycle_id in (select id from cycle where active = TRUE)""")
+        .on('email -> username, 'status -> FeedbackStatus.New.toString)
         .as(Nomination.simple *).map { case (a, b, c, d, e, f) => Nomination.enrich(a, b, c, d, e, f) }
       case _ => Seq()
     }
@@ -418,10 +418,9 @@ object Nomination {
       .map { case (a,b,c,d,e,f) => enrich(a,b,c,d,e,f)}
   }
 
-  def findNominationByToFromCycle(fromId: Long, toEmail: String, cycleId: Long): Option[(Long, FeedbackStatus)] = DB.withConnection { implicit connection =>
-    SQL("""select * from nominations where from_id = {fromId} and to_email = {toEmail} and cycle_id = {cycleId}""")
-      .on('fromId -> fromId, 'toEmail -> toEmail, 'cycleId -> cycleId)
-//      .as(Option[(Some[Long], Long, String, String, DateTime, Boolean)])
+  def findNominationByToFromCycle(fromEmail: String, toEmail: String, initiatedEmail: String, cycleId: Long): Option[(Long, FeedbackStatus)] = DB.withConnection { implicit connection =>
+    SQL("""select * from nominations where from_email = {fromEmail} and to_email = {toEmail} and initiated_by = {initiated} and cycle_id = {cycleId}""")
+      .on('fromEmail -> fromEmail, 'toEmail -> toEmail, 'initiated -> initiatedEmail, 'cycleId -> cycleId)
       .as(Nomination.simple.singleOpt)
       .map{ case (a,b,c,d,e,f) => (a, d)}
   }
@@ -434,20 +433,27 @@ object Nomination {
     }
   }
 
-  def createNomination(fromId: Long, toEmail: String, cycleId: Long): Either[Throwable, Long] = DB.withConnection { implicit connection =>
+  def createNomination(fromEmail: String, toEmail: String, cycleId: Long): Either[Throwable, Long] = DB.withConnection { implicit connection =>
 
-    findNominationByToFromCycle(fromId, toEmail, cycleId) match {
-      case Some((id, FeedbackStatus.Cancelled)) => reenableNomination(id)
+    findNominationByToFromCycle(fromEmail, toEmail, fromEmail, cycleId) match {
+      case Some((nominationId, FeedbackStatus.Cancelled)) => reenableNomination(nominationId)
       case Some(_) => Left(new Exception("Nomination already exists."))
       case None =>
         // status is new until email notification sent
-        SQL( """insert into nominations (from_id, to_email, status, cycle_id) values ({fromId},{toEmail},{status}, {cycle_id})""")
-          .on('fromId -> fromId, 'toEmail -> toEmail, 'status -> FeedbackStatus.New.toString, 'cycle_id -> cycleId).executeInsert() match {
+        SQL(
+          """insert into nominations
+            (from_email, to_email, initiated_by, status, cycle_id)
+            values ({fromEmail},{toEmail},{initiated},{status}, {cycle_id})""")
+          .on('fromEmail -> fromEmail,
+            'toEmail -> toEmail,
+            'initiated -> fromEmail,
+            'status -> FeedbackStatus.New.toString,
+            'cycle_id -> cycleId).executeInsert() match {
           case None => Left(new Exception("Could not create nomination."))
-          case Some(nominationId) =>
-            QuestionResponse.initialiseResponses(nominationId, QuestionTemplate.findQuestionsForCycle(cycleId)) match {
+          case Some(newNominationId) =>
+            QuestionResponse.initialiseResponses(newNominationId, QuestionTemplate.findQuestionsForCycle(cycleId)) match {
               case false => Left(new Exception("Could not initialise questions."))
-              case true => Right(nominationId)
+              case true => Right(newNominationId)
             }
         }
     }

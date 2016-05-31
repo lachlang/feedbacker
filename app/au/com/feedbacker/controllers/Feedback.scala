@@ -19,18 +19,19 @@ class Feedback extends AuthenticatedController {
 
   def getPendingFeedbackActions = AuthenticatedAction { person =>
     Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(Nomination.getPendingNominationsForUser(person.credentials.email) .map {
-      case Nomination(id, _, Some(to), status, lastUpdated, _, shared) =>
-        val managerName: String = Person.findByEmail(to.managerEmail) match {
+      case Nomination(id, Some(from), _, status, lastUpdated, _, shared) =>
+        val managerName: String = Person.findByEmail(from.managerEmail) match {
           case Some(p) => p.name
-          case None => to.managerEmail
+          case None => from.managerEmail
         }
-        SummaryItem(id, status.toString, to.name, to.role, managerName, lastUpdated, shared) } )))
+        SummaryItem(id, status.toString, from.name, from.role, managerName, lastUpdated, shared) } )))
   }
 
   def updateFeedbackItem(id: Long) = AuthenticatedRequestAction { (person, request) =>
     ???
   }
 
+  // TODO: update this to allow bosses to view feedback post submission
   def getFeedbackItem(id: Long) = AuthenticatedAction { person =>
     val nomination: Option[Nomination] = Nomination.getDetail(id)
     (nomination.flatMap(DetailItem.detailFromNomination(_)), nomination.flatMap(_.to)) match {
@@ -99,17 +100,17 @@ class Nominations extends AuthenticatedController {
     Ok(Json.obj("body" -> Json.toJson(Nominee.findNomineeCandidates)))
   }
 
-  def createNomination = AuthenticatedRequestAction { (person, json) =>
-    val username: JsResult[String] = json.validate[String]((JsPath \ "body" \ "username").read[String](Reads.email))
+  def createNomination = AuthenticatedRequestAction { (fromUser, json) =>
+    val toUsername: JsResult[String] = json.validate[String]((JsPath \ "body" \ "username").read[String](Reads.email))
     val cycleId: JsResult[Long] = json.validate[Long]((JsPath \ "body" \ "cycleId").read[Long])
-    (person.id, username, cycleId) match {
+    (fromUser.id, toUsername, cycleId) match {
       case (Some(id), name: JsSuccess[String], cycle: JsSuccess[Long]) =>
-        if (person.credentials.email == name.get) {
+        if (fromUser.credentials.email == toUsername.get) {
           BadRequest(Json.obj("message" -> "You cannot nominate yourself."))
         } else if (!FeedbackCycle.validateCycle(cycle.get)) {
           BadRequest(Json.obj("message" -> "Invalid feedback cycle selected."))
         } else {
-          Nomination.createNomination(id, name.get, cycle.get) match {
+          Nomination.createNomination(fromUser.credentials.email, toUsername.get, cycle.get) match {
             case Left(e) => BadRequest(Json.obj("message" -> e.getMessage))
             case Right(n) => Created
           }

@@ -8,6 +8,7 @@ fbControllers.controller('EditCtrl',  ['$scope', '$log', 'Model', 'uibButtonConf
 	var ctrl = this;
 
 	ctrl.error = undefined;
+	ctrl.message = undefined;
 	ctrl.feedback = {questions: []};
 
 	ctrl.initialiseController = function() {
@@ -39,14 +40,12 @@ fbControllers.controller('EditCtrl',  ['$scope', '$log', 'Model', 'uibButtonConf
 		Model.saveFeedback(submit).then(function(response) {
 			if (submit) {
 				ctrl.navigateToList();
+			} else {
+				ctrl.message = "Saved feedback."
 			}
 		}, function() {
 			ctrl.error = "Could not save feedback.  Please try again later."
 		});
-	};
-
-	ctrl.cancel = function() {
-		ctrl.navigateToList();
 	};
 
 	ctrl.initialiseController();
@@ -58,5 +57,6 @@ fbControllers.controller('EditCtrl',  ['$scope', '$log', 'Model', 'uibButtonConf
 
 	ctrl.resetError = function() {
 		ctrl.error = undefined;
+		ctrl.message = undefined;
 	};
 }]);

@@ -30,18 +30,20 @@ create index idx_activation_email on activations (email);
 
 create table nominations (
 	id 						bigserial,
-	from_id					bigint not null,
+	from_email				varchar(255) not null,
 	to_email				varchar(255) not null,
+	initiated_by			varchar(255) not null,
 	status					varchar(20) not null,
-	last_updated				timestamp,
+	last_updated			timestamp,
 	cycle_id 				bigint not null,
 	shared 					boolean not null default false,
 	constraint ck_nominations_status check (status in ('New','Pending','Submitted','Cancelled', 'Closed')),
 	constraint pk_nominations primary key (id)
 );
 
-create index idx_nominations_from on nominations (from_id);
+create index idx_nominations_from on nominations (from_email);
 create index idx_nominations_to on nominations (to_email);
+create index idx_nominations_initiated_by on nominations (initiated_by);
 
 create table cycle (
 	id						bigserial,
@@ -76,8 +78,9 @@ create table question_response (
 
 create index question_response_nomination_idx on question_response (nomination_id);
 
-alter table nominations add constraint fk_nominations_from foreign key (from_id) references person (id);
+alter table nominations add constraint fk_nominations_from foreign key (from_email) references person (email);
 alter table nominations add constraint fk_nominations_to foreign key (to_email) references person (email);
+alter table nominations add constraint fk_nominations_initiated_by foreign key (initiated_by) references person (email);
 alter table nominations add constraint fk_nominations_cycle foreign key (cycle_id) references cycle (id);
 alter table question_response add constraint fk_question_response_nominations foreign key (nomination_id) references nominations (id);
 alter table question_templates add constraint fk_question_template_cycle foreign key (cycle_id) references cycle (id);

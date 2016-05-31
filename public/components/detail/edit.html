@@ -4,6 +4,11 @@
       <h2>Edit Feedback</h2>
     </div>
   </div>
+  <div data-ng-if="edit.message" class="row top-buffer">
+    <div class="col-md-12">
+      <div class="alert alert-success" role="alert">{{edit.message}}</div>
+    </div>
+  </div>
   <div data-ng-if="edit.error" class="row top-buffer">
     <div class="col-md-12">
       <div class="alert alert-danger" role="alert">{{edit.error}}</div>
@@ -12,7 +17,7 @@
   <div data-ng-if="!edit.error">
     <div class="row top-buffer">
       <div class="col-md-12">
-        <p class="lead">Feedback for <strong>{{edit.feedback.feedbackForName}}</strong> from <strong>{{edit.feedback.feedbackFromName}}</strong>.  Feedback will be visible by <em>{{edit.feedback.managerName}}</em></p>
+        <p class="lead">Feedback for <strong>{{edit.feedback.fromName}}</strong> from <strong>{{edit.feedback.toName}}</strong>.  Feedback will be visible by <em>{{edit.feedback.bossName}}</em></p>
       </div>
     </div>
     <div class="row top-buffer">
@@ -62,7 +67,7 @@
       <button class="btn btn-success" data-ng-click="edit.save(false)">Save</button>
     </div>
   	<div class="col-md-1">
-		<a class="btn btn-default" data-ng-click="edit.cancel()">Cancel</a>
+      <a class="btn btn-default" href="#/list">Cancel</a>
   	</div>
   	<div class="col-md-10"></div>
   </div>
