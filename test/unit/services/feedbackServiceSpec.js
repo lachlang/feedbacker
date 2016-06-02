@@ -23,7 +23,7 @@ describe('service [Feedback]', function() {
     
     it('has defined functions', function() {
         expect(angular.isFunction(feedback.getPendingFeedbackActions)).toBe(true);
-        expect(angular.isFunction(feedback.updateFeedbackItem)).toBe(true);
+        expect(angular.isFunction(feedback.updateFeedback)).toBe(true);
         expect(angular.isFunction(feedback.getFeedbackItem)).toBe(true);
         expect(angular.isFunction(feedback.getCurrentFeedbackItemsForUser)).toBe(true);
         expect(angular.isFunction(feedback.getCurrentFeedbackItemsForSelf)).toBe(true);
@@ -52,9 +52,9 @@ describe('service [Feedback]', function() {
     	});
 
         it('to update a feedback item', function() {
-            var result, promise = feedback.updateFeedbackItem(9, {stuff: "here"});
+            var result, promise = feedback.updateFeedback(9, [{stuff: "here"}, {stuff: "mo stuff"}], true);
 
-            $httpBackend.expectPUT('/api/feedback/item/9', '{"apiVersion":"1.0","body":{"stuff":"here"}}').respond(200, dummyResult);
+            $httpBackend.expectPUT('/api/feedback/item/9', '{"apiVersion":"1.0","body":{"questions":[{"stuff":"here"},{"stuff":"mo stuff"}],"submit":true}}').respond(200, dummyResult);
             
             // set the response value
             promise.then(function(data) {

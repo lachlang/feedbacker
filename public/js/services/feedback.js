@@ -5,13 +5,16 @@ fbServices.service('Feedback', ['$log','$http', function($log, $http) {
 			return $http.get("/api/feedback/pending");
 		},
 
-		updateFeedbackItem: function(feedbackId, feedback) {
+		updateFeedback: function(feedbackId, feedbackResponses, submit) {
 			return $http({
 				method:"PUT",
 				url:"/api/feedback/item/" + feedbackId,
 				data: {
 					apiVersion: "1.0",
-					body: feedback
+					body: {
+						questions: feedbackResponses,
+						submit: submit
+					}
 				}
 			});
 		},

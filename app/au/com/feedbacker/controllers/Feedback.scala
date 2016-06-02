@@ -27,17 +27,32 @@ class Feedback extends AuthenticatedController {
         SummaryItem(id, status.toString, from.name, from.role, managerName, lastUpdated, shared) } )))
   }
 
-  def updateFeedbackItem(id: Long) = AuthenticatedRequestAction { (person, request) =>
-    ???
+  def updateFeedbackItem(nominationId: Long) = AuthenticatedRequestAction { (person, json) =>
+    validateWritePermission(nominationId, person) match {
+      case None => Forbidden
+      case Some(n) => {
+        val submittedJson: JsResult[Boolean] = json.validate[Boolean]((JsPath \ "body" \ "submit").read[Boolean])
+        val questionsJson: JsResult[Seq[QuestionResponse]] = json.validate[Seq[QuestionResponse]]((JsPath \ "body" \ "questions").read[Seq[QuestionResponse]])
+        (questionsJson, submittedJson) match {
+          case (questions: JsSuccess[Seq[QuestionResponse]], submitted: JsSuccess[Boolean]) =>
+            if (Nomination.submitFeedback(nominationId, questions.get, submitted.get)) Ok else BadRequest
+          case _ => BadRequest
+        }
+      }
+    }
   }
 
-  // TODO: update this to allow bosses to view feedback post submission
-  def getFeedbackItem(id: Long) = AuthenticatedAction { person =>
-    val nomination: Option[Nomination] = Nomination.getDetail(id)
-    (nomination.flatMap(DetailItem.detailFromNomination(_)), nomination.flatMap(_.to)) match {
-      case (Some(detail), Some(p)) if person.credentials.email == p.credentials.email =>
-        Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(detail)))
-      case _ => NotFound(Json.obj("message" -> "Could not find feedback detail."))
+  def getFeedbackItem(nominationId: Long) = AuthenticatedAction { person =>
+//    val nomination: Option[Nomination] = Nomination.getDetail(nominationId)
+//    (nomination.flatMap(DetailItem.detailFromNomination(_)), nomination.flatMap(_.to)) match {
+//      case (Some(detail), Some(p)) if person.credentials.email == p.credentials.email =>
+//        Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(detail)))
+//      case _ => NotFound(Json.obj("message" -> "Could not find feedback detail."))
+//    }
+
+    validateReadPermission(nominationId, person) match {
+      case None => NotFound(Json.obj("message" -> "Could not find feedback detail."))
+      case Some(n) => Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(DetailItem.detailFromNomination(n))))
     }
   }
 
@@ -56,6 +71,21 @@ class Feedback extends AuthenticatedController {
   def getFeedbackHistoryForUser(id: Long) = AuthenticatedAction { person =>
     ???
   }
+
+  private val nominationWriteFilter: (Nomination, String) => Boolean = (n, email) => n.to.map(_.credentials.email == email).getOrElse(false)
+//  private val nominationReadFilter: (Nomination, String) => Boolean = (n, email) => n.from.map(_.credentials.email == email).getOrElse(false)
+  private val nominationReadFilter: (Option[Person], String) => Boolean = (person, email) => person match {
+    case None => false
+    case Some(fromPerson) if fromPerson.credentials.email == email => true
+    case Some(fromPerson) => nominationReadFilter(Person.findByEmail(fromPerson.managerEmail), email)
+  }
+
+  private def validateWritePermission(nominationId: Long, toPerson: Person): Option[Nomination] =
+    Nomination.getDetail(nominationId).filter(nominationWriteFilter(_, toPerson.credentials.email))
+
+  private def validateReadPermission(nominationId: Long, fromPerson: Person): Option[Nomination] =
+    Nomination.getDetail(nominationId).filter( n =>
+      nominationReadFilter(n.from, fromPerson.credentials.email) || nominationWriteFilter(n, fromPerson.credentials.email))
 
 }
 

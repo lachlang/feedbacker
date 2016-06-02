@@ -34,10 +34,10 @@ fbControllers.controller('EditCtrl',  ['$scope', '$log', 'Model', 'uibButtonConf
 		}
 	}
 
-	ctrl.save = function(submit) {
+	ctrl.save = function(feedback, submit) {
 		ctrl.resetError();
 
-		Model.saveFeedback(submit).then(function(response) {
+		Model.saveFeedback(feedback, submit).then(function(response) {
 			if (submit) {
 				ctrl.navigateToList();
 			} else {

@@ -102,10 +102,22 @@ fbServices.service('Model', ['$log', '$q', 'Account', 'Feedback', 'Nomination', 
 									"Feedback.getActiveFeedbackCycles");
 		},
 
-		saveFeedback: function() {
-			var deferred = $q.defer;
-			deferred.resolve();
-			return $deferred.promise;
+		saveFeedback: function(feedbackItem, submit) {
+			var deferred = $q.defer();
+			$log.info(feedbackItem)
+			$log.info(submit)
+			if (!feedbackItem || !feedbackItem.id || !feedbackItem.questions) {
+			$log.info("rejected...")
+				deferred.reject();
+			} else {
+				Feedback.updateFeedback(feedbackItem.id, feedbackItem.questions, !!submit).then(function() {
+					feedbackDetail[feedbackItem.id] = feedbackItem
+					deferred.resolve();
+				}, function() {
+					deferred.reject();
+				});
+			}
+			return deferred.promise;
 		}
 	}
 	return model;

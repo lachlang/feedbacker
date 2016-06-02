@@ -317,7 +317,7 @@ object QuestionResponse {
 
   def updateResponses(responses :Seq[QuestionResponse]): Boolean = DB.withConnection { implicit connection =>
     responses.map ( response =>
-    SQL("""update question_response response={response}, comments={comments} where id={id}""")
+    SQL("""update question_response SET response={response}, comments={comments} where id={id}""")
       .on('response -> response.response, 'comments -> response.comments, 'id-> response.id).executeUpdate() == 1).foldLeft(true)( (a, b) => a&b)
   }
 
@@ -459,13 +459,14 @@ object Nomination {
     }
   }
 
-  def submitFeedback(feedback: Nomination) : Boolean = DB.withConnection { implicit connection =>
+  def submitFeedback(nominationId: Long, questions: Seq[QuestionResponse], submitted: Boolean) : Boolean = DB.withConnection { implicit connection =>
 
-    QuestionResponse.updateResponses(feedback.questions) match {
+    val status: FeedbackStatus = if (submitted) FeedbackStatus.Submitted else FeedbackStatus.Pending
+    QuestionResponse.updateResponses(questions) match {
       case true =>
-        SQL("update nominations status={status}, last_updated= {lastUpdated} where id={id}")
-        .on('status -> FeedbackStatus.Submitted.toString, 'lastUpdated -> DateTime.now().getMillis, 'id->feedback.id)
-          .executeUpdate == feedback.questions.length
+        SQL("update nominations SET status={status}, last_updated = {lastUpdated} where id={id}")
+        .on('status -> FeedbackStatus.Pending.toString, 'lastUpdated -> DateTime.now().getMillis, 'id->nominationId)
+          .executeUpdate == questions.length
       case _ => false
     }
   }

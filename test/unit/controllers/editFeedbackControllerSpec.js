@@ -28,18 +28,17 @@ describe('edit feedback detail controller [EditCtrl]', function() {
     	it('should define functions', function() {
             expect(angular.isFunction(editController.initialiseController)).toBe(true);
             expect(angular.isFunction(editController.save)).toBe(true);
-            expect(angular.isFunction(editController.cancel)).toBe(true);
+//            expect(angular.isFunction(editController.cancel)).toBe(true);
             expect(angular.isFunction(editController.navigateToList)).toBe(true);
             expect(angular.isFunction(editController.resetError)).toBe(true);
     	});
 
     	it('for global controller variables', function() {
             expect(editController).toBeDefined();
-            expect(editController.questions).toEqual([]);
+            expect(editController.feedback).toBeDefined();
+            expect(editController.feedback).toEqual({questions:[]});
             expect(editController.error).not.toBeDefined();
-            expect(editController.feedbackForName).not.toBeDefined();
-            expect(editController.managerName).not.toBeDefined();
-            expect(editController.shareFeedback).toBe(false);
+            expect(editController.message).not.toBeDefined();
     	});
 
     	it('and calls the necessary services to pre-populate the model', function(){
