@@ -20,8 +20,6 @@ fbControllers.controller('EditCtrl',  ['$scope', '$log', 'Model', 'uibButtonConf
 
 			Model.getFeedbackDetail(feedbackId).then(function(response) {
 				ctrl.feedback = response;
-				$log.info(response)
-				$log.info(ctrl.feedback)
 				if (!ctrl.feedback.shareFeedback) {
 					ctrl.feedback.shareFeedback = false;
 				}

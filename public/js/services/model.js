@@ -110,10 +110,14 @@ fbServices.service('Model', ['$log', '$q', 'Account', 'Feedback', 'Nomination', 
 			$log.info("rejected...")
 				deferred.reject();
 			} else {
+				$log.info("saving...")
 				Feedback.updateFeedback(feedbackItem.id, feedbackItem.questions, !!submit).then(function() {
+					$log.info("saved...")
 					feedbackDetail[feedbackItem.id] = feedbackItem
 					deferred.resolve();
-				}, function() {
+				}, function(result) {
+					$log.info("not save...")
+					$log.info(result)
 					deferred.reject();
 				});
 			}

@@ -2,6 +2,7 @@ package au.com.feedbacker.model
 
 import au.com.feedbacker.controllers.SessionToken
 import org.joda.time.DateTime
+import anorm.JodaParameterMetaData._
 
 import play.api.db._
 import play.api.Play.current
@@ -10,8 +11,6 @@ import anorm._
 import anorm.SqlParser._
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
-
-// import scala.language.postfixOps
 
 object CredentialStatus extends Enumeration {
 	type CredentialStatus = Value
@@ -260,7 +259,7 @@ object Activation {
 
   def validateToken(st: SessionToken): Option[Activation] = DB.withConnection { implicit connection =>
     SQL("select * from activations where token = {token} and email = {email} and used = false and expires < {time}")
-      .on('token -> st.token, 'email -> st.username, 'time -> DateTime.now().getMillis).as(Activation.simple.singleOpt)
+      .on('token -> st.token, 'email -> st.username, 'time -> DateTime.now).as(Activation.simple.singleOpt)
   }
 
   def expireToken(token: String): Boolean = DB.withConnection { implicit connection =>
@@ -277,15 +276,21 @@ object Activation {
     }
   }
 
-  def createActivationToken(username: String): Boolean = DB.withConnection { implicit connection =>
-    val token = SessionToken.generateToken
-    SQL(
+  /**
+   * create a new activataion token for a user
+   * @param username
+   * @return
+   */
+  def createActivationToken(username: String): Option[SessionToken] = DB.withConnection { implicit connection =>
+    val token: String = SessionToken.generateToken
+    if (SQL(
       """insert into activations (token, email, expires, created, used) values
         |({token}, {email}, {created}, {expires}, false) """)
       .on('token -> token,
         'email -> username,
-        'created -> DateTime.now().getMillis,
-        'expires -> (DateTime.now().getMillis + tokenExpiryInSeconds* 1000)).executeUpdate == 1
+        'created -> DateTime.now,
+        'expires -> (DateTime.now.plus(tokenExpiryInSeconds* 1000))).executeUpdate == 1)
+      Some(SessionToken(username, token)) else None
   }
 }
 
@@ -312,7 +317,7 @@ object QuestionResponse {
     )(QuestionResponse.apply, unlift(QuestionResponse.unapply))
 
   def findForNomination(nominationId: Long): Seq[QuestionResponse] = DB.withConnection { implicit connection =>
-    SQL("""select * from question_response where nomination_id = {id}""").on('id -> nominationId).as(QuestionResponse.simple *).toSeq
+    SQL("""select * from question_response where nomination_id = {id} order by id asc""").on('id -> nominationId).as(QuestionResponse.simple *).toSeq
   }
 
   def updateResponses(responses :Seq[QuestionResponse]): Boolean = DB.withConnection { implicit connection =>
@@ -345,7 +350,7 @@ object QuestionTemplate {
   }
 
   def findQuestionsForCycle(cycleId: Long): Seq[QuestionTemplate] = DB.withConnection { implicit connection =>
-    SQL("""select * from question_templates where cycle_id = {id}""").on('id -> cycleId).as(QuestionTemplate.simple *)
+    SQL("""select * from question_templates where cycle_id = {id} order by id asc""").on('id -> cycleId).as(QuestionTemplate.simple *)
   }
 }
 
@@ -465,8 +470,8 @@ object Nomination {
     QuestionResponse.updateResponses(questions) match {
       case true =>
         SQL("update nominations SET status={status}, last_updated = {lastUpdated} where id={id}")
-        .on('status -> FeedbackStatus.Pending.toString, 'lastUpdated -> DateTime.now().getMillis, 'id->nominationId)
-          .executeUpdate == questions.length
+        .on('status -> FeedbackStatus.Pending.toString, 'lastUpdated -> DateTime.now, 'id->nominationId)
+          .executeUpdate == 1
       case _ => false
     }
   }

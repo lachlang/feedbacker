@@ -17,9 +17,13 @@ import scala.concurrent.Future
 
 class Registration extends Controller {
 
-  def translateResult(result: Either[Throwable, Person], errorMessage: String) : Result = result match {
+  def activate(person: Person): Unit = Activation.createActivationToken(person.credentials.email) match {
+    case Some(st) => ??? // send activation email
+  }
+
+  def translateResultAndActivate(result: Either[Throwable, Person], errorMessage: String) : Result = result match {
     case Left(e) => BadRequest("{ \"body\": { \"message\": \"" + errorMessage + "\"}} ")
-    case Right(p) => Ok(Json.toJson(p))
+    case Right(p) => activate(p); Ok(Json.toJson(p))
   }
 
   def register: Action[JsValue] = Action(parse.json(maxLength = 2000)) { request =>
@@ -28,16 +32,12 @@ class Registration extends Controller {
     request.body.validate[RegistrationContent].asOpt match {
       case None => BadRequest("{ \"body\": { \"message\": \"Could not parse request.\"}} ")
       case Some(body) => Credentials.findStatusByEmail(body.email) match {
-        case Some((id, CredentialStatus.Nominated)) => translateResult(Person.update(Person(Some(id), body.name, body.role, Credentials(body.email, Authentication.hash(body.password), CredentialStatus.Inactive), body.managerEmail)), errorMessage)
+        case Some((id, CredentialStatus.Nominated)) => translateResultAndActivate(Person.update(Person(Some(id), body.name, body.role, Credentials(body.email, Authentication.hash(body.password), CredentialStatus.Inactive), body.managerEmail)), errorMessage)
         case Some((_, _)) => Conflict("{ \"body\": { \"message\": \"User is already registered.\"}} ")
-        case None => translateResult(Person.create(Person(None, body.name, body.role, Credentials(body.email, Authentication.hash(body.password), CredentialStatus.Inactive), body.managerEmail)), errorMessage)
+        case None => translateResultAndActivate(Person.create(Person(None, body.name, body.role, Credentials(body.email, Authentication.hash(body.password), CredentialStatus.Inactive), body.managerEmail)), errorMessage)
       }
     }
   }
-}
-
-object Registration {
-  def validateEmailFormat = ???
 }
 
 class Account extends AuthenticatedController {
