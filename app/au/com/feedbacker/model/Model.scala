@@ -141,29 +141,57 @@ object Person {
     }
   }
 
+  def createNominee(username: Username): Either[Throwable, Long] = {
+    DB.withConnection { implicit connection =>
+      try {
+        SQL(
+          """
+            insert into person (name, role, email, pass_hash, user_status, manager_email)values (
+              {email},Nominee,{email},{pass_hash},{user_status},placeholder@test.com
+            )
+          """).on(
+            'email -> username,
+            'pass_hash -> SessionToken.generateToken,
+            'user_status -> CredentialStatus.Nominated.toString
+          ).executeInsert() match {
+            case None => Left(new Exception("Could not insert."))
+            case Some(id) => Right(id)
+          }
+      } catch {
+        case e:Exception => Left(e)
+      }
+    }
+  }
+
   def update(person: Person): Either[Throwable, Person] = {
-    DB.withConnection { implicit connection => ???
-//      try {
-//        SQL(
-//          """
-//              update person SET id={id}, name, role, email, pass_hash, user_status, manager_email)values (
-//                {name},{role},{email},{pass_hash},{user_status},{manager_email} where
-//              )
-//          """).on(
-//            'id -> person.id,
-//            'name -> person.name,
-//            'role -> person.role,
-//            'email -> person.credentials.email,
-//            'pass_hash -> person.credentials.hash,
-//            'user_status -> person.credentials.status.toString,
-//            'manager_email -> person.managerEmail
-//          ).executeUpdate() match {
-//          case 0 => Left(new Exception("Could not update."))
-//          case _ => Right(person)
-//        }
-//      } catch {
-//        case e:Exception => Left(e)
-//      }
+    DB.withConnection { implicit connection =>
+      try {
+        SQL(
+          """
+            update person SET id={id},
+                              name={name},
+                              role={role},
+                              email={email},
+                              pass_hash={pass_hash},
+                              user_status={user_status},
+                              manager_email={manager_email}
+                              where id={id}
+            )
+          """).on(
+            'id -> person.id,
+            'name -> person.name,
+            'role -> person.role,
+            'email -> person.credentials.email,
+            'pass_hash -> person.credentials.hash,
+            'user_status -> person.credentials.status.toString,
+            'manager_email -> person.managerEmail
+          ).executeUpdate() match {
+          case 1 => Right(person)
+          case _ => Left(new Exception("Could not update."))
+        }
+      } catch {
+        case e:Exception => Left(e)
+      }
     }
   }
 

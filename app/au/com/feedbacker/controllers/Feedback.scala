@@ -5,12 +5,8 @@ package au.com.feedbacker.controllers
 import au.com.feedbacker.model.FeedbackStatus.FeedbackStatus
 import play.api.http.Writeable
 import play.api.libs.json._
-import play.api.mvc._
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import au.com.feedbacker.model._
 import org.joda.time.DateTime
-
-import scala.concurrent.Future
 
 /**
  * Created by lachlang on 09/05/2016.
@@ -43,13 +39,6 @@ class Feedback extends AuthenticatedController {
   }
 
   def getFeedbackItem(nominationId: Long) = AuthenticatedAction { person =>
-//    val nomination: Option[Nomination] = Nomination.getDetail(nominationId)
-//    (nomination.flatMap(DetailItem.detailFromNomination(_)), nomination.flatMap(_.to)) match {
-//      case (Some(detail), Some(p)) if person.credentials.email == p.credentials.email =>
-//        Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(detail)))
-//      case _ => NotFound(Json.obj("message" -> "Could not find feedback detail."))
-//    }
-
     validateReadPermission(nominationId, person) match {
       case None => NotFound(Json.obj("message" -> "Could not find feedback detail."))
       case Some(n) => Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(DetailItem.detailFromNomination(n))))
@@ -131,23 +120,25 @@ class Nominations extends AuthenticatedController {
   }
 
   def createNomination = AuthenticatedRequestAction { (fromUser, json) =>
-    val toUsername: JsResult[String] = json.validate[String]((JsPath \ "body" \ "username").read[String](Reads.email))
-    val cycleId: JsResult[Long] = json.validate[Long]((JsPath \ "body" \ "cycleId").read[Long])
-    (fromUser.id, toUsername, cycleId) match {
-      case (Some(id), name: JsSuccess[String], cycle: JsSuccess[Long]) =>
-        if (fromUser.credentials.email == toUsername.get) {
-          BadRequest(Json.obj("message" -> "You cannot nominate yourself."))
-        } else if (!FeedbackCycle.validateCycle(cycle.get)) {
+    val toUsernameJson: JsResult[String] = json.validate[String]((JsPath \ "body" \ "username").read[String](Reads.email))
+    val cycleIdJson: JsResult[Long] = json.validate[Long]((JsPath \ "body" \ "cycleId").read[Long])
+    (toUsernameJson, cycleIdJson) match {
+      case (JsSuccess(toUsername, _), JsSuccess(cycleId, _)) => {
+        if (!FeedbackCycle.validateCycle(cycleId))
           BadRequest(Json.obj("message" -> "Invalid feedback cycle selected."))
-        } else {
-          Nomination.createNomination(fromUser.credentials.email, toUsername.get, cycle.get) match {
-            case Left(e) => BadRequest(Json.obj("message" -> e.getMessage))
-            case Right(n) => Created
+        else {
+          Person.findByEmail(toUsername) match {
+            case Some(toUser) => wrapEither(Nomination.createNomination(fromUser.credentials.email, toUser.credentials.email, cycleId))
+            case None => wrapEither(createNominatedUser(toUsername).right
+              .map(id => Nomination.createNomination(fromUser.credentials.email, toUsername, cycleId)))
           }
         }
+      }
       case _ => BadRequest
     }
   }
+
+  private def createNominatedUser(username: String): Either[Throwable, Long] = Person.createNominee(username)
 
   def cancelNomination(id: Long) = AuthenticatedAction { person =>
     val genericFail: JsValue = Json.obj("message" -> "Could not cancel nomination.")

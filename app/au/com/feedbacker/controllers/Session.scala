@@ -31,6 +31,12 @@ trait AuthenticatedController extends Controller {
       case _ => Forbidden
     }
   }
+
+  def wrapEither[A]: Either[Throwable, A] => Result = either =>
+    either match {
+      case Left(e) => BadRequest(Json.obj("message" -> e.getMessage))
+      case Right(n) => Created
+    }
 }
 
 class Authentication extends Controller {
