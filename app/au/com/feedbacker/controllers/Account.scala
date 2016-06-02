@@ -18,7 +18,22 @@ import scala.concurrent.Future
 class Registration extends Controller {
 
   def activate(person: Person): Unit = Activation.createActivationToken(person.credentials.email) match {
-    case Some(st) => ??? // send activation email
+    case Some(st) => {
+      val emailBody: String =
+        s"""Hi ${person.name},
+
+            Thanks for registering to user feedbacker.
+
+            To activate your account please navigate to following link
+
+            #/activate?username=${st.username}&token=${st.token}
+
+            Thanks
+            The Feedback Team
+            (Feedback is always welcome)
+         """.stripMargin
+      println(emailBody)
+    } // send activation email
   }
 
   def translateResultAndActivate(result: Either[Throwable, Person], errorMessage: String) : Result = result match {

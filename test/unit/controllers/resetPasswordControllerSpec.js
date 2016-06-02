@@ -15,6 +15,7 @@ describe('edit reset password controller [ResetCtrl]', function() {
 
     	account = _Account_;
         spyOn(account, 'sendPasswordResetEmail').and.returnValue(deferred.promise);
+        spyOn(account, 'sendActivationEmail').and.returnValue(deferred.promise);
         spyOn(account, 'resetPassword').and.returnValue(deferred.promise);
 
         location = $location;
@@ -28,6 +29,7 @@ describe('edit reset password controller [ResetCtrl]', function() {
 
     	it('should define functions', function() {
             expect(angular.isFunction(resetController.sendPasswordResetEmail)).toBe(true);
+            expect(angular.isFunction(resetController.sendActivationEmail)).toBe(true);
             expect(angular.isFunction(resetController.resetPassword)).toBe(true);
     	});
 
@@ -70,6 +72,43 @@ describe('edit reset password controller [ResetCtrl]', function() {
 	        resetController.error = "value";
 
 	        resetController.sendPasswordResetEmail("thing");
+
+            expect(resetController.message).toBeUndefined();
+            expect(resetController.error).toBeUndefined();
+	    });
+	});
+
+	describe('send activation email', function() {
+
+	    it('should set a success message when email sent', function() {
+
+	        resetController.sendActivationEmail("test");
+
+            expect(resetController.message).toBeUndefined(); // it really should at this point
+            deferred.resolve();
+            scope.$digest();
+
+            expect(resetController.message).toEqual("Account activation email sent.");
+            expect(resetController.error).not.toBeDefined();
+	    });
+
+	    it('should set an error message when reset email fail', function() {
+
+	        resetController.sendActivationEmail("test");
+
+            expect(resetController.message).toBeUndefined(); // it really should at this point
+            deferred.reject();
+            scope.$digest();
+
+            expect(resetController.message).toBeUndefined();
+            expect(resetController.error).toEqual("Could not send account activation email.  Please try again later.");
+	    });
+
+	    it('should reset ctrl messages when email sent', function() {
+	        resetController.message = "some";
+	        resetController.error = "value";
+
+	        resetController.sendActivationEmail("thing");
 
             expect(resetController.message).toBeUndefined();
             expect(resetController.error).toBeUndefined();

@@ -1,0 +1,36 @@
+<div class="container-fluid" data-ng-controller="ResetCtrl as reset">
+    <div class="row">
+        <div class="col-sm-12">
+            <h2>Request Account Activation Email</h2>
+        </div>
+    </div>
+    <div class="row top-buffer" data-ng-show="reset.message">
+        <div class="col-sm-4">
+            <div class="alert alert-success" role="alert">{{reset.message}}</div>
+        </div>
+    </div>
+    <div class="row top-buffer" data-ng-show="reset.error">
+        <div class="col-sm-4">
+            <div class="alert alert-danger" role="alert">{{reset.error}}</div>
+        </div>
+    </div>
+    <div class="row top-buffer">
+        <div class="col-sm-12">
+            <form class="form-group" data-ng-submit="reset.sendActivationEmail(reset.username)">
+                <div class="row">
+                    <div class="col-sm-4">
+                        <input type="email" class="form-control" data-ng-modul="reset.username" placeholder="Email Address" required/>
+                    </div>
+                    <div class="col-sm-1">
+                        <button type="submit" class="btn btn-primary">Send Email</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="row top-buffer">
+        <div class="col-sm-2">
+            <a href="#/landing" class="btn btn-default">Cancel</a>
+        </div>
+    </div>
+</div>

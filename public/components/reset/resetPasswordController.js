@@ -18,6 +18,16 @@ fbControllers.controller('ResetCtrl',  ['$scope', '$log', '$location', 'Account'
         });
 	};
 
+	ctrl.sendActivationEmail = function(email) {
+        ctrl.error = undefined;
+        ctrl.message = undefined;
+        Account.sendActivationEmail(email).then(function() {
+            ctrl.message = "Account activation email sent."
+        }, function() {
+            ctrl.error = "Could not send account activation email.  Please try again later.";
+        });
+	};
+
     ctrl.resetPassword = function(newPassword, passwordCheck) {
         ctrl.error = undefined;
         ctrl.message = undefined;

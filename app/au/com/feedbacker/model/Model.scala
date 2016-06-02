@@ -118,7 +118,7 @@ object Person {
       try {
         SQL(
           """
-              insert into person (name, role, email, pass_hash, user_status, manager_email)values (
+              insert into person (name, role, email, pass_hash, user_status, manager_email) values (
                 {name},{role},{email},{pass_hash},{user_status},{manager_email}
               )
             """).on(
@@ -313,7 +313,7 @@ object Activation {
     val token: String = SessionToken.generateToken
     if (SQL(
       """insert into activations (token, email, expires, created, used) values
-        |({token}, {email}, {created}, {expires}, false) """)
+         ({token}, {email}, {created}, {expires}, false) """)
       .on('token -> token,
         'email -> username,
         'created -> DateTime.now,
