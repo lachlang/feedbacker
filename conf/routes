@@ -11,7 +11,7 @@ GET     /api/session/logout         au.com.feedbacker.controllers.Authentication
 GET    	/api/user                   au.com.feedbacker.controllers.Account.getUser
 
 POST    /api/register               au.com.feedbacker.controllers.Registration.register
-POST    /api/activate               au.com.feedbacker.controllers.Activation.activate
+GET     /api/activate               au.com.feedbacker.controllers.Activation.activate
 POST    /api/activate/email         au.com.feedbacker.controllers.Activation.sendActivationEmail
 POST    /api/password/reset         au.com.feedbacker.controllers.ResetPassword.resetPassword
 POST    /api/password/reset/email   au.com.feedbacker.controllers.ResetPassword.sendPasswordResetEmail

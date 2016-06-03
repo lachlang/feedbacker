@@ -212,14 +212,12 @@ object Person {
    * @return
    */
   def resetPassword(st: SessionToken, passwordHash: String): Boolean = DB.withConnection { implicit connection =>
-    Activation.validateToken(st) match {
-      case None => false
-      case Some(_) => Activation.expireToken(st.token) &&
-          SQL("update into person (user_status, pass_hash) values ({status}, {hash}) where email = {email}")
-            .on('status -> CredentialStatus.Active.toString,
-                'hash -> passwordHash,
-                'email -> st.username).execute == 1
-    }
+    if (!Activation.validateToken(st)) false else
+      Activation.expireToken(st.token) &&
+        SQL("update into person (user_status, pass_hash) values ({status}, {hash}) where email = {email}")
+          .on('status -> CredentialStatus.Active.toString,
+              'hash -> passwordHash,
+              'email -> st.username).execute == 1
   }
 }
 
@@ -285,9 +283,13 @@ object Activation {
    * @return
    */
 
-  def validateToken(st: SessionToken): Option[Activation] = DB.withConnection { implicit connection =>
+  def validateToken(st: SessionToken): Boolean = DB.withConnection { implicit connection =>
     SQL("select * from activations where token = {token} and email = {email} and used = false and expires < {time}")
       .on('token -> st.token, 'email -> st.username, 'time -> DateTime.now).as(Activation.simple.singleOpt)
+    match {
+      case Some(_) => true
+      case None => false
+    }
   }
 
   def expireToken(token: String): Boolean = DB.withConnection { implicit connection =>
@@ -296,12 +298,10 @@ object Activation {
   }
 
   def activate(st: SessionToken): Boolean = DB.withConnection { implicit connection =>
-    validateToken(st) match {
-      case None => false
-      case Some(_) => expireToken(st.token) &&
+    if (!validateToken(st)) false else
+      expireToken(st.token) &&
         SQL("update person user_status = {status} where email = {email}")
           .on('status -> CredentialStatus.Active.toString, 'email -> st.username).executeUpdate == 1
-    }
   }
 
   /**

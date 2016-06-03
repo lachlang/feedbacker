@@ -83,14 +83,16 @@ object RegistrationContent {
 class Activation extends Controller {
 
   def activate = Action(parse.json(maxLength = 100)) { request =>
-    request.body.validate[SessionToken].asOpt match {
-      case None => Forbidden
-      case Some(st) => ???
+    request.getQueryString("username").flatMap(username =>
+      request.getQueryString("token").map(token => SessionToken(username, token)))
+    match {
+      case None => BadRequest
+      case Some(st) => if (!Activation.validateToken(st)) Forbidden else if (Activation.activate(st)) Ok else BadRequest
     }
   }
 
   def sendActivationEmail = Action { request =>
-    Ok
+    BadRequest
   }
 }
 
@@ -105,6 +107,6 @@ class ResetPassword extends Controller {
 
   def sendPasswordResetEmail = Action { request =>
 
-    Ok
+    BadRequest
   }
 }
