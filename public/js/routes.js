@@ -4,7 +4,7 @@ feedbackerApp.config(['$routeProvider',
 			templateUrl: 'fragments/about.html',
 			requireLogin: false
 		});
-		$routeProvider.when('/activate', {
+		$routeProvider.when('/activationEmail', {
 			templateUrl: 'components/activate/activate.html',
 			requireLogin: false
 		});

@@ -45,14 +45,9 @@ class Authentication extends Controller {
     val jsonBody: Option[JsValue] = request.body.asJson
 
     jsonBody.map { json => ((json \ "body" \ "username").asOpt[String], (json \ "body" \ "password").asOpt[String]) } match {
-      case Some((Some(userName), Some(password))) => Person.findByEmail(userName) match {
+      case Some((Some(userName), Some(password))) => SessionToken.initialiseToken(userName, password) match {
         case None => Forbidden
-        case Some(p) => if (Authentication.validatePassword(password, p.credentials.hash)) {
-          // case Some(p) => if (BCrypt.checkpw(password, p.credentials.hash) && p.credentials.status == CredentialStatus.Active) {
-          Ok(Json.obj("apiVersion" -> JsString("1.0"), "body" -> Json.toJson(p))).withCookies(SessionToken.initialiseToken(p.credentials.email))
-        } else {
-          Forbidden
-        }
+        case Some(st) => st.signIn(Ok)
       }
       case _ => BadRequest
     }
@@ -76,19 +71,30 @@ object Authentication {
 
 }
 
-case class SessionToken(username: String, token: String)
+case class SessionToken(username: String, token: String) {
+  // TODO: pull this out into config
+
+  def signIn: Result => Result = response => response.withCookies(
+    Cookie(SessionToken.cookieName,
+      token,
+      SessionToken.cookieMaxAge,
+      SessionToken.cookiePathOption,
+      SessionToken.cookieDomainOption,
+      SessionToken.secureOnly,
+      SessionToken.httpOnly)
+  )
+}
 
 object SessionToken {
 
-  implicit val format: Format[SessionToken] = Json.format[SessionToken]
-
-  // TODO: pull this out into config
   protected val cookieName: String = "FEEDBACKER_SESSION"
   protected val cookieMaxAge: Option[Int] = Some(3600)
   protected val cookiePathOption: String = "/"
   protected val cookieDomainOption: Option[String] = None
   protected val secureOnly : Boolean = false
   protected val httpOnly: Boolean = false
+
+  implicit val format: Format[SessionToken] = Json.format[SessionToken]
 
   private val tokenMap: ConcurrentMap[String, String] = new ConcurrentHashMap[String, String]
 
@@ -98,10 +104,14 @@ object SessionToken {
 
   def validateToken(token: String): Option[SessionToken] = Some(SessionToken(tokenMap.get(token),token))
 
-  def initialiseToken(username: String): Cookie = {
-    val token = generateToken
-    tokenMap.put(token, username)
-    Cookie(cookieName, token, cookieMaxAge, cookiePathOption, cookieDomainOption, secureOnly, httpOnly)
+  def initialiseToken(username: String, password: String): Option[SessionToken] = {
+    Person.findByEmail(username).filter{_.credentials.status == CredentialStatus.Active}.flatMap{p =>
+      if (!Authentication.validatePassword(password, p.credentials.hash)) None else {
+        val token = generateToken
+        tokenMap.put(token, username)
+        Some(SessionToken(username, token))
+      }
+    }
   }
 
   def removeToken(token: SessionToken, result: Result): Result = {
@@ -109,7 +119,6 @@ object SessionToken {
     result.discardingCookies(DiscardingCookie(cookieName))
   }
 
-//  def generateToken = BigInt(300, tokenGenerator).toString(32)
   def generateToken: String = {
     val bytes = new Array[Byte](64)
     tokenGenerator.nextBytes(bytes)

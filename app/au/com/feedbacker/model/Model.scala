@@ -143,11 +143,11 @@ object Person {
 
   def createNominee(username: Username): Either[Throwable, Long] = {
     DB.withConnection { implicit connection =>
-      try {
+      try { println("creating shadow user");
         SQL(
           """
             insert into person (name, role, email, pass_hash, user_status, manager_email)values (
-              {email},Nominee,{email},{pass_hash},{user_status},placeholder@test.com
+              {email},'Nominee',{email},{pass_hash},{user_status},'placeholder@test.com'
             )
           """).on(
             'email -> username,
@@ -235,7 +235,8 @@ object Nominee {
     }
   }
   def findNomineeCandidates: Seq[Nominee] = DB.withConnection { implicit connection =>
-    SQL("select name, email, role from person where user_status = {status}").on('status -> CredentialStatus.Active.toString).as(Nominee.simple *)
+    SQL("select name, email, role from person where user_status in ({activeStatus}, {inactiveStatus})")
+      .on('activeStatus -> CredentialStatus.Active.toString, 'inactiveStatus -> CredentialStatus.Inactive.toString).as(Nominee.simple *)
   }
 
 
@@ -284,11 +285,12 @@ object Activation {
    */
 
   def validateToken(st: SessionToken): Boolean = DB.withConnection { implicit connection =>
+    println("validating token ...")
     SQL("select * from activations where token = {token} and email = {email} and used = false and expires < {time}")
       .on('token -> st.token, 'email -> st.username, 'time -> DateTime.now).as(Activation.simple.singleOpt)
     match {
-      case Some(_) => true
-      case None => false
+      case Some(_) => println("valid");true
+      case None => println("invalid");false
     }
   }
 
@@ -312,7 +314,7 @@ object Activation {
   def createActivationToken(username: String): Option[SessionToken] = DB.withConnection { implicit connection =>
     val token: String = SessionToken.generateToken
     if (SQL(
-      """insert into activations (token, email, expires, created, used) values
+      """insert into activations (token, email, created, expires, used) values
          ({token}, {email}, {created}, {expires}, false) """)
       .on('token -> token,
         'email -> username,

@@ -17,28 +17,9 @@ import scala.concurrent.Future
 
 class Registration extends Controller {
 
-  def activate(person: Person): Unit = Activation.createActivationToken(person.credentials.email) match {
-    case Some(st) => {
-      val emailBody: String =
-        s"""Hi ${person.name},
-
-            Thanks for registering to user feedbacker.
-
-            To activate your account please navigate to following link
-
-            #/activate?username=${st.username}&token=${st.token}
-
-            Thanks
-            The Feedback Team
-            (Feedback is always welcome)
-         """.stripMargin
-      println(emailBody)
-    } // send activation email
-  }
-
   def translateResultAndActivate(result: Either[Throwable, Person], errorMessage: String) : Result = result match {
     case Left(e) => BadRequest("{ \"body\": { \"message\": \"" + errorMessage + "\"}} ")
-    case Right(p) => activate(p); Ok(Json.toJson(p))
+    case Right(p) => ActivationCtrl.generateActivationEmail(p); Ok(Json.toJson(p))
   }
 
   def register: Action[JsValue] = Action(parse.json(maxLength = 2000)) { request =>
@@ -80,20 +61,48 @@ object RegistrationContent {
   )(RegistrationContent.apply, unlift(RegistrationContent.unapply))
 }
 
-class Activation extends Controller {
+class ActivationCtrl extends Controller {
 
-  def activate = Action(parse.json(maxLength = 100)) { request =>
-    request.getQueryString("username").flatMap(username =>
-      request.getQueryString("token").map(token => SessionToken(username, token)))
+  def activate = Action { request =>
+    println("activating")
+    request.getQueryString("username").flatMap{username => println(s"username:$username");
+      request.getQueryString("token").map{token => println(s"token:$token"); SessionToken(username, token)}}
     match {
       case None => BadRequest
-      case Some(st) => if (!Activation.validateToken(st)) Forbidden else if (Activation.activate(st)) Ok else BadRequest
+      case Some(st) => println("valid request");if (!Activation.validateToken(st)) Forbidden else if (Activation.activate(st)) st.signIn(Redirect("#/list")) else BadRequest
     }
   }
 
   def sendActivationEmail = Action { request =>
-    BadRequest
+    request.body.asJson.flatMap ( json => (json \ "body" \ "username").asOpt[String].flatMap(Person.findByEmail(_))) match {
+      case None => BadRequest
+      case Some(person) => ActivationCtrl.generateActivationEmail(person); Ok
+    }
   }
+
+}
+
+object ActivationCtrl {
+  def generateActivationEmail(person: Person): Unit = Activation.createActivationToken(person.credentials.email) match {
+    case Some(st) => {
+      val emailBody: String =
+        s"""Hi ${person.name},
+
+            Thanks for registering to user feedbacker.
+
+            To activate your account please navigate to following link
+
+            api/activate?username=${st.username}&token=${st.token}
+
+            Thanks
+            The Feedback Team
+            (Feedback is always welcome)
+         """.stripMargin
+      println(emailBody)
+    } // send activation email
+  }
+
+
 }
 
 class ResetPassword extends Controller {

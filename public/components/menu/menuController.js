@@ -5,7 +5,7 @@ fbControllers.controller('MenuCtrl', ['$scope', '$log', '$location', 'Session', 
 
 	var ctrl = this;
 
-	ctrl.error = undefined;ctrl.isLoggedIn
+	ctrl.error = undefined;
 	ctrl.isLoggedIn = false;
 
 	ctrl.login = function() {
@@ -13,13 +13,14 @@ fbControllers.controller('MenuCtrl', ['$scope', '$log', '$location', 'Session', 
 
 		// LG: 2016-04-26 use standard form validation only at this point
 		Session.login(ctrl.username, ctrl.password).then(function(result) {
+			$log.debug("Logged in...");
 			$location.path("/list");
 		}, function(result) {
 			$log.error("Login FAILED!")
+			$scope.$broadcast('inactive-account', {});
 			ctrl.error = "Could not log in.  Please try again later.";
 		});
 		ctrl.password = undefined;
-		$log.debug("this is a test function which will print text to the browser console...");
 	};
 
 	ctrl.logout = function() {

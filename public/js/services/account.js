@@ -54,10 +54,10 @@ fbServices.service('Account', ['$log', '$http', '$q', function($log, $http, $q) 
 			}
 			return $http({
 				method:"POST",
-				url:"/api/register/activate/email",
+				url:"/api/activate/email",
 				data: {
 					apiVersion:"1.0",
-					body:{ email: email}
+					body:{ username: email}
 				}
 			});
 		},
