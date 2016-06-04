@@ -12,6 +12,16 @@
         <!-- <p><a class="btn btn-primary btn-lg" href="#/about" role="button">Learn more &raquo;</a></p> -->
       </div>
       <div class="col-md-4" data-ng-controller="RegistrationCtrl as registration">
+        <div class="row top-buffer" data-ng-show="registration.message">
+          <div class="col-sm-12">
+            <div class="alert alert-success" role="alert">{{registration.message}}</div>
+          </div>
+        </div>
+        <div class="row top-buffer" data-ng-show="registration.error">
+          <div class="col-sm-12">
+            <div class="alert alert-danger" role="alert">{{registration.error}}</div>
+          </div>
+        </div>
         <form class="form-group" data-ng-submit="registration.register()">
           <div class="row">
             <div class="col-sm-12">

@@ -267,11 +267,11 @@ object Activation {
   private val tokenExpiryInSeconds = 3600
 
   val simple = {
-    get[String]("activation.token") ~
-    get[String]("activation.email") ~
-    get[DateTime]("activation.created") ~
-    get[Boolean]("activation.used") ~
-    get[DateTime]("activation.expires") map {
+    get[String]("activations.token") ~
+    get[String]("activations.email") ~
+    get[DateTime]("activations.created") ~
+    get[Boolean]("activations.used") ~
+    get[DateTime]("activations.expires") map {
       case token~email~created~used~expires => Activation(token, email, created, used, expires)
     }
   }
@@ -285,24 +285,23 @@ object Activation {
    */
 
   def validateToken(st: SessionToken): Boolean = DB.withConnection { implicit connection =>
-    println("validating token ...")
-    SQL("select * from activations where token = {token} and email = {email} and used = false and expires < {time}")
+    val result: Option[Activation] = SQL("select * from activations where token = {token} and email = {email} and used = false and expires > {time}")
       .on('token -> st.token, 'email -> st.username, 'time -> DateTime.now).as(Activation.simple.singleOpt)
-    match {
-      case Some(_) => println("valid");true
-      case None => println("invalid");false
+    result match {
+      case Some(_) => true
+      case None => false
     }
   }
 
   def expireToken(token: String): Boolean = DB.withConnection { implicit connection =>
-    SQL("update activations used = true where token = {token}")
+    SQL("update activations SET used = true where token = {token}")
       .on('token -> token).executeUpdate == 1
   }
 
   def activate(st: SessionToken): Boolean = DB.withConnection { implicit connection =>
     if (!validateToken(st)) false else
       expireToken(st.token) &&
-        SQL("update person user_status = {status} where email = {email}")
+        SQL("update person SET user_status = {status} where email = {email}")
           .on('status -> CredentialStatus.Active.toString, 'email -> st.username).executeUpdate == 1
   }
 

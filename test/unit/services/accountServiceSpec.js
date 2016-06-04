@@ -84,7 +84,7 @@ describe('service [Account]', function() {
         it('to request an activation email be sent', function() {
             var result, promise = account.sendActivationEmail("thisIsEMAIL");
 
-            $httpBackend.expectPOST('/api/register/activate/email', '{"apiVersion":"1.0","body":{"email":"thisIsEMAIL"}}').respond(200, dummyResult);
+            $httpBackend.expectPOST('/api/activate/email', '{"apiVersion":"1.0","body":{"username":"thisIsEMAIL"}}').respond(200, dummyResult);
             
             // set the response value
             promise.then(function(data) {

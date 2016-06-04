@@ -64,12 +64,11 @@ object RegistrationContent {
 class ActivationCtrl extends Controller {
 
   def activate = Action { request =>
-    println("activating")
-    request.getQueryString("username").flatMap{username => println(s"username:$username");
-      request.getQueryString("token").map{token => println(s"token:$token"); SessionToken(username, token)}}
+    request.getQueryString("username").flatMap{username =>
+      request.getQueryString("token").map{token => SessionToken(username, token.replaceAll(" ", "+"))}}
     match {
       case None => BadRequest
-      case Some(st) => println("valid request");if (!Activation.validateToken(st)) Forbidden else if (Activation.activate(st)) st.signIn(Redirect("#/list")) else BadRequest
+      case Some(st) => if (!Activation.validateToken(st)) Forbidden else if (Activation.activate(st)) st.signIn(Redirect("/#/list")) else BadRequest
     }
   }
 
