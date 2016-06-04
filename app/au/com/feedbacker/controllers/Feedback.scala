@@ -128,7 +128,11 @@ class Nominations extends AuthenticatedController {
           BadRequest(Json.obj("message" -> "Invalid feedback cycle selected."))
         else {
           Person.findByEmail(toUsername) match {
-            case Some(toUser) => wrapEither(Nomination.createNomination(fromUser.credentials.email, toUser.credentials.email, cycleId))
+            case Some(toUser) =>
+              if (toUser.credentials.email == fromUser.credentials.email)
+                BadRequest(Json.obj("message" -> "Cannot nominate yourself"))
+              else
+                wrapEither(Nomination.createNomination(fromUser.credentials.email, toUser.credentials.email, cycleId))
             case None => wrapEither(createNominatedUser(toUsername).right
               .map(id => Nomination.createNomination(fromUser.credentials.email, toUsername, cycleId)))
           }
