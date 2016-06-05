@@ -143,7 +143,7 @@ object Person {
 
   def createNominee(username: Username): Either[Throwable, Long] = {
     DB.withConnection { implicit connection =>
-      try { println("creating shadow user");
+      try {
         SQL(
           """
             insert into person (name, role, email, pass_hash, user_status, manager_email)values (
@@ -168,17 +168,14 @@ object Person {
       try {
         SQL(
           """
-            update person SET id={id},
-                              name={name},
+            update person SET name={name},
                               role={role},
                               email={email},
                               pass_hash={pass_hash},
                               user_status={user_status},
                               manager_email={manager_email}
-                              where id={id}
-            )
+                              where email={email}
           """).on(
-            'id -> person.id,
             'name -> person.name,
             'role -> person.role,
             'email -> person.credentials.email,
@@ -256,7 +253,7 @@ object Credentials {
   implicit val writes: Writes[Credentials] = Json.writes[Credentials]
 
   def findStatusByEmail(email:String): Option[(Long, CredentialStatus)] = DB.withConnection { implicit connection =>
-    SQL("select email, pass_hash, user_status from person where email = {email}").on('email -> email).as(Credentials.status.singleOpt)
+    SQL("select id, user_status from person where email = {email}").on('email -> email).as(Credentials.status.singleOpt)
   }
 }
 
