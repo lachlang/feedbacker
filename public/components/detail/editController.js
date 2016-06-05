@@ -32,12 +32,19 @@ fbControllers.controller('EditCtrl',  ['$scope', '$log', 'Model', 'uibButtonConf
 		}
 	}
 
-	ctrl.save = function(feedback, submit) {
+	ctrl.save = function(feedbackItem, submit) {
 		ctrl.resetError();
 
-		Model.saveFeedback(feedback, submit).then(function(response) {
-			if (submit) {
-				ctrl.navigateToList();
+		if (!feedbackItem || !feedbackItem.id || !feedbackItem.questions) {
+
+			return;
+		}
+		Feedback.updateFeedback(feedbackItem.id, feedbackItem.questions, !!submit).then(function(response) {
+			if (!!submit) {
+				// update the summary view and return to the list view
+				Model.getPendingFeedbackActions(true).then(function() {
+					ctrl.navigateToList();
+				});
 			} else {
 				ctrl.message = "Saved feedback."
 			}
@@ -49,7 +56,6 @@ fbControllers.controller('EditCtrl',  ['$scope', '$log', 'Model', 'uibButtonConf
 	ctrl.initialiseController();
 
 	ctrl.navigateToList = function() {
-//		$location.search("id", undefined);
 		$location.path("list");
 	};
 

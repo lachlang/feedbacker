@@ -34,7 +34,6 @@ describe('service [Model]', function() {
         expect(angular.isFunction(model.getCurrentFeedback)).toBe(true);
         expect(angular.isFunction(model.getFeedbackHistory)).toBe(true);
         expect(angular.isFunction(model.getFeedbackDetail)).toBe(true);
-        expect(angular.isFunction(model.saveFeedback)).toBe(true);
     });
 
     describe('caches data after the first call to server', function() {
@@ -132,10 +131,6 @@ describe('service [Model]', function() {
         it('should call the feedback.getActiveFeedbackCycles service when flushed', function(){
             flushTest(model.getActiveFeedbackCycles, feedback.getActiveFeedbackCycles);
         });
-    });
-
-    describe('validate the feedback is saved and submitted', function() {
-        //TODO:
     });
 
 });

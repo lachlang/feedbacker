@@ -100,29 +100,8 @@ fbServices.service('Model', ['$log', '$q', 'Account', 'Feedback', 'Nomination', 
 									function(feedbackId) { return feedbackCycles },
 									Feedback.getActiveFeedbackCycles,
 									"Feedback.getActiveFeedbackCycles");
-		},
-
-		saveFeedback: function(feedbackItem, submit) {
-			var deferred = $q.defer();
-			$log.info(feedbackItem)
-			$log.info(submit)
-			if (!feedbackItem || !feedbackItem.id || !feedbackItem.questions) {
-			$log.info("rejected...")
-				deferred.reject();
-			} else {
-				$log.info("saving...")
-				Feedback.updateFeedback(feedbackItem.id, feedbackItem.questions, !!submit).then(function() {
-					$log.info("saved...")
-					feedbackDetail[feedbackItem.id] = feedbackItem
-					deferred.resolve();
-				}, function(result) {
-					$log.info("not save...")
-					$log.info(result)
-					deferred.reject();
-				});
-			}
-			return deferred.promise;
 		}
+
 	}
 	return model;
 }]);
