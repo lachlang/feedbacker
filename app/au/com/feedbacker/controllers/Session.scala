@@ -55,8 +55,8 @@ class Authentication extends Controller {
 
   def logout = Action { request =>
     SessionToken.extractToken(request) match {
-      case Some(st) => SessionToken.removeToken(st, Ok)
-      case None => Ok
+      case Some(st) => st.signOut(Ok)
+      case None => BadRequest
     }
   }
 }
@@ -74,15 +74,23 @@ object Authentication {
 case class SessionToken(username: String, token: String) {
   // TODO: pull this out into config
 
-  def signIn: Result => Result = response => response.withCookies(
-    Cookie(SessionToken.cookieName,
-      token,
-      SessionToken.cookieMaxAge,
-      SessionToken.cookiePathOption,
-      SessionToken.cookieDomainOption,
-      SessionToken.secureOnly,
-      SessionToken.httpOnly)
-  )
+  def signIn: Result => Result = response => {
+    SessionToken.initialiseSession(this)
+    response.withCookies(
+      Cookie(SessionToken.cookieName,
+        token,
+        SessionToken.cookieMaxAge,
+        SessionToken.cookiePathOption,
+        SessionToken.cookieDomainOption,
+        SessionToken.secureOnly,
+        SessionToken.httpOnly)
+    )
+  }
+
+  def signOut: Result => Result = response => {
+    SessionToken.destroySession(this)
+    response.discardingCookies(DiscardingCookie(SessionToken.cookieName))
+  }
 }
 
 object SessionToken {
@@ -108,15 +116,9 @@ object SessionToken {
     Person.findByEmail(username).filter{_.credentials.status == CredentialStatus.Active}.flatMap{p =>
       if (!Authentication.validatePassword(password, p.credentials.hash)) None else {
         val token = generateToken
-        tokenMap.put(token, username)
         Some(SessionToken(username, token))
       }
     }
-  }
-
-  def removeToken(token: SessionToken, result: Result): Result = {
-    tokenMap.remove(token.token)
-    result.discardingCookies(DiscardingCookie(cookieName))
   }
 
   def generateToken: String = {
@@ -124,6 +126,10 @@ object SessionToken {
     tokenGenerator.nextBytes(bytes)
     Base64.getEncoder.encodeToString(bytes)
   }
+
+  private def initialiseSession(st: SessionToken): Unit = tokenMap.put(st.token, st.username)
+
+  private def destroySession(st: SessionToken): Unit = tokenMap.remove(st.token)
 }
 
 //class UserIdRequest[A](val username: Option[String], request: Request[A]) extends WrappedRequest[A](request)
