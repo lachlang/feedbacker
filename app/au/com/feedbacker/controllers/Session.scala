@@ -96,7 +96,7 @@ case class SessionToken(username: String, token: String) {
 object SessionToken {
 
   protected val cookieName: String = "FEEDBACKER_SESSION"
-  protected val cookieMaxAge: Option[Int] = Some(3600)
+  protected val cookieMaxAge: Option[Int] = Some(60 * 60 * 1000) // 60 minutes * 60 seconds * 1000 ms
   protected val cookiePathOption: String = "/"
   protected val cookieDomainOption: Option[String] = None
   protected val secureOnly : Boolean = false
@@ -132,27 +132,6 @@ object SessionToken {
   private def destroySession(st: SessionToken): Unit = tokenMap.remove(st.token)
 }
 
-//class UserIdRequest[A](val username: Option[String], request: Request[A]) extends WrappedRequest[A](request)
-
-//class UserRequest[A](val user: Option[Person], request: UserIdRequest[A]) extends WrappedRequest[A](request) {
-//  def username = request.username
-//}
-//
-//object UserAction extends ActionBuilder[UserIdRequest] with ActionTransformer[Request, UserIdRequest] {
-//  def transform[A](request: Request[A]) = Future.successful {
-//    new UserIdRequest[A](SessionToken.extractToken(request).map(_.username), request)
-//  }
-//}
-//
-//object PermissionCheckAction extends ActionFilter[UserIdRequest] {
-//  def filter[A](request: UserIdRequest[A]): Future[Option[Result]] = Future.successful {
-//    request.username match {
-//      case Some(_) => None
-//      case None => Some(Results.Status(401))
-//    }
-//  }
-//}
-
 object AuthenticatedAction extends ActionFilter[Request] {
   def filter[A](request: Request[A]): Future[Option[Result]] = Future.successful {
     SessionToken.extractToken(request) match {
@@ -161,14 +140,3 @@ object AuthenticatedAction extends ActionFilter[Request] {
     }
   }
 }
-
-//def AuthenticatedUserAction(username: String) = new ActionRefiner[UserIdRequest, UserRequest] {
-//  def refine[A](input: UserIdRequest[A]) = Future.successful {
-//    Person.findByEmail(username).map(new ItemRequest(_, input)).toRight(NotFound)
-//  }
-//}
-
-//trait AuthenticatedAction[T] extends Action[T] {
-//
-//}
-

@@ -30,8 +30,8 @@ class Feedback extends AuthenticatedController {
         val submittedJson: JsResult[Boolean] = json.validate[Boolean]((JsPath \ "body" \ "submit").read[Boolean])
         val questionsJson: JsResult[Seq[QuestionResponse]] = json.validate[Seq[QuestionResponse]]((JsPath \ "body" \ "questions").read[Seq[QuestionResponse]])
         (questionsJson, submittedJson) match {
-          case (questions: JsSuccess[Seq[QuestionResponse]], submitted: JsSuccess[Boolean]) =>
-            if (Nomination.submitFeedback(nominationId, questions.get, submitted.get)) Ok else BadRequest
+          case (JsSuccess(questions,_), JsSuccess(submitted,_)) =>
+            if (Nomination.submitFeedback(nominationId, questions, submitted)) Ok else BadRequest
           case _ => BadRequest
         }
       }
@@ -62,7 +62,7 @@ class Feedback extends AuthenticatedController {
   }
 
   private val nominationWriteFilter: (Nomination, String) => Boolean = (n, email) => n.to.map(_.credentials.email == email).getOrElse(false)
-//  private val nominationReadFilter: (Nomination, String) => Boolean = (n, email) => n.from.map(_.credentials.email == email).getOrElse(false)
+
   private val nominationReadFilter: (Option[Person], String) => Boolean = (person, email) => person match {
     case None => false
     case Some(fromPerson) if fromPerson.credentials.email == email => true

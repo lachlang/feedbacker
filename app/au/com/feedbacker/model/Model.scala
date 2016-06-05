@@ -496,7 +496,7 @@ object Nomination {
     QuestionResponse.updateResponses(questions) match {
       case true =>
         SQL("update nominations SET status={status}, last_updated = {lastUpdated} where id={id}")
-        .on('status -> FeedbackStatus.Pending.toString, 'lastUpdated -> DateTime.now, 'id->nominationId)
+        .on('status -> status.toString, 'lastUpdated -> DateTime.now, 'id->nominationId)
           .executeUpdate == 1
       case _ => false
     }

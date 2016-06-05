@@ -49,8 +49,8 @@ fbControllers.controller('EditCtrl',  ['$scope', '$log', 'Model', 'uibButtonConf
 	ctrl.initialiseController();
 
 	ctrl.navigateToList = function() {
-		$location.search("id", undefined);
-		$location.path("#/list");
+//		$location.search("id", undefined);
+		$location.path("list");
 	};
 
 	ctrl.resetError = function() {
