@@ -96,7 +96,7 @@ case class SessionToken(username: String, token: String) {
 object SessionToken {
 
   protected val cookieName: String = "FEEDBACKER_SESSION"
-  protected val cookieMaxAge: Option[Int] = Some(60 * 60 * 1000) // 60 minutes * 60 seconds * 1000 ms
+  protected val cookieMaxAge: Option[Int] = Some(60 * 60 * 10) // 60 minutes * 60 seconds
   protected val cookiePathOption: String = "/"
   protected val cookieDomainOption: Option[String] = None
   protected val secureOnly : Boolean = false

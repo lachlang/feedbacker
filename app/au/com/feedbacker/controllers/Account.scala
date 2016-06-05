@@ -87,7 +87,7 @@ object ActivationCtrl {
       val emailBody: String =
         s"""Hi ${person.name},
 
-            Thanks for registering to user feedbacker.
+            Thanks for registering to use Feedbacker.
 
             To activate your account please navigate to following link
 
