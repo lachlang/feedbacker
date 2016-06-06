@@ -5,7 +5,7 @@ import java.util.concurrent.{ConcurrentMap, ConcurrentHashMap}
 
 import java.util.Base64
 import org.mindrot.jbcrypt.BCrypt
-import play.api.libs.json.{Format, JsString, Json, JsValue}
+import play.api.libs.json._
 import play.api.mvc._
 
 import au.com.feedbacker.model._
@@ -49,7 +49,7 @@ class Authentication extends Controller {
   def login = Action { request =>
     val jsonBody: Option[JsValue] = request.body.asJson
 
-    jsonBody.map { json => ((json \ "body" \ "username").asOpt[String], (json \ "body" \ "password").asOpt[String]) } match {
+    jsonBody.map { json => ((json \ "body" \ "username").asOpt[String](Reads.email), (json \ "body" \ "password").asOpt[String]) } match {
       case Some((Some(userName), Some(password))) => SessionToken.initialiseToken(userName, password) match {
         case None => Forbidden
         case Some(st) => st.signIn(Ok)

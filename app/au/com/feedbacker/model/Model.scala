@@ -76,7 +76,9 @@ object FeedbackStatus extends Enumeration {
 }
 import FeedbackStatus._
 
-case class Person(id: Option[Long], name: String, role: String, credentials: Credentials, managerEmail: String)
+case class Person(id: Option[Long], name: String, role: String, credentials: Credentials, managerEmail: String) {
+  def setNewHash(hash: String)  = Person(id, name, role, Credentials(credentials.email, hash, credentials.status), managerEmail)
+}
 
 object Person {
 
