@@ -2,7 +2,10 @@ package au.com.feedbacker.controllers
 
 //import play.api.http.Writeable
 
+import javax.inject.Inject
+
 import au.com.feedbacker.model.FeedbackStatus.FeedbackStatus
+import au.com.feedbacker.util.Emailer
 import play.api.http.Writeable
 import play.api.libs.json._
 import au.com.feedbacker.model._
@@ -109,7 +112,7 @@ object DetailItem {
   }
 }
 
-class Nominations extends AuthenticatedController {
+class Nominations @Inject() (emailer: Emailer) extends AuthenticatedController {
 
   def getCurrentNominations = AuthenticatedAction { person =>
     Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(Nomination.getCurrentNominationsFromUser(person.credentials.email))))
@@ -132,9 +135,8 @@ class Nominations extends AuthenticatedController {
               if (toUser.credentials.email == fromUser.credentials.email)
                 BadRequest(Json.obj("message" -> "Cannot nominate yourself"))
               else
-                wrapEither(Nomination.createNomination(fromUser.credentials.email, toUser.credentials.email, cycleId))
-            case None => wrapEither(createNominatedUser(toUsername).right
-              .map(id => Nomination.createNomination(fromUser.credentials.email, toUsername, cycleId)))
+                wrapEither(Nomination.createNomination(fromUser.credentials.email, toUser.credentials.email, cycleId),emailer.sendNominationNotificationEmail)
+            case None => wrapEither(createNominatedUser(toUsername).right.flatMap(id => Nomination.createNomination(fromUser.credentials.email, toUsername, cycleId)), emailer.sendNominationNotificationEmail)
           }
         }
       }

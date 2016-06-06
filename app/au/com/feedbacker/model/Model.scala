@@ -456,15 +456,20 @@ object Nomination {
       .map{ case (a,b,c,d,e,f) => (a, d)}
   }
 
-  def reenableNomination(nominationId: Long): Either[Throwable, Long] = DB.withConnection { implicit connection =>
-    SQL("""update nominations SET status = {status} where id = {id}""")
-      .on('status -> FeedbackStatus.New.toString, 'id -> nominationId).executeUpdate == 1 match {
-      case true => Right(nominationId)
-      case false => Left(new Exception("Could not re-enable existing nomination."))
+  private def mapWinToNomination(win: Boolean, nominationId: Long, errorMsg: String): Either[Throwable, Nomination] =
+    if (!win) Left(new Exception(errorMsg))
+    else getSummary(nominationId) match {
+      case None => Left(new Exception(errorMsg))
+      case Some(n) => Right(n)
     }
+
+  def reenableNomination(nominationId: Long): Either[Throwable, Nomination] = DB.withConnection { implicit connection =>
+    mapWinToNomination(SQL("""update nominations SET status = {status} where id = {id}""")
+      .on('status -> FeedbackStatus.New.toString, 'id -> nominationId).executeUpdate == 1,
+      nominationId, "Could not re-enable existing nomination.")
   }
 
-  def createNomination(fromEmail: String, toEmail: String, cycleId: Long): Either[Throwable, Long] = DB.withConnection { implicit connection =>
+  def createNomination(fromEmail: String, toEmail: String, cycleId: Long): Either[Throwable, Nomination] = DB.withConnection { implicit connection =>
 
     findNominationByToFromCycle(fromEmail, toEmail, fromEmail, cycleId) match {
       case Some((nominationId, FeedbackStatus.Cancelled)) => reenableNomination(nominationId)
@@ -482,11 +487,9 @@ object Nomination {
             'cycle_id -> cycleId).executeInsert() match {
           case None => Left(new Exception("Could not create nomination."))
           case Some(newNominationId) =>
-            QuestionResponse.initialiseResponses(newNominationId, QuestionTemplate.findQuestionsForCycle(cycleId)) match {
-              case false => Left(new Exception("Could not initialise questions."))
-              case true => Right(newNominationId)
-            }
-        }
+            mapWinToNomination(QuestionResponse.initialiseResponses(newNominationId, QuestionTemplate.findQuestionsForCycle(cycleId)),
+             newNominationId, "Could not initialise question")
+          }
     }
   }
 

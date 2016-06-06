@@ -40,31 +40,31 @@ class Emailer @Inject() (mailerClient: MailerClient) {
     sendEmail(email)
   }
 
-  def sendNominationNotificationEmail(toName: String, fromName: String, toEmail:String): Unit = {
-    val email = Email(
-      "Feedbacker - You have been nominated to provide feedback",
-      from,
-      to(toName, toEmail),
-      Some(Emailer.nominationBody(toName, fromName, getServerPath)),
-      None
-    )
-    sendEmail(email)
-  }
-//  def sendNominationNotificationEmail: Nomination => Unit = { nomination =>
-//    (nomination.to, nomination.from) match {
-//      case (Some(toUser), Some(fromUser)) => {
-//        val email = Email(
-//          "Feedbacker - You have been nominated to provide feedback",
-//          from,
-//          to(toUser.name, toUser.credentials.email),
-//          Some(Emailer.nominationBody(toUser.name, fromUser.name, getServerPath)),
-//          None
-//        )
-//        sendEmail(email)
-//      }
-//      case _ => Unit
-//    }
+//  def sendNominationNotificationEmail(toName: String, fromName: String, toEmail:String): Unit = {
+//    val email = Email(
+//      "Feedbacker - You have been nominated to provide feedback",
+//      from,
+//      to(toName, toEmail),
+//      Some(Emailer.nominationBody(toName, fromName, getServerPath)),
+//      None
+//    )
+//    sendEmail(email)
 //  }
+  def sendNominationNotificationEmail: Nomination => Unit = { nomination =>
+    (nomination.to, nomination.from) match {
+      case (Some(toUser), Some(fromUser)) => {
+        val email = Email(
+          "Feedbacker - You have been nominated to provide feedback",
+          from,
+          to(toUser.name, toUser.credentials.email),
+          Some(Emailer.nominationBody(toUser.name, fromUser.name, getServerPath)),
+          None
+        )
+        sendEmail(email)
+      }
+      case _ => Unit
+    }
+  }
 
 }
 
