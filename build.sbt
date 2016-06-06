@@ -2,7 +2,7 @@ name := """Feedbacker"""
 
 version := "1.0-SNAPSHOT"
 
-lazy val root = (project in file(".")).enablePlugins(PlayScala)
+lazy val root = (project in file(".")).enablePlugins(PlayScala, JavaAppPackaging)
 
 scalaVersion := "2.11.6"
 
@@ -17,7 +17,9 @@ libraryDependencies ++= Seq(
 libraryDependencies ++= Seq(
   "com.typesafe.play" %% "play-server"          % "2.5.3",
   "com.typesafe.play" %% "play-json"            % "2.5.3",
-  "com.typesafe.play" %% "anorm" 				% "2.5.0",
+  "com.typesafe.play" %% "anorm" 				        % "2.5.0",
+//  "com.typesafe.play" %% "play-mailer"          % "5.0.0-M1",
+  "com.typesafe.play" %% "play-mailer"          % "4.0.0",
   "org.postgresql"    % "postgresql"            % "9.4-1201-jdbc41",
   "org.mindrot"       % "jbcrypt"               % "0.3m"
 )
@@ -27,3 +29,5 @@ resolvers += "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases"
 // Play provides two styles of routers, one expects its actions to be injected, the
 // other, legacy style, accesses its actions statically.
 routesGenerator := InjectedRoutesGenerator
+
+
