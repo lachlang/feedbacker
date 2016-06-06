@@ -20,3 +20,4 @@ server.pid
 npm-debug.log
 conf/generated.keystore
 feedbacker.tar
+/conf/application.local.test.conf

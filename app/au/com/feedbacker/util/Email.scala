@@ -1,25 +1,77 @@
 package au.com.feedbacker.util
 
 import au.com.feedbacker.controllers.SessionToken
-import au.com.feedbacker.model.Person
+import javax.inject.Inject
+import au.com.feedbacker.model.Nomination
+import play.api.libs.mailer.{Email, MailerClient}
 
 /**
  * Created by lachlang on 6/06/2016.
  */
-class Email {
+class Emailer @Inject() (mailerClient: MailerClient) {
+
+  private def to(name: String, email: String) = Seq(s"""$name <$email>""")
+  private val from = "Feedbacker <no-reply@feedbacker.com.au"
+  private def getServerPath() = "localhost:9000"
+
+  def sendEmail(email: Email): Unit = {
+    mailerClient.send(email)
+  }
+
+  def sendActivationEmail(name: String, st: SessionToken): Unit = {
+    val email = Email(
+      "Welcome to Feedbacker",
+      from,
+      to(name, st.username),
+      Some(Emailer.activationBody(name, st, getServerPath)),
+      None
+    )
+    sendEmail(email)
+  }
+
+  def sendPasswordResetEmail(name: String, st: SessionToken): Unit = {
+    val email = Email(
+      "Feedbacker Password Reset",
+      from,
+      to(name, st.username),
+      Some(Emailer.resetPasswordBody(name, st, getServerPath())),
+      None
+    )
+    sendEmail(email)
+  }
+
+  def sendNominationNotificationEmail(toName: String, fromName: String, toEmail:String): Unit = {
+    val email = Email(
+      "Feedbacker - You have been nominated to provide feedback",
+      from,
+      to(toName, toEmail),
+      Some(Emailer.nominationBody(toName, fromName, getServerPath)),
+      None
+    )
+    sendEmail(email)
+  }
+//  def sendNominationNotificationEmail: Nomination => Unit = { nomination =>
+//    (nomination.to, nomination.from) match {
+//      case (Some(toUser), Some(fromUser)) => {
+//        val email = Email(
+//          "Feedbacker - You have been nominated to provide feedback",
+//          from,
+//          to(toUser.name, toUser.credentials.email),
+//          Some(Emailer.nominationBody(toUser.name, fromUser.name, getServerPath)),
+//          None
+//        )
+//        sendEmail(email)
+//      }
+//      case _ => Unit
+//    }
+//  }
 
 }
 
-object Email {
+object Emailer {
 
-  def sendActivationEmail(email: String): Unit = ???
-
-  def sendPasswordResetEmail(email: String): Unit = ???
-
-  def sendNominationNotificationEmail(email:String): Unit = ???
-
-
-  private def activationBody(name: String, st: SessionToken, serverPath: String): String = s"""Hi $name,
+  private def activationBody(name: String, st: SessionToken, serverPath: String): String = s"""
+            Hi $name,
 
             Thanks for registering to use Feedbacker.
 
@@ -69,13 +121,13 @@ object Email {
       (Feedback is always welcome)
       """.stripMargin
 
-  private def resetPasswordBody(name: String, st: SessionToken): String = s"""Hi $name,
+  private def resetPasswordBody(name: String, st: SessionToken, serverPath: String): String = s"""Hi $name,
 
             Thanks for registering to use Feedbacker.
 
             To reset your password please navigate to following link:
 
-            api/resetPassword?username=${st.username}&token=${st.token}
+            $serverPath/api/resetPassword?username=${st.username}&token=${st.token}
 
             Thanks
             The Feedback Team
@@ -83,5 +135,3 @@ object Email {
          """.stripMargin
 
 }
-
-case class AccountEmailRequest(sessionToken: SessionToken, person: Person)

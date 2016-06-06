@@ -22,7 +22,7 @@
   <div class="row top-buffer">
     <div class="col-md-1"></div>
     <div class="col-md-4">
-      <p>Make feedback visible to {{edit.feedback.feedbackForName}}?</p>
+      <p>Make feedback visible to {{edit.feedback.fromName}}?</p>
     </div>
     <div class="col-md-2">
       <div class="btn-group" role="group" aria-label="Answer options">
@@ -59,10 +59,10 @@
   </div>
   <div class="row top-buffer">
     <div class="col-md-2">
-      <button class="btn btn-primary" data-ng-click="edit.save(edit.feedback, true)">Save and Submit</button>
+      <button class="btn btn-primary" alt="This will make the feedback visible but you can still change it before the cut off date." data-ng-click="edit.save(edit.feedback, true)">Save and publish</button>
     </div>
     <div class="col-md-1">
-      <button class="btn btn-info" data-ng-click="edit.save(edit.feedback, false)">Save</button>
+      <button class="btn btn-info" data-ng-click="edit.save(edit.feedback, false)">Save for later</button>
     </div>
   	<div class="col-md-1">
       <a class="btn btn-default" href="#/list">Cancel</a>

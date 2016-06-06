@@ -18,8 +18,7 @@ libraryDependencies ++= Seq(
   "com.typesafe.play" %% "play-server"          % "2.5.3",
   "com.typesafe.play" %% "play-json"            % "2.5.3",
   "com.typesafe.play" %% "anorm" 				        % "2.5.0",
-//  "com.typesafe.play" %% "play-mailer"          % "5.0.0-M1",
-  "com.typesafe.play" %% "play-mailer"          % "4.0.0",
+  "com.typesafe.play" %% "play-mailer"          % "5.0.0-M1",
   "org.postgresql"    % "postgresql"            % "9.4-1201-jdbc41",
   "org.mindrot"       % "jbcrypt"               % "0.3m"
 )
