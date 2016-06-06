@@ -8,8 +8,7 @@
       <div class="col-md-5">
         <h1>Feedbacker!</h1>
         <h2>Because feedback is a gift</h2>
-        <p>Track the feedback you have been asked to provide...</p>
-        <!-- <p><a class="btn btn-primary btn-lg" href="#/about" role="button">Learn more &raquo;</a></p> -->
+        <p>Track the feedback you have been asked to provide...{{registration.message}}{{registration.error}}</p>
       </div>
       <div class="col-md-4" data-ng-controller="RegistrationCtrl as registration">
         <div class="row top-buffer" data-ng-show="registration.message">

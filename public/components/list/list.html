@@ -42,7 +42,7 @@
                 <td>{{pending.role}}</td>
                 <td>{{pending.managerName}}</td>
                 <td>{{pending.status}}</td>
-                <td>{{pending.lastUpdated}}</td>
+                <td>{{pending.lastUpdated | date: 'medium'}}</td>
                 <td>
                   <a data-ng-show="pending.status=='Closed'" href="#/detailView?id={{pending.id}}">View</a>
                   <a data-ng-show="pending.status!='Closed'" href="#/detailEdit?id={{pending.id}}">Edit</a>
@@ -79,7 +79,7 @@
                 <td>{{history.name}}</td>
                 <td>{{history.role}}</td>
                 <td>{{history.status}}</td>
-                <td>{{history.lastUpdated}}</td>
+                <td>{{history.lastUpdated | date: 'medium'}}</td>
                 <td>
                   <a data-ng-if="history.shared" href="#/detailView?id={{history.id}}">View</a>
                 </td>

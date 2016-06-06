@@ -148,11 +148,12 @@ class Nominations @Inject() (emailer: Emailer) extends AuthenticatedController {
 
   def cancelNomination(id: Long) = AuthenticatedAction { person =>
     val genericFail: JsValue = Json.obj("message" -> "Could not cancel nomination.")
+
     Nomination.getSummary(id) match {
-      case Some(Nomination(_, _, _,status, _, _, _)) if status != FeedbackStatus.New && status != FeedbackStatus.Pending =>
-        BadRequest(Json.obj("message" -> "Can only cancel nominations with a 'New' or 'Pending' status."))
-      case Some(Nomination(_, Some(p), _, _, _, _, _))
+      case Some(Nomination(_, Some(p), _, FeedbackStatus.New, _, _, _))
         if p.credentials.email == person.credentials.email => if (Nomination.cancelNomination(id)) Ok else BadRequest(genericFail)
+      case Some(Nomination(_, _, _,status, _, _, _)) if status != FeedbackStatus.New =>
+        BadRequest(Json.obj("message" -> "Can only cancel nominations with a 'New' status."))
       case None => BadRequest(genericFail)
     }
   }

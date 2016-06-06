@@ -1,7 +1,7 @@
 /*
  * Controller search for connection, uploading bulk connections and for sending connection/invitation requests
  */
-fbControllers.controller('MenuCtrl', ['$scope', '$log', '$location', 'Session', function($scope, $log, $location, Session) {
+fbControllers.controller('MenuCtrl', ['$rootScope', '$log', '$location', 'Session', function($rootScope, $log, $location, Session) {
 
 	var ctrl = this;
 
@@ -16,8 +16,8 @@ fbControllers.controller('MenuCtrl', ['$scope', '$log', '$location', 'Session', 
 			$log.debug("Logged in...");
 			$location.path("/list");
 		}, function(result) {
-			$log.error("Login FAILED!")
-			$scope.$broadcast('inactive-account', {});
+			$log.error("Login FAILED!");
+			$rootScope.$broadcast('inactive-account', {});
 			ctrl.error = "Could not log in.  Please try again later.";
 		});
 		ctrl.password = undefined;

@@ -13,8 +13,11 @@ fbControllers.controller('RegistrationCtrl',  ['$scope', '$log', '$location', 'A
 
 		Account.register(ctrl.name, ctrl.role, ctrl.email, ctrl.password, ctrl.managerEmail).then(function(response) {
 			ctrl.message = "Thankyou for registering.  An activation email has been sent to your email address."
-//			$location.path("#/list");
-//			$location.path("#/activation");
+			ctrl.name = undefined
+			ctrl.role = undefined
+			ctrl.email = undefined
+			ctrl.password = undefined
+			ctrl.managerEmail = undefined
 		}, function(response) {
 			ctrl.error = "We could not register you at this time."
 			$log.error("it failed")
@@ -24,7 +27,7 @@ fbControllers.controller('RegistrationCtrl',  ['$scope', '$log', '$location', 'A
 
 	$scope.$on('inactive-account', function() {
 		$log.debug("Account is inactive");
-		ctrl.error = "You account is not yet active.  Please follow the link sent in your activation email."
+		ctrl.error = "You account is not yet active.  Please follow the link sent in your activation email.";
 	});
 
 }]);

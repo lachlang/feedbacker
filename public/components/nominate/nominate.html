@@ -59,7 +59,7 @@
 								<span data-ng-hide="nominee.lastUpdated">--</span>
 							</td>
 			                <td>
-			                  	<a data-ng-show="nominee.status == 'New' || nominee.status == 'Pending'" class="btn btn-info" data-ng-click="nominate.cancelNomination(nominee.id)">Remove</a>
+			                  	<a data-ng-show="nominee.status == 'New'" class="btn btn-info" data-ng-click="nominate.cancelNomination(nominee.id)">Remove</a>
 			                  	<a data-ng-show="nominee.status=='Submitted' && nominee.id" href="#/detailView?id={{nominee.id}}">View</a>
 			                </td>
 	              		</tr>
