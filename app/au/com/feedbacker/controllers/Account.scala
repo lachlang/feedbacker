@@ -18,11 +18,14 @@ import scala.concurrent.Future
  */
 
 
-class Registration extends Controller {
+class Registration @Inject() (emailer: Emailer) extends Controller {
 
   def translateResultAndActivate(result: Either[Throwable, Person], errorMessage: String) : Result = result match {
-    case Left(e) => println(e.getMessage);BadRequest("{ \"body\": { \"message\": \"" + errorMessage + "\"}} ")
-    case Right(p) => ActivationCtrl.generateActivationEmail(p); Ok(Json.toJson(p))
+    case Left(e) => BadRequest("{ \"body\": { \"message\": \"" + errorMessage + "\"}} ")
+    case Right(p) => Activation.createActivationToken(p.credentials.email) match {
+      case None => BadRequest("{ \"body\": { \"message\": \"Could not send activation email.\"}} ")
+      case Some(st) => emailer.sendActivationEmail(p.name, st); Ok(Json.toJson(p))
+    }
   }
 
   def register: Action[JsValue] = Action(parse.json(maxLength = 2000)) { request =>
@@ -64,7 +67,7 @@ object RegistrationContent {
   )(RegistrationContent.apply, unlift(RegistrationContent.unapply))
 }
 
-class ActivationCtrl extends Controller {
+class ActivationCtrl @Inject() (emailer: Emailer) extends Controller {
 
   def activate = Action { request =>
     request.getQueryString("username").flatMap{username =>
@@ -78,32 +81,35 @@ class ActivationCtrl extends Controller {
   def sendActivationEmail = Action { request =>
     request.body.asJson.flatMap ( json => (json \ "body" \ "username").asOpt[String].flatMap(Person.findByEmail(_))) match {
       case None => BadRequest
-      case Some(person) => ActivationCtrl.generateActivationEmail(person); Ok
+      case Some(person) => Activation.createActivationToken(person.credentials.email) match {
+        case None => BadRequest
+        case Some(st) => emailer.sendActivationEmail(person.name, st); Ok
+      }
     }
   }
 
 }
 
-object ActivationCtrl {
-  def generateActivationEmail(person: Person): Unit = Activation.createActivationToken(person.credentials.email) match {
-    case Some(st) => {
-      val emailBody: String =
-        s"""Hi ${person.name},
-
-            Thanks for registering to use Feedbacker.
-
-            To activate your account please navigate to following link
-
-            api/activate?username=${st.username}&token=${st.token}
-
-            Thanks
-            The Feedback Team
-            (Feedback is always welcome)
-         """.stripMargin
-      println(emailBody)
-    } // send activation email
-  }
-}
+//object ActivationCtrl {
+//  def generateActivationEmail(person: Person): Unit = Activation.createActivationToken(person.credentials.email) match {
+//    case Some(st) => {
+//      val emailBody: String =
+//        s"""Hi ${person.name},
+//
+//            Thanks for registering to use Feedbacker.
+//
+//            To activate your account please navigate to following link
+//
+//            api/activate?username=${st.username}&token=${st.token}
+//
+//            Thanks
+//            The Feedback Team
+//            (Feedback is always welcome)
+//         """.stripMargin
+//      println(emailBody)
+//    } // send activation email
+//  }
+//}
 
 class ResetPassword @Inject() (emailer: Emailer) extends Controller {
 
