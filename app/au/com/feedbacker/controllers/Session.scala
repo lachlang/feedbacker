@@ -140,3 +140,8 @@ object AuthenticatedAction extends ActionFilter[Request] {
     }
   }
 }
+
+//object SslRedirectFilter extends Filter {
+//
+//  def apply(nextFilter: (RequestHeader) => Future[SimpleResult])(requ)
+//}
