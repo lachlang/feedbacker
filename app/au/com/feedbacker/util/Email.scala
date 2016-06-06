@@ -11,7 +11,7 @@ import play.api.libs.mailer.{Email, MailerClient}
 class Emailer @Inject() (mailerClient: MailerClient) {
 
   private def to(name: String, email: String) = Seq(s"""$name <$email>""")
-  private val from = "Feedbacker <no-reply@feedbacker.com.au"
+  private val from = "Feedbacker <no-reply@feedbacker.com.au>"
   private def getServerPath() = "localhost:9000"
 
   def sendEmail(email: Email): Unit = {
@@ -40,16 +40,6 @@ class Emailer @Inject() (mailerClient: MailerClient) {
     sendEmail(email)
   }
 
-//  def sendNominationNotificationEmail(toName: String, fromName: String, toEmail:String): Unit = {
-//    val email = Email(
-//      "Feedbacker - You have been nominated to provide feedback",
-//      from,
-//      to(toName, toEmail),
-//      Some(Emailer.nominationBody(toName, fromName, getServerPath)),
-//      None
-//    )
-//    sendEmail(email)
-//  }
   def sendNominationNotificationEmail: Nomination => Unit = { nomination =>
     (nomination.to, nomination.from) match {
       case (Some(toUser), Some(fromUser)) => {

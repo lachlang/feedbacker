@@ -55,12 +55,12 @@
 			                <td>{{nominee.to.role}}</td>
 			                <td>{{nominee.status}}</td>
 							<td>
-								<span data-ng-show="nominee.lastUpdated">{{nominee.lastUpdated}}</span>
+								<span data-ng-show="nominee.lastUpdated">{{nominee.lastUpdated | date : 'medium'}}</span>
 								<span data-ng-hide="nominee.lastUpdated">--</span>
 							</td>
 			                <td>
 			                  	<a data-ng-show="nominee.status == 'New' || nominee.status == 'Pending'" class="btn btn-info" data-ng-click="nominate.cancelNomination(nominee.id)">Remove</a>
-			                  	<a data-ng-show="nominee.status=='Submitted' && nominee.feedbackId" class="btn btn-info" href="#/viewDetail/id={{nominee.feedbackId}}">View</a>
+			                  	<a data-ng-show="nominee.status=='Submitted' && nominee.id" href="#/detailView?id={{nominee.id}}">View</a>
 			                </td>
 	              		</tr>
 	            	</tbody>
@@ -68,11 +68,5 @@
 	        </div>
 		</div>
 	</div>
-	<div class="row top-buffer">
-		<div class="col-sm-12">
-			<p>Click <a href="#/list">here</a> to go back.</p>
-		</div>
-	</div>
 
-	</div>
 </div>

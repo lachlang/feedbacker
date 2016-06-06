@@ -423,15 +423,15 @@ object Nomination {
   }
 
   def getPendingNominationsForUser(username: String): Seq[Nomination] = DB.withConnection { implicit connection =>
-      SQL("""select * from nominations where to_email = {email} and initiated_by != {email} and status != {status} and cycle_id in (select id from cycle where active = TRUE)""")
-        .on('email -> username, 'status -> FeedbackStatus.Cancelled.toString)
+      SQL("""select * from nominations where to_email = {email} and initiated_by != {email} and status NOT IN ({statusCancelled}, {statusCancelled}) and cycle_id in (select id from cycle where active = TRUE)""")
+        .on('email -> username, 'statusCancelled -> FeedbackStatus.Cancelled.toString, 'statusClosed -> FeedbackStatus.Closed.toString)
         .as(Nomination.simple *).map{case (a,b,c,d,e,f) => Nomination.enrich(a,b,c,d,e,f)}
   }
 
   def getCurrentNominationsFromUser(username: String): Seq[Nomination] = DB.withConnection { implicit connection =>
     Person.findByEmail(username) match {
-      case Some(_) => SQL( """select * from nominations where from_email = {email} and initiated_by = {email} and status = {status} and cycle_id in (select id from cycle where active = TRUE)""")
-        .on('email -> username, 'status -> FeedbackStatus.New.toString)
+      case Some(_) => SQL( """select * from nominations where from_email = {email} and initiated_by = {email} and status NOT IN ({statusCancelled}, {statusCancelled}) and cycle_id in (select id from cycle where active = TRUE)""")
+        .on('email -> username, 'statusCancelled -> FeedbackStatus.Cancelled.toString, 'statusClosed -> FeedbackStatus.Closed.toString)
         .as(Nomination.simple *).map { case (a, b, c, d, e, f) => Nomination.enrich(a, b, c, d, e, f) }
       case _ => Seq()
     }

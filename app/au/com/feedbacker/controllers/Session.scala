@@ -37,11 +37,6 @@ trait AuthenticatedController extends Controller {
 //      case Left(e) => BadRequest(Json.obj("message" -> e.getMessage))
 //      case Right(_) => Created
 //    }
-//  def wrapEither2[A](sideEffect: A => Unit): Either[Throwable, A] => Result = either =>
-//    either match {
-//      case Left(e) => BadRequest(Json.obj("message" -> e.getMessage))
-//      case Right(r) => sideEffect(r); Created
-//  }
   def wrapEither[A]: (Either[Throwable, A], A => Unit) => Result = (either, sideEffect) =>
     either match {
       case Left(e) => BadRequest(Json.obj("message" -> e.getMessage))
