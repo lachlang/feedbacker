@@ -5,13 +5,9 @@ import javax.inject.Inject
 import au.com.feedbacker.util.Emailer
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
-//import play.api.libs.json.Format._
 import play.api.mvc._
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
 import au.com.feedbacker.model._
-
-import scala.concurrent.Future
 
 /**
  * Created by lachlang on 09/05/2016.
@@ -90,43 +86,20 @@ class ActivationCtrl @Inject() (emailer: Emailer) extends Controller {
 
 }
 
-//object ActivationCtrl {
-//  def generateActivationEmail(person: Person): Unit = Activation.createActivationToken(person.credentials.email) match {
-//    case Some(st) => {
-//      val emailBody: String =
-//        s"""Hi ${person.name},
-//
-//            Thanks for registering to use Feedbacker.
-//
-//            To activate your account please navigate to following link
-//
-//            api/activate?username=${st.username}&token=${st.token}
-//
-//            Thanks
-//            The Feedback Team
-//            (Feedback is always welcome)
-//         """.stripMargin
-//      println(emailBody)
-//    } // send activation email
-//  }
-//}
-
 class ResetPassword @Inject() (emailer: Emailer) extends Controller {
 
-  def resetPassword = Action { request =>
-    val newPasswordOpt = request.body.asJson.flatMap { json => (json \ "body" \ "password").asOpt[String]}
-    val sessionTokenOpt = request.getQueryString("username").flatMap{username =>
-    request.getQueryString("token").map{token => SessionToken(username, token.replaceAll(" ", "+"))}}
+  def resetPassword = Action(parse.json(maxLength = 200)) { request =>
 
-    (newPasswordOpt, sessionTokenOpt) match {
-      case (Some(newPassword), Some(st)) =>
+    request.body.validate[ResetPasswordContent].asOpt match {
+      case Some(content) =>
+        val st = SessionToken(content.username, content.token.replaceAll(" ", "+"))
         if (!Activation.validateToken(st)) Forbidden
         else {
           Person.findByEmail(st.username) match {
             case None => BadRequest
-            case Some(p) => Person.update(p.setNewHash(Authentication.hash(newPassword))) match {
+            case Some(p) => Person.update(p.setNewHash(Authentication.hash(content.password))) match {
                   case Left(e) => BadRequest(Json.obj("message" -> e.getMessage))
-                  case Right(_) => Ok
+                  case Right(_) => Activation.expireToken(st.token);Ok
                 }
           }
         }
@@ -137,7 +110,8 @@ class ResetPassword @Inject() (emailer: Emailer) extends Controller {
 
   def sendPasswordResetEmail = Action { request =>
     request.body.asJson
-      .flatMap { json => (json \ "body" \ "username").asOpt[String](Reads.email) } match {
+      .flatMap { json => (json \ "body" \ "email").asOpt[String](Reads.email) } match {
+      case None => BadRequest
       case Some(username) => (Person.findByEmail(username),Activation.createActivationToken(username)) match {
         case (Some(p),Some(st)) => emailer.sendPasswordResetEmail(p.name, st); Ok
         case _ => BadRequest
@@ -145,3 +119,15 @@ class ResetPassword @Inject() (emailer: Emailer) extends Controller {
     }
   }
 }
+
+case class ResetPasswordContent(password: String, username: String, token: String)
+
+object ResetPasswordContent {
+
+  implicit val format: Format[ResetPasswordContent] = (
+      (JsPath \ "body" \ "password").format[String] and
+      (JsPath \ "body" \ "username").format[String](Reads.email) and
+      (JsPath \ "body" \ "token").format[String]
+    )(ResetPasswordContent.apply, unlift(ResetPasswordContent.unapply))
+}
+

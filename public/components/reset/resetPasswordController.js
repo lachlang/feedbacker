@@ -31,8 +31,8 @@ fbControllers.controller('ResetCtrl',  ['$scope', '$log', '$location', 'Account'
     ctrl.resetPassword = function(newPassword, passwordCheck) {
         ctrl.error = undefined;
         ctrl.message = undefined;
-        var username = $location.search("username");
-        var token = $location.search("token");
+        var username = $location.search()["username"];
+        var token = $location.search()["token"];
         if (newPassword != passwordCheck) {
             ctrl.error = "Passwords must match.";
             return;
@@ -44,9 +44,7 @@ fbControllers.controller('ResetCtrl',  ['$scope', '$log', '$location', 'Account'
         }
 
         Account.resetPassword(ctrl.newPassword, token, username).then(function() {
-            $location.search("username", null);
-            $location.search("token", null);
-            $location.path('#/list');
+            ctrl.message = "Password successfully updated."
         }, function() {
             ctrl.error = "Could not reset your password.  Please try again later."
         });

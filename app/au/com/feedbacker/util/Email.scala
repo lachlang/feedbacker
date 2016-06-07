@@ -67,7 +67,7 @@ object Emailer {
 
             To activate your account please navigate to following link
 
-            $serverPath/api/reset?username=${st.username}&token=${st.token}
+            $serverPath/api/activate?username=${st.username}&token=${st.token}
 
             Thanks
             The Feedback Team
@@ -117,7 +117,7 @@ object Emailer {
 
             To reset your password please navigate to following link:
 
-            $serverPath/api/resetPassword?username=${st.username}&token=${st.token}
+            $serverPath/#/resetPassword?username=${st.username}&token=${st.token}
 
             Thanks
             The Feedback Team
