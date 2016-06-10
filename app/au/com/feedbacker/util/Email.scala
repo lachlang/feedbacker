@@ -12,7 +12,11 @@ class Emailer @Inject() (mailerClient: MailerClient) {
 
   private def to(name: String, email: String) = Seq(s"""$name <$email>""")
   private val from = "Feedbacker <no-reply@feedbacker.com.au>"
-  private def getServerPath() = "localhost:9000"
+  private def getServerPath: String = {
+    val server = play.Play.application.configuration.getString("feedbacker.server.path")
+    val port = play.Play.application.configuration.getString("feedbacker.server.port")
+    s"""$server:$port"""
+  }
 
   def sendEmail(email: Email): Unit = {
     mailerClient.send(email)
@@ -34,7 +38,7 @@ class Emailer @Inject() (mailerClient: MailerClient) {
       "Feedbacker Password Reset",
       from,
       to(name, st.username),
-      Some(Emailer.resetPasswordBody(name, st, getServerPath())),
+      Some(Emailer.resetPasswordBody(name, st, getServerPath)),
       None
     )
     sendEmail(email)

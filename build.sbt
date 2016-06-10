@@ -36,7 +36,7 @@ dockerCommands := Seq(
   Cmd("FROM", "java:latest"),
   Cmd("WORKDIR", "/opt/docker"),
   Cmd("ADD", "opt", "/opt"),
-  ExecCmd("ENTRYPOINT", "/bin/Feedbacker"),
+  ExecCmd("ENTRYPOINT", "bin/feedbacker"),
   ExecCmd("CMD"),
-  ExecCmd("EXPOSE", "8080")
+  Cmd("EXPOSE", "8080")
 )
