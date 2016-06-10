@@ -1,3 +1,5 @@
+import com.typesafe.sbt.packager.docker.{ExecCmd, Cmd}
+
 name := """Feedbacker"""
 
 version := "1.0-SNAPSHOT"
@@ -30,3 +32,11 @@ resolvers += "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases"
 routesGenerator := InjectedRoutesGenerator
 
 
+dockerCommands := Seq(
+  Cmd("FROM", "java:latest"),
+  Cmd("WORKDIR", "/opt/docker"),
+  Cmd("ADD", "opt", "/opt"),
+  ExecCmd("ENTRYPOINT", "/bin/Feedbacker"),
+  ExecCmd("CMD"),
+  ExecCmd("EXPOSE", "8080")
+)
