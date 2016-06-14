@@ -65,7 +65,7 @@ object RegistrationContent {
 
 class ActivationCtrl @Inject() (emailer: Emailer) extends Controller {
 
-  def activate = Action { request =>
+  def activate = LoggingAction { request =>
     request.getQueryString("username").flatMap{username =>
       request.getQueryString("token").map{token => SessionToken(username, token.replaceAll(" ", "+"))}}
     match {
@@ -74,7 +74,7 @@ class ActivationCtrl @Inject() (emailer: Emailer) extends Controller {
     }
   }
 
-  def sendActivationEmail = Action { request =>
+  def sendActivationEmail = LoggingAction { request =>
     request.body.asJson.flatMap ( json => (json \ "body" \ "username").asOpt[String].flatMap(Person.findByEmail(_))) match {
       case None => BadRequest
       case Some(person) => Activation.createActivationToken(person.credentials.email) match {
@@ -88,7 +88,7 @@ class ActivationCtrl @Inject() (emailer: Emailer) extends Controller {
 
 class ResetPassword @Inject() (emailer: Emailer) extends Controller {
 
-  def resetPassword = Action(parse.json(maxLength = 200)) { request =>
+  def resetPassword = LoggingAction(parse.json(maxLength = 200)) { request =>
 
     request.body.validate[ResetPasswordContent].asOpt match {
       case Some(content) =>
@@ -108,7 +108,7 @@ class ResetPassword @Inject() (emailer: Emailer) extends Controller {
   }
 
 
-  def sendPasswordResetEmail = Action { request =>
+  def sendPasswordResetEmail = LoggingAction { request =>
     request.body.asJson
       .flatMap { json => (json \ "body" \ "email").asOpt[String](Reads.email) } match {
       case None => BadRequest

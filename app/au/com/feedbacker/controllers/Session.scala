@@ -5,6 +5,7 @@ import java.util.concurrent.{ConcurrentMap, ConcurrentHashMap}
 
 import java.util.Base64
 import org.mindrot.jbcrypt.BCrypt
+import play.Logger
 import play.api.libs.json._
 import play.api.mvc._
 
@@ -18,14 +19,14 @@ import scala.concurrent.Future
 
 trait AuthenticatedController extends Controller {
 
-  def AuthenticatedAction(body: Person => Result) = Action { request =>
+  def AuthenticatedAction(body: Person => Result) = LoggingAction { request =>
     Authentication.getUser(request) match {
       case Some(person) => body(person)
       case _ => Forbidden
     }
   }
 
-  def AuthenticatedRequestAction(body: (Person, JsValue) => Result) = Action { request =>
+  def AuthenticatedRequestAction(body: (Person, JsValue) => Result) = LoggingAction { request =>
     (Authentication.getUser(request), request.body.asJson) match {
       case (Some(person), Some(requestBody)) => body(person, requestBody)
       case _ => Forbidden
@@ -58,7 +59,7 @@ class Authentication extends Controller {
     }
   }
 
-  def logout = Action { request =>
+  def logout = LoggingAction { request =>
     SessionToken.extractToken(request) match {
       case Some(st) => st.signOut(Ok)
       case None => BadRequest
@@ -137,14 +138,26 @@ object SessionToken {
   private def destroySession(st: SessionToken): Unit = tokenMap.remove(st.token)
 }
 
-object AuthenticatedAction extends ActionFilter[Request] {
-  def filter[A](request: Request[A]): Future[Option[Result]] = Future.successful {
-    SessionToken.extractToken(request) match {
-      case Some(_) => None
-      case None => Some(Results.Status(401))
-    }
+object LoggingAction extends ActionBuilder[Request] {
+  def invokeBlock[A](request: Request[A], block: (Request[A]) => Future[Result]) = {
+    Logger.debug(s"""request path:${request.path}, body:${request.body.toString}""")
+    block(request)
   }
 }
+
+//object AuthenticatedAction extends ActionFilter[Request] {
+//  def filter[A](request: Request[A]): Future[Option[Result]] = Future.successful {
+//    Logger.info("test....")
+//    Logger.info(s"""request body: ${request.body.toString}""")
+//    SessionToken.extractToken(request) match {
+//      case Some(st) => {
+//        Logger.info(s"""username: ${st.username}""")
+//        None
+//      }
+//      case None => Some(Results.Status(401))
+//    }
+//  }
+//}
 
 //object SslRedirectFilter extends Filter {
 //
