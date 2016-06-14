@@ -14,10 +14,15 @@ fbControllers.controller('MenuCtrl', ['$rootScope', '$log', '$location', 'Sessio
 		// LG: 2016-04-26 use standard form validation only at this point
 		Session.login(ctrl.username, ctrl.password).then(function(result) {
 			$log.debug("Logged in...");
+			$log.info(result)
 			$location.path("/list");
-		}, function(result) {
+		}, function(response) {
 			$log.error("Login FAILED!");
-			$rootScope.$broadcast('inactive-account', {});
+			if (response.status == 401) {
+				$rootScope.$broadcast('inactive-account', {});
+			} else if (response.status == 400) {
+				$rootScope.$broadcast('invalid-credentials', {});
+			}
 			ctrl.error = "Could not log in.  Please try again later.";
 		});
 		ctrl.password = undefined;

@@ -1,7 +1,7 @@
 /*
  * Controller for feedback action
  */
-fbControllers.controller('RegistrationCtrl',  ['$scope', '$log', '$location', 'Account', function($scope, $log, $location, Account) {
+fbControllers.controller('RegistrationCtrl',  ['$rootScope', '$log', '$location', 'Account', function($rootScope, $log, $location, Account) {
 
 	var ctrl = this;
 	ctrl.error = undefined;
@@ -25,9 +25,14 @@ fbControllers.controller('RegistrationCtrl',  ['$scope', '$log', '$location', 'A
 		});
 	};
 
-	$scope.$on('inactive-account', function() {
+	$rootScope.$on('inactive-account', function() {
 		$log.debug("Account is inactive");
 		ctrl.error = "You account is not yet active.  Please follow the link sent in your activation email.";
+	});
+
+	$rootScope.$on('invalid-credentials', function() {
+		$log.debug("Invalid username/password");
+		ctrl.error = "Your username and password were invalid.";
 	});
 
 }]);

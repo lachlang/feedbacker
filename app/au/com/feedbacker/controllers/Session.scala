@@ -47,14 +47,34 @@ trait AuthenticatedController extends Controller {
 
 class Authentication extends Controller {
 
+  def loginOld = Action { request =>
+    val jsonBody: Option[JsValue] = request.body.asJson
+
+    jsonBody.map { json => ((json \ "body" \ "username").asOpt[String](Reads.email), (json \ "body" \ "password").asOpt[String]) } match {
+      case Some((Some(username), Some(password))) =>
+        SessionToken.initialiseToken(username, password) match {
+          case None => Forbidden
+          case Some(st) => st.signIn(Ok)
+        }
+      case _ => BadRequest
+    }
+  }
+
+  // NOTE: this is horrible but I'm tired
   def login = Action { request =>
     val jsonBody: Option[JsValue] = request.body.asJson
 
     jsonBody.map { json => ((json \ "body" \ "username").asOpt[String](Reads.email), (json \ "body" \ "password").asOpt[String]) } match {
-      case Some((Some(userName), Some(password))) => SessionToken.initialiseToken(userName, password) match {
-        case None => Forbidden
-        case Some(st) => st.signIn(Ok)
-      }
+      case Some((Some(username), Some(password))) =>
+        val personOpt = Person.findByEmail(username)
+        personOpt match {
+          case Some(p) => if (p.credentials.status == CredentialStatus.Inactive) Unauthorized else
+            SessionToken.initialiseToken2(personOpt, password) match {
+            case None => BadRequest
+            case Some(st) => st.signIn(Ok)
+          }
+          case None => Forbidden
+        }
       case _ => BadRequest
     }
   }
@@ -123,6 +143,15 @@ object SessionToken {
       if (!Authentication.validatePassword(password, p.credentials.hash)) None else {
         val token = generateToken
         Some(SessionToken(username, token))
+      }
+    }
+  }
+
+  def initialiseToken2(person: Option[Person], password: String): Option[SessionToken] = {
+    person.filter{_.credentials.status == CredentialStatus.Active}.flatMap{p =>
+      if (!Authentication.validatePassword(password, p.credentials.hash)) None else {
+        val token = generateToken
+        Some(SessionToken(p.credentials.email, token))
       }
     }
   }

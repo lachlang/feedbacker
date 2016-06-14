@@ -9,7 +9,7 @@ var feedbackerApp = angular.module('feedbacker', ['feedbacker.services','feedbac
         return {
             responseError: function(rejection) {
 
-            	if(rejection.status === 401 || rejection.status == 403) {
+            	if(rejection.status == 403) {
                     $rootScope.$broadcast("unauthenticated", {});
                 	$cookies.remove("FEEDBACKER_SESSION");
                 }

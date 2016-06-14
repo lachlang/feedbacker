@@ -14,9 +14,8 @@ fbServices.service('Session', ['$rootScope', '$location', '$log','$http', '$q', 
 
 	return {
 		login: function (username, password) {
-			var deferred = $q.defer();
 
-			$http({
+			return $http({
 				method: "PUT",
 				url: "/api/session/login",
 				data: {
@@ -26,12 +25,7 @@ fbServices.service('Session', ['$rootScope', '$location', '$log','$http', '$q', 
 						password: password
 					}
 				}
-			}).then(function(result) {
-				deferred.resolve(result)
-			}, function() {
-				deferred.reject();
-			});
-			return deferred.promise;
+			})
 		},
 
 		logout: callLogout,
