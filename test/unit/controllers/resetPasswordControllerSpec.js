@@ -19,7 +19,7 @@ describe('edit reset password controller [ResetCtrl]', function() {
         spyOn(account, 'resetPassword').and.returnValue(deferred.promise);
 
         location = $location;
-        spyOn(location, "search").and.returnValue({"username":"a@b.c", "token":"abcdefghij"});
+        spyOn(location, "search").and.returnValue({"username":"a@b.co", "token":"abcdefghij"});
         spyOn(location, "path");
 
 		resetController = $controller('ResetCtrl',{$scope: scope });
@@ -125,12 +125,9 @@ describe('edit reset password controller [ResetCtrl]', function() {
             deferred.resolve();
             scope.$digest();
 
-            expect(location.search).toHaveBeenCalledWith("username");
-            expect(location.search).toHaveBeenCalledWith("token");
-            expect(location.search).toHaveBeenCalledWith("username", null);
-            expect(location.search).toHaveBeenCalledWith("token", null);
-            expect(location.path).toHaveBeenCalledWith("#/list");
-            expect(resetController.message).toBeUndefined();
+            expect(location.search).toHaveBeenCalled();
+            expect(account.resetPassword).toHaveBeenCalledWith("testtest", "abcdefghij", "a@b.co");
+            expect(resetController.message).toEqual("Password successfully updated.");
             expect(resetController.error).not.toBeDefined();
         });
 
@@ -155,7 +152,7 @@ describe('edit reset password controller [ResetCtrl]', function() {
         });
 
         it('should check for token', function() {
-            location.search.and.returnValue(undefined);
+            location.search.and.returnValue({});
 
             resetController.resetPassword("test", "test");
 

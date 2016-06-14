@@ -43,7 +43,7 @@ fbControllers.controller('ResetCtrl',  ['$scope', '$log', '$location', 'Account'
             ctrl.error = "Please choose a password of minimum 8 characters in length."
         }
 
-        Account.resetPassword(ctrl.newPassword, token, username).then(function() {
+        Account.resetPassword(newPassword, token, username).then(function() {
             ctrl.message = "Password successfully updated."
         }, function() {
             ctrl.error = "Could not reset your password.  Please try again later."
