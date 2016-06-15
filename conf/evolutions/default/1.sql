@@ -36,7 +36,7 @@ create table nominations (
 	status					varchar(20) not null,
 	last_updated			timestamp,
 	cycle_id 				bigint not null,
-	shared 					boolean not null default false,
+	shared 					boolean not null default true,
 	constraint ck_nominations_status check (status in ('New','Pending','Submitted','Cancelled', 'Closed')),
 	constraint pk_nominations primary key (id)
 );

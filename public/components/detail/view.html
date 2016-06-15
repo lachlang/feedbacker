@@ -17,8 +17,11 @@
 		<span>{{question.text}}</span>
 	</div>
 	<div class="col-md-2">
-		<div class="btn-group" role="group" aria-label="Answer options">
+		<div class="btn-group" data-ng-if="question.format == 'RADIO" role="group" aria-label="Answer options">
 			<span data-ng-repeat="option in question.responseOptions" class="btn" data-ng-class="option==question.response ? 'btn-primary' : ['disabled', 'btn-default']">{{option}}</span>
+		</div>
+		<div data-ng-if="question.format == 'SELECT'">
+			<p>{{question.response}}</p>
 		</div>
 	</div>
 	<div class="col-md-5">
