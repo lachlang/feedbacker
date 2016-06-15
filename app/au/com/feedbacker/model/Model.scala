@@ -322,23 +322,25 @@ object Activation {
   }
 }
 
-case class QuestionResponse(id: Option[Long], text: String, responseOptions: Seq[String], response: Option[String], comments: Option[String])
+case class QuestionResponse(id: Option[Long], text: String, format: String, responseOptions: Seq[String], response: Option[String], comments: Option[String])
 
 object QuestionResponse {
 
   val simple = {
     get[Option[Long]]("question_response.id") ~
       get[String]("question_response.text") ~
+      get[String]("question_response.render_format") ~
       get[String]("question_response.response_options") ~
       get[Option[String]]("question_response.response") ~
       get[Option[String]]("question_response.comments") map {
-      case id~text~responseOptions~response~comments => QuestionResponse(id, text, responseOptions.split(","), response, comments)
+      case id~text~format~responseOptions~response~comments => QuestionResponse(id, text, format, responseOptions.split(","), response, comments)
     }
   }
 
   implicit val format: Format[QuestionResponse] = (
       (JsPath \ "id").formatNullable[Long] and
       (JsPath \ "text").format[String] and
+      (JsPath \ "format").format[String] and
       (JsPath \ "responseOptions").format[Seq[String]] and
       (JsPath \ "response").formatNullable[String] and
       (JsPath \ "comments").formatNullable[String]
@@ -356,8 +358,8 @@ object QuestionResponse {
 
   def initialiseResponses(nominationId :Long, questions: Seq[QuestionTemplate]): Boolean = DB.withConnection { implicit connection =>
     questions.map { q =>
-    SQL("""insert into question_response (nomination_id, text, response_options) values ({nominationId}, {text}, {responseOptions})""")
-      .on('nominationId -> nominationId, 'text -> q.text, 'responseOptions -> q.responseOptions.mkString(",")).executeInsert() match {
+    SQL("""insert into question_response (nomination_id, text, render_format, response_options) values ({nominationId}, {text}, {format}, {responseOptions})""")
+      .on('nominationId -> nominationId, 'text -> q.text, 'format -> q.format, 'responseOptions -> q.responseOptions.mkString(",")).executeInsert() match {
         case Some(_) => true
         case None => false
       }
@@ -365,15 +367,16 @@ object QuestionResponse {
   }
 }
 
-case class QuestionTemplate(id: Option[Long], text: String, responseOptions: Seq[String])
+case class QuestionTemplate(id: Option[Long], text: String, format: String, responseOptions: Seq[String])
 
 object QuestionTemplate {
 
   val simple = {
     get[Option[Long]]("question_templates.id") ~
       get[String]("question_templates.text") ~
+      get[String]("question_templates.render_format") ~
       get[String]("question_templates.response_options") map {
-      case id~text~responseOptions => QuestionTemplate(id, text, responseOptions.split(","))
+      case id~text~format~responseOptions => QuestionTemplate(id, text, format, responseOptions.split(","))
     }
   }
 

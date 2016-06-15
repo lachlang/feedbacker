@@ -59,9 +59,11 @@ create index cycle_label_idx on cycle (label);
 create table question_templates (
 	id 						bigserial,
 	text					varchar(4096) not null,
+	render_format 			varchar(50) not null,
 	response_options		varchar(1024) not null,
 	cycle_id				bigint not null,
-	constraint pk_question_templates primary key (id)
+	constraint pk_question_templates primary key (id),
+	constraint ch_template_render check (render_format in ('RADIO', 'SELECT'))
 );
 
 create index question_template_cycle_idx on question_templates (cycle_id);
@@ -69,11 +71,13 @@ create index question_template_cycle_idx on question_templates (cycle_id);
 create table question_response (
 	id 						bigserial,
 	nomination_id			bigint not null,
+	render_format 			varchar(50) not null,
 	text					varchar(4096) not null,
 	response_options		varchar(1024) not null,
 	response 				varchar(255),
 	comments 				varchar(8192),
-	constraint pk_question_response primary key (id)
+	constraint pk_question_response primary key (id),
+	constraint ch_response_render check (render_format in ('RADIO', 'SELECT'))
 );
 
 create index question_response_nomination_idx on question_response (nomination_id);
