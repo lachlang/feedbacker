@@ -10,6 +10,7 @@ create table person (
   pass_hash                 varchar(255) not null,
   user_status				varchar(20) not null,
   manager_email				varchar(255) not null,
+  is_manager				boolean not null default false,
   constraint ch_person_status check (user_status in ('Active', 'Nominated', 'Inactive', 'Restricted')),
   constraint uq_person_email unique (email),
   constraint pk_person primary key (id)

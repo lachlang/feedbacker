@@ -71,7 +71,7 @@ object Emailer {
 
             To activate your account please navigate to following link
 
-            $serverPath/api/activate?username=${st.username}&token=${st.token}
+            http://$serverPath/api/activate?username=${st.username}&token=${st.token}
 
             Thanks
             The Feedback Team
@@ -88,7 +88,7 @@ object Emailer {
 
        To sign up to Feedbacker and submit your response, please navigate to:
 
-       $serverPath/#/landing
+       http://$serverPath/#/landing
 
        Thanks
        The Feedbacker Team
@@ -108,7 +108,7 @@ object Emailer {
 
       To sign up to Feedbacker and submit your response, please navigate to:
 
-      $serverPath/#/landing
+      http://$serverPath/#/landing
 
       Thanks
       The Feedbacker Team
@@ -121,7 +121,7 @@ object Emailer {
 
             To reset your password please navigate to following link:
 
-            $serverPath/#/resetPassword?username=${st.username}&token=${st.token}
+            http://$serverPath/#/resetPassword?username=${st.username}&token=${st.token}
 
             Thanks
             The Feedback Team
