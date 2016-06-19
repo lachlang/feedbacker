@@ -4,8 +4,6 @@ import au.com.feedbacker.controllers.SessionToken
 import org.joda.time.DateTime
 import anorm.JodaParameterMetaData._
 
-import play.api.Play.current
-
 import javax.inject.Inject
 import anorm._
 import anorm.SqlParser._
@@ -221,15 +219,6 @@ object Person {
   }
 
   implicit val writes: Writes[Person] = Json.writes[Person]
-
-//   Queries
-  /**
-   * Retrieve a person by id address.
-   */
-
-  def findByEmail(email: String): Option[Person] = play.api.db.DB.withConnection { implicit connection =>
-    SQL("select * from person where email = {email}").on('email -> email).as(Person.simple.singleOpt)
-  }
 }
 
 case class Nominee(name: Person.Name, email: Person.Username, role: String)

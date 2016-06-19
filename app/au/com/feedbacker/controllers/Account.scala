@@ -41,13 +41,10 @@ class Registration @Inject() (emailer: Emailer,
   }
 }
 
-class Account extends AuthenticatedController {
+class Account @Inject() (person: PersonDao) extends AuthenticatedController(person) {
 
-  def getUser = Action { request =>
-    Authentication.getUser(request) match {
-      case Some(user) => Ok(Json.obj("body" -> Json.toJson(user)))
-      case _ => Forbidden
-    }
+  def getUser = AuthenticatedAction { user =>
+     Ok(Json.obj("body" -> Json.toJson(user)))
   }
 
   // TODO: add update functions here

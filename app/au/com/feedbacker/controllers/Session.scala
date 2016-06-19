@@ -18,27 +18,24 @@ import scala.concurrent.Future
  * Created by lachlang on 09/05/2016.
  */
 
-trait AuthenticatedController extends Controller {
+class AuthenticatedController(person: PersonDao) extends Controller {
 
   def AuthenticatedAction(body: Person => Result) = LoggingAction { request =>
-    Authentication.getUser(request) match {
+    getUser(request) match {
       case Some(person) => body(person)
       case _ => Forbidden
     }
   }
 
   def AuthenticatedRequestAction(body: (Person, JsValue) => Result) = LoggingAction { request =>
-    (Authentication.getUser(request), request.body.asJson) match {
+    (getUser(request), request.body.asJson) match {
       case (Some(person), Some(requestBody)) => body(person, requestBody)
       case _ => Forbidden
     }
   }
 
-//  def wrapEither[A]: Either[Throwable, A] => Result = either =>
-//    either match {
-//      case Left(e) => BadRequest(Json.obj("message" -> e.getMessage))
-//      case Right(_) => Created
-//    }
+  private def getUser(request: RequestHeader): Option[Person] = SessionToken.extractToken(request).flatMap(st => person.findByEmail(st.username))
+
   def wrapEither[A]: (Either[Throwable, A], A => Unit) => Result = (either, sideEffect) =>
     either match {
       case Left(e) => BadRequest(Json.obj("message" -> e.getMessage))
@@ -53,7 +50,9 @@ class Authentication @Inject() (person: PersonDao) extends Controller {
 
     jsonBody.map { json => ((json \ "body" \ "username").asOpt[String](Reads.email), (json \ "body" \ "password").asOpt[String]) } match {
       case Some((Some(username), Some(password))) =>
-        SessionToken.initialiseToken(username, password) match {
+        val personOpt = person.findByEmail(username)
+
+        SessionToken.initialiseToken(personOpt, password) match {
           case None => Forbidden
           case Some(st) => st.signIn(Ok)
         }
@@ -70,7 +69,7 @@ class Authentication @Inject() (person: PersonDao) extends Controller {
         val personOpt = person.findByEmail(username)
         personOpt match {
           case Some(p) => if (p.credentials.status == CredentialStatus.Inactive) Unauthorized else
-            SessionToken.initialiseToken2(personOpt, password) match {
+            SessionToken.initialiseToken(personOpt, password) match {
             case None => BadRequest
             case Some(st) => st.signIn(Ok)
           }
@@ -93,8 +92,6 @@ object Authentication {
   def hash(planetext :String): String = BCrypt.hashpw(planetext, BCrypt.gensalt())
 
   def validatePassword(cleartext: String, hash: String): Boolean = BCrypt.checkpw(cleartext, hash)
-
-  def getUser(request: RequestHeader): Option[Person] = SessionToken.extractToken(request).flatMap(st => Person.findByEmail(st.username))
 
 }
 
@@ -123,7 +120,7 @@ case class SessionToken(username: String, token: String) {
 object SessionToken {
 
   protected val cookieName: String = "FEEDBACKER_SESSION"
-  protected val cookieMaxAge: Option[Int] = Some(60 * 60 * 10) // 60 minutes * 60 seconds
+  protected val cookieMaxAge: Option[Int] = Some(60 * 60 * 2) // 60 minutes * 60 seconds * 2 hours
   protected val cookiePathOption: String = "/"
   protected val cookieDomainOption: Option[String] = None
   protected val secureOnly : Boolean = false
@@ -139,16 +136,7 @@ object SessionToken {
 
   def validateToken(token: String): Option[SessionToken] = Some(SessionToken(tokenMap.get(token),token))
 
-  def initialiseToken(username: String, password: String): Option[SessionToken] = {
-    Person.findByEmail(username).filter{_.credentials.status == CredentialStatus.Active}.flatMap{p =>
-      if (!Authentication.validatePassword(password, p.credentials.hash)) None else {
-        val token = generateToken
-        Some(SessionToken(username, token))
-      }
-    }
-  }
-
-  def initialiseToken2(person: Option[Person], password: String): Option[SessionToken] = {
+  def initialiseToken(person: Option[Person], password: String): Option[SessionToken] = {
     person.filter{_.credentials.status == CredentialStatus.Active}.flatMap{p =>
       if (!Authentication.validatePassword(password, p.credentials.hash)) None else {
         val token = generateToken
@@ -174,20 +162,6 @@ object LoggingAction extends ActionBuilder[Request] {
     block(request)
   }
 }
-
-//object AuthenticatedAction extends ActionFilter[Request] {
-//  def filter[A](request: Request[A]): Future[Option[Result]] = Future.successful {
-//    Logger.info("test....")
-//    Logger.info(s"""request body: ${request.body.toString}""")
-//    SessionToken.extractToken(request) match {
-//      case Some(st) => {
-//        Logger.info(s"""username: ${st.username}""")
-//        None
-//      }
-//      case None => Some(Results.Status(401))
-//    }
-//  }
-//}
 
 //object SslRedirectFilter extends Filter {
 //

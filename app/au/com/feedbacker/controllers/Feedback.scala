@@ -14,7 +14,7 @@ import org.joda.time.DateTime
 /**
  * Created by lachlang on 09/05/2016.
  */
-class Feedback @Inject() (person: PersonDao, nomination: NominationDao) extends AuthenticatedController {
+class Feedback @Inject() (person: PersonDao, nomination: NominationDao) extends AuthenticatedController(person) {
 
   def getPendingFeedbackActions = AuthenticatedAction { user =>
     Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(nomination.getPendingNominationsForUser(user.credentials.email) .map {
@@ -116,7 +116,7 @@ class Nominations @Inject() (emailer: Emailer,
                              person: PersonDao,
                              nomination: NominationDao,
                              feedbackCycle: FeedbackCycleDao,
-                             nominee: NomineeDao) extends AuthenticatedController {
+                             nominee: NomineeDao) extends AuthenticatedController(person) {
 
   def getCurrentNominations = AuthenticatedAction { person =>
     Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(nomination.getCurrentNominationsFromUser(person.credentials.email))))
