@@ -42,4 +42,8 @@ fbControllers.controller('MenuCtrl', ['$rootScope', '$log', '$location', 'Sessio
 		return Session.validSession();
 	}
 
+	ctrl.isActive = function (viewLocation) {
+		return viewLocation === $location.path();
+	};
+
 }]);

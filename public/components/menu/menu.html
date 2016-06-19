@@ -7,9 +7,14 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="#/">Feedbacker</a>
-      <a data-ng-if="menu.isLoggedIn()" class="navbar-brand" href="#/list">Feedback Summary</a>
-      <a data-ng-if="menu.isLoggedIn()" class="navbar-brand" href="#/nominate">Nominations</a>
+      <ul class="nav navbar-nav">
+        <li data-ng-class="{ active: menu.isActive('/landing')}"><a class="navbar-brand" href="#/">Feedbacker</a></li>
+        <li data-ng-class="{ active: menu.isActive('/list')}"><a class="navbar-brand" data-ng-if="menu.isLoggedIn()" href="#/list">Feedback Summary</a></li>
+        <li data-ng-class="{ active: menu.isActive('/nominate')}"><a data-ng-if="menu.isLoggedIn()" class="navbar-brand" href="#/nominate">Nominations</a></li>
+      </ul>
+
+
+
     </div>
     <div data-ng-if="!menu.isLoggedIn()" id="navbar" class="navbar-collapse collapse">
       <form class="navbar-form navbar-right" data-ng-submit="menu.login()">
