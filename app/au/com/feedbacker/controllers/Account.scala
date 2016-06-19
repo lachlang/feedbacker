@@ -14,11 +14,14 @@ import au.com.feedbacker.model._
  */
 
 
-class Registration @Inject() (emailer: Emailer) extends Controller {
+class Registration @Inject() (emailer: Emailer,
+                              person: PersonDao,
+                              credentials: CredentialsDao,
+                              activation: ActivationDao) extends Controller {
 
   def translateResultAndActivate(result: Either[Throwable, Person], errorMessage: String) : Result = result match {
     case Left(e) => BadRequest("{ \"body\": { \"message\": \"" + errorMessage + "\"}} ")
-    case Right(p) => Activation.createActivationToken(p.credentials.email) match {
+    case Right(p) => activation.createActivationToken(p.credentials.email) match {
       case None => BadRequest("{ \"body\": { \"message\": \"Could not send activation email.\"}} ")
       case Some(st) => emailer.sendActivationEmail(p.name, st); Ok(Json.toJson(p))
     }
@@ -29,10 +32,10 @@ class Registration @Inject() (emailer: Emailer) extends Controller {
 
     request.body.validate[RegistrationContent].asOpt match {
       case None => BadRequest("{ \"body\": { \"message\": \"Could not parse request.\"}} ")
-      case Some(body) => Credentials.findStatusByEmail(body.email) match {
-        case Some((id, CredentialStatus.Nominated)) => translateResultAndActivate(Person.update(Person(Some(id), body.name, body.role, Credentials(body.email, Authentication.hash(body.password), CredentialStatus.Inactive), body.managerEmail)), errorMessage)
+      case Some(body) => credentials.findStatusByEmail(body.email) match {
+        case Some((id, CredentialStatus.Nominated)) => translateResultAndActivate(person.update(Person(Some(id), body.name, body.role, Credentials(body.email, Authentication.hash(body.password), CredentialStatus.Inactive), body.managerEmail)), errorMessage)
         case Some((_, _)) => Conflict("{ \"body\": { \"message\": \"User is already registered.\"}} ")
-        case None => translateResultAndActivate(Person.create(Person(None, body.name, body.role, Credentials(body.email, Authentication.hash(body.password), CredentialStatus.Inactive), body.managerEmail)), errorMessage)
+        case None => translateResultAndActivate(person.create(Person(None, body.name, body.role, Credentials(body.email, Authentication.hash(body.password), CredentialStatus.Inactive), body.managerEmail)), errorMessage)
       }
     }
   }
@@ -63,21 +66,21 @@ object RegistrationContent {
   )(RegistrationContent.apply, unlift(RegistrationContent.unapply))
 }
 
-class ActivationCtrl @Inject() (emailer: Emailer) extends Controller {
+class ActivationCtrl @Inject() (emailer: Emailer, person: PersonDao, activation: ActivationDao) extends Controller {
 
   def activate = LoggingAction { request =>
     request.getQueryString("username").flatMap{username =>
       request.getQueryString("token").map{token => SessionToken(username, token.replaceAll(" ", "+"))}}
     match {
       case None => BadRequest
-      case Some(st) => if (!Activation.validateToken(st)) Forbidden else if (Activation.activate(st)) st.signIn(Redirect("/#/list")) else BadRequest
+      case Some(st) => if (!activation.validateToken(st)) Forbidden else if (activation.activate(st)) st.signIn(Redirect("/#/list")) else BadRequest
     }
   }
 
   def sendActivationEmail = LoggingAction { request =>
-    request.body.asJson.flatMap ( json => (json \ "body" \ "username").asOpt[String].flatMap(Person.findByEmail(_))) match {
+    request.body.asJson.flatMap ( json => (json \ "body" \ "username").asOpt[String].flatMap(person.findByEmail(_))) match {
       case None => BadRequest
-      case Some(person) => Activation.createActivationToken(person.credentials.email) match {
+      case Some(person) => activation.createActivationToken(person.credentials.email) match {
         case None => BadRequest
         case Some(st) => emailer.sendActivationEmail(person.name, st); Ok
       }
@@ -86,20 +89,22 @@ class ActivationCtrl @Inject() (emailer: Emailer) extends Controller {
 
 }
 
-class ResetPassword @Inject() (emailer: Emailer) extends Controller {
+class ResetPassword @Inject() (emailer: Emailer,
+                               person: PersonDao,
+                               activation: ActivationDao) extends Controller {
 
   def resetPassword = LoggingAction(parse.json(maxLength = 200)) { request =>
 
     request.body.validate[ResetPasswordContent].asOpt match {
       case Some(content) =>
         val st = SessionToken(content.username, content.token.replaceAll(" ", "+"))
-        if (!Activation.validateToken(st)) Forbidden
+        if (!activation.validateToken(st)) Forbidden
         else {
-          Person.findByEmail(st.username) match {
+          person.findByEmail(st.username) match {
             case None => BadRequest
-            case Some(p) => Person.update(p.setNewHash(Authentication.hash(content.password))) match {
+            case Some(p) => person.update(p.setNewHash(Authentication.hash(content.password))) match {
                   case Left(e) => BadRequest(Json.obj("message" -> e.getMessage))
-                  case Right(_) => Activation.expireToken(st.token);Ok
+                  case Right(_) => activation.expireToken(st.token);Ok
                 }
           }
         }
@@ -107,12 +112,11 @@ class ResetPassword @Inject() (emailer: Emailer) extends Controller {
     }
   }
 
-
   def sendPasswordResetEmail = LoggingAction { request =>
     request.body.asJson
       .flatMap { json => (json \ "body" \ "email").asOpt[String](Reads.email) } match {
       case None => BadRequest
-      case Some(username) => (Person.findByEmail(username),Activation.createActivationToken(username)) match {
+      case Some(username) => (person.findByEmail(username),activation.createActivationToken(username)) match {
         case (Some(p),Some(st)) => emailer.sendPasswordResetEmail(p.name, st); Ok
         case _ => BadRequest
       }

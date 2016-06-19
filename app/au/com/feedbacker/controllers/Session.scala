@@ -4,6 +4,7 @@ import java.security.SecureRandom
 import java.util.concurrent.{ConcurrentMap, ConcurrentHashMap}
 
 import java.util.Base64
+import javax.inject.Inject
 import org.mindrot.jbcrypt.BCrypt
 import play.Logger
 import play.api.libs.json._
@@ -45,7 +46,7 @@ trait AuthenticatedController extends Controller {
     }
 }
 
-class Authentication extends Controller {
+class Authentication @Inject() (person: PersonDao) extends Controller {
 
   def loginOld = Action { request =>
     val jsonBody: Option[JsValue] = request.body.asJson
@@ -66,7 +67,7 @@ class Authentication extends Controller {
 
     jsonBody.map { json => ((json \ "body" \ "username").asOpt[String](Reads.email), (json \ "body" \ "password").asOpt[String]) } match {
       case Some((Some(username), Some(password))) =>
-        val personOpt = Person.findByEmail(username)
+        val personOpt = person.findByEmail(username)
         personOpt match {
           case Some(p) => if (p.credentials.status == CredentialStatus.Inactive) Unauthorized else
             SessionToken.initialiseToken2(personOpt, password) match {

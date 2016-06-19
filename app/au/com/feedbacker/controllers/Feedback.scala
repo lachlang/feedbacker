@@ -14,12 +14,12 @@ import org.joda.time.DateTime
 /**
  * Created by lachlang on 09/05/2016.
  */
-class Feedback extends AuthenticatedController {
+class Feedback @Inject() (person: PersonDao, nomination: NominationDao) extends AuthenticatedController {
 
-  def getPendingFeedbackActions = AuthenticatedAction { person =>
-    Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(Nomination.getPendingNominationsForUser(person.credentials.email) .map {
+  def getPendingFeedbackActions = AuthenticatedAction { user =>
+    Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(nomination.getPendingNominationsForUser(user.credentials.email) .map {
       case Nomination(id, Some(from), _, status, lastUpdated, _, shared) =>
-        val managerName: String = Person.findByEmail(from.managerEmail) match {
+        val managerName: String = person.findByEmail(from.managerEmail) match {
           case Some(p) => p.name
           case None => from.managerEmail
         }
@@ -34,7 +34,7 @@ class Feedback extends AuthenticatedController {
         val questionsJson: JsResult[Seq[QuestionResponse]] = json.validate[Seq[QuestionResponse]]((JsPath \ "body" \ "questions").read[Seq[QuestionResponse]])
         (questionsJson, submittedJson) match {
           case (JsSuccess(questions,_), JsSuccess(submitted,_)) =>
-            if (Nomination.submitFeedback(nominationId, questions, submitted)) Ok else BadRequest
+            if (nomination.submitFeedback(nominationId, questions, submitted)) Ok else BadRequest
           case _ => BadRequest
         }
       }
@@ -49,11 +49,11 @@ class Feedback extends AuthenticatedController {
   }
 
   def getCurrentFeedbackItemsForSelf = AuthenticatedAction { person =>
-    Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(Nomination.getCurrentFeedbackForUser(person.credentials.email))))
+    Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(nomination.getCurrentFeedbackForUser(person.credentials.email))))
   }
 
   def getFeedbackHistoryForSelf = AuthenticatedAction { person  =>
-    Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(Nomination.getHistoryFeedbackForUser(person.credentials.email))))
+    Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(nomination.getHistoryFeedbackForUser(person.credentials.email))))
   }
 
   def getCurrentFeedbackItemsForUser(id: Long) = AuthenticatedAction { person =>
@@ -66,17 +66,17 @@ class Feedback extends AuthenticatedController {
 
   private val nominationWriteFilter: (Nomination, String) => Boolean = (n, email) => n.to.map(_.credentials.email == email).getOrElse(false)
 
-  private val nominationReadFilter: (Option[Person], String) => Boolean = (person, email) => person match {
+  private val nominationReadFilter: (Option[Person], String) => Boolean = (user, email) => user match {
     case None => false
     case Some(fromPerson) if fromPerson.credentials.email == email => true
-    case Some(fromPerson) => nominationReadFilter(Person.findByEmail(fromPerson.managerEmail), email)
+    case Some(fromPerson) => nominationReadFilter(person.findByEmail(fromPerson.managerEmail), email)
   }
 
   private def validateWritePermission(nominationId: Long, toPerson: Person): Option[Nomination] =
-    Nomination.getDetail(nominationId).filter(nominationWriteFilter(_, toPerson.credentials.email))
+    nomination.getDetail(nominationId).filter(nominationWriteFilter(_, toPerson.credentials.email))
 
   private def validateReadPermission(nominationId: Long, fromPerson: Person): Option[Nomination] =
-    Nomination.getDetail(nominationId).filter( n =>
+    nomination.getDetail(nominationId).filter( n =>
       nominationReadFilter(n.from, fromPerson.credentials.email) || nominationWriteFilter(n, fromPerson.credentials.email))
 
 }
@@ -112,14 +112,18 @@ object DetailItem {
   }
 }
 
-class Nominations @Inject() (emailer: Emailer) extends AuthenticatedController {
+class Nominations @Inject() (emailer: Emailer,
+                             person: PersonDao,
+                             nomination: NominationDao,
+                             feedbackCycle: FeedbackCycleDao,
+                             nominee: NomineeDao) extends AuthenticatedController {
 
   def getCurrentNominations = AuthenticatedAction { person =>
-    Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(Nomination.getCurrentNominationsFromUser(person.credentials.email))))
+    Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(nomination.getCurrentNominationsFromUser(person.credentials.email))))
   }
 
   def getNomineeCandidates = AuthenticatedAction { person =>
-    Ok(Json.obj("body" -> Json.toJson(Nominee.findNomineeCandidates)))
+    Ok(Json.obj("body" -> Json.toJson(nominee.findNomineeCandidates)))
   }
 
   def createNomination = AuthenticatedRequestAction { (fromUser, json) =>
@@ -127,16 +131,16 @@ class Nominations @Inject() (emailer: Emailer) extends AuthenticatedController {
     val cycleIdJson: JsResult[Long] = json.validate[Long]((JsPath \ "body" \ "cycleId").read[Long])
     (toUsernameJson, cycleIdJson) match {
       case (JsSuccess(toUsername, _), JsSuccess(cycleId, _)) => {
-        if (!FeedbackCycle.validateCycle(cycleId))
+        if (!feedbackCycle.validateCycle(cycleId))
           BadRequest(Json.obj("message" -> "Invalid feedback cycle selected."))
         else {
-          Person.findByEmail(toUsername) match {
+          person.findByEmail(toUsername) match {
             case Some(toUser) =>
               if (toUser.credentials.email == fromUser.credentials.email)
                 BadRequest(Json.obj("message" -> "Cannot nominate yourself"))
               else
-                wrapEither(Nomination.createNomination(fromUser.credentials.email, toUser.credentials.email, cycleId),emailer.sendNominationNotificationEmail)
-            case None => wrapEither(createNominatedUser(toUsername).right.flatMap(id => Nomination.createNomination(fromUser.credentials.email, toUsername, cycleId)), emailer.sendNominationNotificationEmail)
+                wrapEither(nomination.createNomination(fromUser.credentials.email, toUser.credentials.email, cycleId),emailer.sendNominationNotificationEmail)
+            case None => wrapEither(createNominatedUser(toUsername).right.flatMap(id => nomination.createNomination(fromUser.credentials.email, toUsername, cycleId)), emailer.sendNominationNotificationEmail)
           }
         }
       }
@@ -144,14 +148,14 @@ class Nominations @Inject() (emailer: Emailer) extends AuthenticatedController {
     }
   }
 
-  private def createNominatedUser(username: String): Either[Throwable, Long] = Person.createNominee(username)
+  private def createNominatedUser(username: String): Either[Throwable, Long] = person.createNominee(username)
 
   def cancelNomination(id: Long) = AuthenticatedAction { person =>
     val genericFail: JsValue = Json.obj("message" -> "Could not cancel nomination.")
 
-    Nomination.getSummary(id) match {
+    nomination.getSummary(id) match {
       case Some(Nomination(_, Some(p), _, FeedbackStatus.New, _, _, _))
-        if p.credentials.email == person.credentials.email => if (Nomination.cancelNomination(id)) Ok else BadRequest(genericFail)
+        if p.credentials.email == person.credentials.email => if (nomination.cancelNomination(id)) Ok else BadRequest(genericFail)
       case Some(Nomination(_, _, _,status, _, _, _)) if status != FeedbackStatus.New =>
         BadRequest(Json.obj("message" -> "Can only cancel nominations with a 'New' status."))
       case None => BadRequest(genericFail)
@@ -159,7 +163,7 @@ class Nominations @Inject() (emailer: Emailer) extends AuthenticatedController {
   }
 
   def getActiveFeedbackCycles = AuthenticatedAction { person =>
-    Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(FeedbackCycle.findActiveCycles)))
+    Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(feedbackCycle.findActiveCycles)))
   }
 }
 //case class Response[T : Writes](apiVersion: String, body: T)
