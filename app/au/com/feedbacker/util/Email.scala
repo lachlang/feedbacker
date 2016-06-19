@@ -8,13 +8,13 @@ import play.api.libs.mailer.{Email, MailerClient}
 /**
  * Created by lachlang on 6/06/2016.
  */
-class Emailer @Inject() (mailerClient: MailerClient) {
+class Emailer @Inject() (mailerClient: MailerClient, configuration: play.api.Configuration) {
 
   private def to(name: String, email: String) = Seq(s"""$name <$email>""")
   private val from = "Feedbacker <no-reply@feedbacker.com.au>"
   private def getServerPath: String = {
-    val server = play.Play.application.configuration.getString("feedbacker.server.path")
-    val port = play.Play.application.configuration.getString("feedbacker.server.port")
+    val server = configuration.getString("feedbacker.server.path").getOrElse("localhost")
+    val port = configuration.getString("feedbacker.server.port").getOrElse("80")
     s"""$server:$port"""
   }
 
