@@ -14,6 +14,7 @@ describe('service [Model]', function() {
 
         account = _Account_;
         spyOn(account, 'getCurrentUser').and.returnValue(deferred.promise)
+        spyOn(account, 'getReports').and.returnValue(deferred.promise)
 
 		feedback = _Feedback_;
         spyOn(feedback, 'getPendingFeedbackActions').and.returnValue(deferred.promise);
@@ -83,6 +84,10 @@ describe('service [Model]', function() {
             cacheTest(model.getActiveFeedbackCycles, feedback.getActiveFeedbackCycles);
         });
 
+        it('should call the account.getReports service only once', function() {
+            cacheTest(model.getReports, account.getReports);
+        });
+
     });
     
     describe('flushes cached data when requested', function() {
@@ -130,6 +135,10 @@ describe('service [Model]', function() {
 
         it('should call the feedback.getActiveFeedbackCycles service when flushed', function(){
             flushTest(model.getActiveFeedbackCycles, feedback.getActiveFeedbackCycles);
+        });
+
+        it('should call the account.getReport service when flushed', function(){
+            flushTest(model.getReports, account.getReports);
         });
     });
 

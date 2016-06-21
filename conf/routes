@@ -9,6 +9,7 @@ PUT    	/api/session/login          au.com.feedbacker.controllers.Authentication
 GET     /api/session/logout         au.com.feedbacker.controllers.Authentication.logout
 
 GET    	/api/user                   au.com.feedbacker.controllers.Account.getUser
+GET    	/api/user/reports           au.com.feedbacker.controllers.Account.getReports
 
 POST    /api/register               au.com.feedbacker.controllers.Registration.register
 GET     /api/activate               au.com.feedbacker.controllers.ActivationCtrl.activate

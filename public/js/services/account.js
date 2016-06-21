@@ -92,6 +92,10 @@ fbServices.service('Account', ['$log', '$http', '$q', function($log, $http, $q) 
 					body:{ email: email}
 				}
 			});
+		},
+
+		getReports: function() {
+			return $http.get('/api/user/reports');
 		}
 	}
 }]);

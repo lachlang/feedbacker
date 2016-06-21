@@ -11,6 +11,7 @@
         <li data-ng-class="{ active: menu.isActive('/landing')}"><a class="navbar-brand" href="#/">Feedbacker</a></li>
         <li data-ng-class="{ active: menu.isActive('/list')}"><a class="navbar-brand" data-ng-if="menu.isLoggedIn()" href="#/list">Feedback Summary</a></li>
         <li data-ng-class="{ active: menu.isActive('/nominate')}"><a data-ng-if="menu.isLoggedIn()" class="navbar-brand" href="#/nominate">Nominations</a></li>
+        <li data-ng-class="{ active: menu.isActive('/reports')}"><a data-ng-if="menu.isLoggedInLeader()" class="navbar-brand" href="#/reports">Reports</a></li>
       </ul>
 
 

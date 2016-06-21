@@ -8,6 +8,7 @@ fbServices.service('Model', ['$log', '$q', 'Account', 'Feedback', 'Nomination', 
 	var currentNominations = [];
 	var nomineeCandidates = [];
 	var feedbackCycles = [];
+	var reports = [];
 	var errorResult = undefined;
 
 	var cacheServiceCall = function(mutateCache, updateRequired, getCache, serviceFunction, serviceCallName, mapKey) {
@@ -80,26 +81,34 @@ fbServices.service('Model', ['$log', '$q', 'Account', 'Feedback', 'Nomination', 
 											return item;
 										});
 									},
-									function(feedbackId) {return ( !nomineeCandidates || nomineeCandidates.length == 0 || flushCache ) },
-									function(feedbackId) { return nomineeCandidates },
+									function() {return ( !nomineeCandidates || nomineeCandidates.length == 0 || flushCache ) },
+									function() { return nomineeCandidates },
 									Nomination.getNomineeCandidates,
 									"Nomination.getNomineeCandidates");
 		},
 
 		getCurrentNominations: function(flushCache) {
 			return cacheServiceCall(function(result) { currentNominations = result.data.body },
-									function(feedbackId) {return ( !currentNominations || currentNominations.length == 0 || flushCache ) },
-									function(feedbackId) { return currentNominations },
+									function() {return ( !currentNominations || currentNominations.length == 0 || flushCache ) },
+									function() { return currentNominations },
 									Nomination.getCurrentNominations,
 									"Nomination.getCurrentNominations");
 		},
 
 		getActiveFeedbackCycles: function(flushCache) {
 			return cacheServiceCall(function(result) { feedbackCycles = result.data.body },
-									function(feedbackId) {return ( !feedbackCycles || feedbackCycles.length == 0 || flushCache ) },
-									function(feedbackId) { return feedbackCycles },
+									function() {return ( !feedbackCycles || feedbackCycles.length == 0 || flushCache ) },
+									function() { return feedbackCycles },
 									Feedback.getActiveFeedbackCycles,
 									"Feedback.getActiveFeedbackCycles");
+		},
+
+		getReports: function(flushCache) {
+			return cacheServiceCall(function(result) { reports = result.data.body },
+									function() {return ( !reports || reports.length == 0 || flushCache ) },
+									function() { return reports },
+									Account.getReports,
+									"Account.getReports");
 		}
 
 	}

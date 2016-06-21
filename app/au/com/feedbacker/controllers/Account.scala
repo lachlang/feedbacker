@@ -47,6 +47,10 @@ class Account @Inject() (person: PersonDao) extends AuthenticatedController(pers
      Ok(Json.obj("body" -> Json.toJson(user)))
   }
 
+  def getReports = AuthenticatedAction { user =>
+    Ok(Json.obj("body" -> Json.toJson(person.findDirectReports(user.credentials.email))))
+  }
+
   // TODO: add update functions here
 }
 

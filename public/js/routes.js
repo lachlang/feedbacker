@@ -8,10 +8,6 @@ feedbackerApp.config(['$routeProvider',
 			templateUrl: 'components/activate/activate.html',
 			requireLogin: false
 		});
-  //       $routeProvider.when('/error', {
-		// 	templateUrl: 'components/error.html',
-		// 	requireLogin: false
-		// });
 		$routeProvider.when('/detailEdit', {
 			templateUrl: 'components/detail/edit.html',
 			requireLogin: true
@@ -39,6 +35,10 @@ feedbackerApp.config(['$routeProvider',
 		$routeProvider.when('/resetPasswordEmail', {
 			templateUrl: 'components/reset/resetPasswordEmail.html',
 			requireLogin: false
+		});
+		$routeProvider.when('/reports', {
+			templateUrl: 'components/reports/reports.html',
+			requireLogin: true
 		});
 		$routeProvider.when('/signOut', {
 			templateUrl: 'components/landing/landing.html',

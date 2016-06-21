@@ -128,6 +128,22 @@ describe('service [Account]', function() {
             expect(result).toBeDefined();
             expect(result).toEqual(dummyResult);
         });
+
+        it('to get the list of people reporting to the current user', function() {
+            var result, promise = account.getReports();
+
+            $httpBackend.expectGET('/api/user/reports').respond(200, dummyResult);
+
+            // set the response value
+            promise.then(function(data) {
+                result = data.data;
+            });
+            expect(result).toBeUndefined();
+            $httpBackend.flush();
+
+            expect(result).toBeDefined();
+            expect(result).toEqual(dummyResult);
+        });
     });
 
     describe('validates the request parameters', function() {

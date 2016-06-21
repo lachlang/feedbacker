@@ -195,6 +195,12 @@ class PersonDao @Inject() (db: play.api.db.Database, activation: ActivationDao) 
             'hash -> passwordHash,
             'email -> st.username).executeUpdate == 1
   }
+
+  def findDirectReports(username: String) : Seq[Person] = db.withConnection { implicit connection =>
+    SQL("""select * from person where manager_email = {email} and user_status = {status}""")
+      .on('email -> username, 'status -> CredentialStatus.Active.toString)
+      .as(Person.simple *)
+  }
 }
 
 object Person {
