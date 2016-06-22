@@ -14,11 +14,17 @@
       <div class="alert alert-danger" role="alert">{{edit.error}}</div>
     </div>
   </div>
-  <div class="row top-buffer">
-    <div class="col-md-12">
-      <p class="lead">Feedback for <strong>{{edit.feedback.fromName}}</strong> from <strong>{{edit.feedback.toName}}</strong>.  Feedback will be visible by <em>{{edit.feedback.bossEmail}}</em> once submitted.</p>
+    <div class="row top-buffer">
+        <div class="col-md-12">
+            <p class="lead">Feedback for <strong>{{edit.feedback.fromName}}</strong> from <strong>{{edit.feedback.toName}}</strong>.  Feedback will be visible by <em>{{edit.feedback.bossEmail}}</em> once submitted.</p>
+        </div>
     </div>
-  </div>
+    <div class="row top-buffer" data-ng-show="edit.feedback.cycleLabel">
+        <div class="col-md-12">
+            <p>Feedback will be editable by <em>{{edit.feedback.toName}}</em> until the conclusion of <strong>{{edit.feedback.cycleLabel}}</strong> on <strong>{{edit.feedback.cycleEndDate | date: 'medium' }}</strong>.</p>
+        </div>
+    </div>
+<!-- REMOVED the share feedback option as it should be configurable per cycle -->
   <!--<div class="row top-buffer">-->
     <!--<div class="col-md-1"></div>-->
     <!--<div class="col-md-4">-->

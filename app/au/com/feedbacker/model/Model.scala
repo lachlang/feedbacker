@@ -260,7 +260,13 @@ object Credentials {
     }
   }
 
-  implicit val writes: Writes[Credentials] = Json.writes[Credentials]
+  // make sure we don't ever write the hash to the client
+  implicit val writes: Writes[Credentials] = new Writes[Credentials] {
+    def writes(creds: Credentials) = Json.obj(
+      "email" -> creds.email,
+      "status" -> creds.status
+    )
+  }
 }
 
 class CredentialsDao @Inject() (db: play.api.db.Database) {
@@ -403,7 +409,7 @@ class QuestionTemplateDao @Inject() (db: play.api.db.Database) {
   }
 }
 
-case class Nomination (id: Option[Long], from: Option[Person], to: Option[Person], status: FeedbackStatus, lastUpdated: Option[DateTime], questions: Seq[QuestionResponse], shared: Boolean)
+case class Nomination (id: Option[Long], from: Option[Person], to: Option[Person], status: FeedbackStatus, lastUpdated: Option[DateTime], questions: Seq[QuestionResponse], shared: Boolean, cycleId: Long)
 
 object Nomination {
 
@@ -413,8 +419,9 @@ object Nomination {
     get[String]("nominations.to_email") ~
     get[String]("nominations.status") ~
     get[Option[DateTime]]("nominations.last_updated") ~
-    get[Boolean]("nominations.shared") map {
-      case id~fromId~toEmail~status~lastUpdated~shared => (id, fromId, toEmail, FeedbackStatus.withName(status), lastUpdated, shared)
+    get[Boolean]("nominations.shared") ~
+    get[Long]("nominations.cycle_id") map {
+      case id~fromId~toEmail~status~lastUpdated~shared~cycleId => (id, fromId, toEmail, FeedbackStatus.withName(status), lastUpdated, shared, cycleId)
     }
   }
 
@@ -425,7 +432,8 @@ object Nomination {
       (JsPath \ "status").write[FeedbackStatus] and
       (JsPath \ "lastUpdated").writeNullable[DateTime] and
       (JsPath \ "questions").write[Seq[QuestionResponse]] and
-      (JsPath \ "shared").write[Boolean]
+      (JsPath \ "shared").write[Boolean] and
+      (JsPath \ "cycleId").write[Long]
     )(unlift(Nomination.unapply))
 }
 
@@ -434,34 +442,34 @@ class NominationDao @Inject() (db: play.api.db.Database,
                                questionTemplate: QuestionTemplateDao,
                                questionResponse: QuestionResponseDao) {
 
-  def enrich: (Long, String, String, FeedbackStatus, Option[DateTime], Boolean) => Nomination = {
-    (id: Long, fromEmail: String, toEmail: String, status: FeedbackStatus, lastUpdated: Option[DateTime], shared: Boolean) =>
-      Nomination(Some(id), person.findByEmail(fromEmail), person.findByEmail(toEmail), status, lastUpdated, Seq(), shared)
+  def enrich: (Long, String, String, FeedbackStatus, Option[DateTime], Boolean, Long) => Nomination = {
+    (id: Long, fromEmail: String, toEmail: String, status: FeedbackStatus, lastUpdated: Option[DateTime], shared: Boolean, cycleId: Long) =>
+      Nomination(Some(id), person.findByEmail(fromEmail), person.findByEmail(toEmail), status, lastUpdated, Seq(), shared, cycleId)
   }
 
   def getSummary(id: Long): Option[Nomination] = db.withConnection { implicit connection =>
     SQL("""select * from nominations left join person on nominations.from_email = person.email where nominations.id = {id} and status != {status}""")
       .on('id -> id, 'status -> FeedbackStatus.Cancelled.toString).as(Nomination.simple.singleOpt) match {
-      case Some((a,b,c,d,e,f)) => Some(enrich(a,b,c,d,e,f))
+      case Some((a,b,c,d,e,f,g)) => Some(enrich(a,b,c,d,e,f,g))
       case _ => None
     }
   }
 
   def getDetail(id: Long): Option[Nomination] = db.withConnection { implicit connection =>
-    getSummary(id).map{ case n => Nomination(n.id, n.from, n.to, n.status, n.lastUpdated, questionResponse.findForNomination(id), n.shared)}
+    getSummary(id).map{ case n => Nomination(n.id, n.from, n.to, n.status, n.lastUpdated, questionResponse.findForNomination(id), n.shared, n.cycleId)}
   }
 
   def getPendingNominationsForUser(username: String): Seq[Nomination] = db.withConnection { implicit connection =>
     SQL("""select * from nominations where to_email = {email} and initiated_by != {email} and status NOT IN ({statusCancelled}, {statusCancelled}) and cycle_id in (select id from cycle where active = TRUE)""")
       .on('email -> username, 'statusCancelled -> FeedbackStatus.Cancelled.toString, 'statusClosed -> FeedbackStatus.Closed.toString)
-      .as(Nomination.simple *).map{case (a,b,c,d,e,f) => enrich(a,b,c,d,e,f)}
+      .as(Nomination.simple *).map{case (a,b,c,d,e,f,g) => enrich(a,b,c,d,e,f,g)}
   }
 
   def getCurrentNominationsFromUser(username: String): Seq[Nomination] = db.withConnection { implicit connection =>
     person.findByEmail(username) match {
       case Some(_) => SQL( """select * from nominations where from_email = {email} and initiated_by = {email} and status NOT IN ({statusCancelled}, {statusCancelled}) and cycle_id in (select id from cycle where active = TRUE)""")
         .on('email -> username, 'statusCancelled -> FeedbackStatus.Cancelled.toString, 'statusClosed -> FeedbackStatus.Closed.toString)
-        .as(Nomination.simple *).map { case (a, b, c, d, e, f) => enrich(a, b, c, d, e, f) }
+        .as(Nomination.simple *).map { case (a, b, c, d, e, f, g) => enrich(a, b, c, d, e, f, g) }
       case _ => Seq()
     }
   }
@@ -469,20 +477,20 @@ class NominationDao @Inject() (db: play.api.db.Database,
   def getCurrentFeedbackForUser(username: String): Seq[Nomination] = db.withConnection { implicit connection =>
     SQL("""select * from nominations where to_email = {email} and cycle_id in (select id from cycle where active = TRUE)""")
       .on('email -> username).as(Nomination.simple *)
-      .map { case (a,b,c,d,e,f) => enrich(a,b,c,d,e,f)}
+      .map { case (a,b,c,d,e,f,g) => enrich(a,b,c,d,e,f,g)}
   }
 
   def getHistoryFeedbackForUser(username: String): Seq[Nomination] = db.withConnection { implicit connection =>
     SQL("""select * from nominations where to_email = {email} and cycle_id not in (select id from cycle where active = TRUE) ORDER BY last_updated DESC NULLS LAST""")
       .on('email -> username).as(Nomination.simple *)
-      .map { case (a,b,c,d,e,f) => enrich(a,b,c,d,e,f)}
+      .map { case (a,b,c,d,e,f,g) => enrich(a,b,c,d,e,f,g)}
   }
 
   def findNominationByToFromCycle(fromEmail: String, toEmail: String, initiatedEmail: String, cycleId: Long): Option[(Long, FeedbackStatus)] = db.withConnection { implicit connection =>
     SQL("""select * from nominations where from_email = {fromEmail} and to_email = {toEmail} and initiated_by = {initiated} and cycle_id = {cycleId}""")
       .on('fromEmail -> fromEmail, 'toEmail -> toEmail, 'initiated -> initiatedEmail, 'cycleId -> cycleId)
       .as(Nomination.simple.singleOpt)
-      .map{ case (a,b,c,d,e,f) => (a, d)}
+      .map{ case (a,b,c,d,e,f,g) => (a, d)}
   }
 
   private def mapWinToNomination(win: Boolean, nominationId: Long, errorMsg: String): Either[Throwable, Nomination] =

@@ -5,6 +5,7 @@ fbServices.service('Model', ['$log', '$q', 'Account', 'Feedback', 'Nomination', 
 	var currentFeedbackList = [];
 	var feedbackHistoryList = [];
 	var feedbackDetail = {};
+	var feedbackCycle = {};
 	var currentNominations = [];
 	var nomineeCandidates = [];
 	var feedbackCycles = [];
@@ -40,6 +41,14 @@ fbServices.service('Model', ['$log', '$q', 'Account', 'Feedback', 'Nomination', 
 									function() { return self },
 									Account.getCurrentUser,
 									"Account.getCurrentUser");
+		},
+
+		getReports: function(flushCache) {
+			return cacheServiceCall(function(result) { reports = result.data.body },
+									function() {return ( !reports || reports.length == 0 || flushCache ) },
+									function() { return reports },
+									Account.getReports,
+									"Account.getReports");
 		},
 
 		getPendingFeedbackActions: function(flushCache) {
@@ -103,12 +112,13 @@ fbServices.service('Model', ['$log', '$q', 'Account', 'Feedback', 'Nomination', 
 									"Feedback.getActiveFeedbackCycles");
 		},
 
-		getReports: function(flushCache) {
-			return cacheServiceCall(function(result) { reports = result.data.body },
-									function() {return ( !reports || reports.length == 0 || flushCache ) },
-									function() { return reports },
-									Account.getReports,
-									"Account.getReports");
+		getFeedbackCycle: function(cycleId, flushCache) {
+			return cacheServiceCall(function(result) { feedbackCycle[cycleId] = result.data.body },
+									function() {return ( feedbackCycle[cycleId] == undefined || flushCache ) },
+									function() { return feedbackCycle[cycleId] },
+									Feedback.getFeedbackCycle,
+									"Feedback.getFeedbackCycle",
+									cycleId);
 		}
 
 	}

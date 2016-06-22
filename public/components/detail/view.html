@@ -9,6 +9,11 @@
 	  <p class="lead">Feedback for <strong>{{edit.feedback.fromName}}</strong> from <strong>{{edit.feedback.toName}}</strong>.  Feedback is be visible by <em>{{edit.feedback.bossEmail}}</em></p>
 	</div>
   </div>
+	<div class="row top-buffer" data-ng-show="edit.feedback.cycleLabel">
+		<div class="col-md-12">
+			<p>Feedback will be editable by <em>{{edit.feedback.toName}}</em> until the conclusion of <strong>{{edit.feedback.cycleLabel}}</strong> on <strong>{{edit.feedback.cycleEndDate | date: 'medium' }}</strong>.</p>
+		</div>
+	</div>
   <div class="row top-buffer" data-ng-repeat="question in edit.feedback.questions">
 	<div class="col-md-1">
 		<span>Q{{$index +1}}</span>

@@ -162,6 +162,22 @@ describe('service [Feedback]', function() {
             expect(result).toBeDefined();
             expect(result).toEqual(dummyResult);
         });
+
+        it('to retrieve a feedback cycle by id', function() {
+            var result, promise = feedback.getFeedbackCycle(123);
+
+            $httpBackend.expectGET('/api/cycle/123').respond(200, dummyResult);
+
+            // set the response value
+            promise.then(function(data) {
+                result = data.data;
+            });
+            expect(result).toBeUndefined();
+            $httpBackend.flush();
+
+            expect(result).toBeDefined();
+            expect(result).toEqual(dummyResult);
+        });
     });
 
 });
