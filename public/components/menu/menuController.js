@@ -6,7 +6,7 @@ fbControllers.controller('MenuCtrl', ['$rootScope', '$log', '$location', 'Sessio
 	var ctrl = this;
 
 	ctrl.error = undefined;
-	ctrl.isLoggedIn = false;
+	ctrl.isLeader = false;
 
 	ctrl.login = function() {
 		ctrl.resetError();
@@ -15,6 +15,7 @@ fbControllers.controller('MenuCtrl', ['$rootScope', '$log', '$location', 'Sessio
 		Session.login(ctrl.username, ctrl.password).then(function(result) {
 			$log.debug("Logged in...");
 			$log.info(result)
+			ctrl.isLeader = result.isLeader;
 			$location.path("/list");
 		}, function(response) {
 			$log.error("Login FAILED!");
@@ -43,7 +44,7 @@ fbControllers.controller('MenuCtrl', ['$rootScope', '$log', '$location', 'Sessio
 	}
 
 	ctrl.isLoggedInLeader = function() {
-		return Session.validSession();
+		return ctrl.isLeader && Session.validSession();
 	}
 
 	ctrl.isActive = function (viewLocation) {

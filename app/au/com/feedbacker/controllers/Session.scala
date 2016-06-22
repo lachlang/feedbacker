@@ -45,21 +45,6 @@ class AuthenticatedController(person: PersonDao) extends Controller {
 
 class Authentication @Inject() (person: PersonDao) extends Controller {
 
-  def loginOld = Action { request =>
-    val jsonBody: Option[JsValue] = request.body.asJson
-
-    jsonBody.map { json => ((json \ "body" \ "username").asOpt[String](Reads.email), (json \ "body" \ "password").asOpt[String]) } match {
-      case Some((Some(username), Some(password))) =>
-        val personOpt = person.findByEmail(username)
-
-        SessionToken.initialiseToken(personOpt, password) match {
-          case None => Forbidden
-          case Some(st) => st.signIn(Ok)
-        }
-      case _ => BadRequest
-    }
-  }
-
   // NOTE: this is horrible but I'm tired
   def login = Action { request =>
     val jsonBody: Option[JsValue] = request.body.asJson
@@ -71,7 +56,7 @@ class Authentication @Inject() (person: PersonDao) extends Controller {
           case Some(p) => if (p.credentials.status == CredentialStatus.Inactive) Unauthorized else
             SessionToken.initialiseToken(personOpt, password) match {
             case None => BadRequest
-            case Some(st) => st.signIn(Ok)
+            case Some(st) => st.signIn(Ok(Json.obj("isLeader" -> p.isLeader)))
           }
           case None => Forbidden
         }

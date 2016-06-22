@@ -74,8 +74,33 @@ object FeedbackStatus extends Enumeration {
 }
 import FeedbackStatus._
 
-case class Person(id: Option[Long], name: String, role: String, credentials: Credentials, managerEmail: String) {
-  def setNewHash(hash: String)  = Person(id, name, role, Credentials(credentials.email, hash, credentials.status), managerEmail)
+case class Person(id: Option[Long], name: String, role: String, credentials: Credentials, managerEmail: String, isLeader: Boolean = false) {
+  def setNewHash(hash: String)  = Person(id, name, role, Credentials(credentials.email, hash, credentials.status), managerEmail, isLeader)
+}
+
+object Person {
+
+  type Id = Long
+  type Name = String
+  type Username = String
+
+  /**
+   * Parse a Person from a ResultSet
+   */
+  val simple = {
+    get[Option[Id]]("person.id") ~
+      get[Name]("person.name") ~
+      get[String]("person.role") ~
+      get[Username]("person.email") ~
+      get[String]("person.pass_hash") ~
+      get[String]("person.user_status") ~
+      get[String]("person.manager_email") ~
+      get[Boolean]("person.is_manager") map {
+      case id~name~role~email~pass_hash~user_status~manager_email~isLeader => Person(id, name, role, Credentials(email, pass_hash, CredentialStatus.withName(user_status)), manager_email, isLeader)
+    }
+  }
+
+  implicit val writes: Writes[Person] = Json.writes[Person]
 }
 
 class PersonDao @Inject() (db: play.api.db.Database, activation: ActivationDao) {
@@ -92,8 +117,7 @@ class PersonDao @Inject() (db: play.api.db.Database, activation: ActivationDao) 
     SQL("select * from person where email = {email}").on('email -> email).as(Person.simple.singleOpt)
   }
 
-  def create(person: Person): Either[Throwable, Person] = {
-    db.withConnection { implicit connection =>
+  def create(person: Person): Either[Throwable, Person] = db.withConnection { implicit connection =>
       try {
         SQL(
           """
@@ -111,13 +135,19 @@ class PersonDao @Inject() (db: play.api.db.Database, activation: ActivationDao) 
           case None => Left(new Exception("Could not insert."))
           case Some(id) => findById(id) match {
             case None => Left( new Exception("Could not insert."))
-            case Some(person) => Right(person)
+            case Some(person) => {
+              setAsLeader(person.managerEmail)
+              Right(person)
+            }
           }
         }
       } catch {
         case e:Exception => Left(e)
       }
     }
+
+  private def setAsLeader(email: String): Boolean = db.withConnection { implicit connection =>
+    SQL("""update person SET is_manager = true where email = {email}""").on('email -> email).executeUpdate == 1
   }
 
   def createNominee(username: String): Either[Throwable, Long] = {
@@ -201,30 +231,6 @@ class PersonDao @Inject() (db: play.api.db.Database, activation: ActivationDao) 
       .on('email -> username, 'status -> CredentialStatus.Active.toString)
       .as(Person.simple *)
   }
-}
-
-object Person {
-
-  type Id = Long
-  type Name = String
-  type Username = String
-
-  /**
-   * Parse a Person from a ResultSet
-   */
-  val simple = {
-    get[Option[Id]]("person.id") ~
-    get[Name]("person.name") ~
-    get[String]("person.role") ~
-    get[Username]("person.email") ~
-    get[String]("person.pass_hash") ~
-    get[String]("person.user_status") ~
-    get[String]("person.manager_email") map {
-      case id~name~role~email~pass_hash~user_status~manager_email => Person(id, name, role, Credentials(email, pass_hash, CredentialStatus.withName(user_status)), manager_email)
-    }
-  }
-
-  implicit val writes: Writes[Person] = Json.writes[Person]
 }
 
 case class Nominee(name: Person.Name, email: Person.Username, role: String)
