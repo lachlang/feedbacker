@@ -49,7 +49,7 @@ class Authentication @Inject() (person: PersonDao) extends Controller {
   def login = Action { request =>
     val jsonBody: Option[JsValue] = request.body.asJson
 
-    jsonBody.map { json => ((json \ "body" \ "username").asOpt[String](Reads.email), (json \ "body" \ "password").asOpt[String]) } match {
+    jsonBody.map { json => ((json \ "body" \ "username").asOpt[String](Reads.email).map(_.toLowerCase), (json \ "body" \ "password").asOpt[String]) } match {
       case Some((Some(username), Some(password))) =>
         val personOpt = person.findByEmail(username)
         personOpt match {

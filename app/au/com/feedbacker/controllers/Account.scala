@@ -30,9 +30,10 @@ class Registration @Inject() (emailer: Emailer,
   def register: Action[JsValue] = Action(parse.json(maxLength = 2000)) { request =>
     val errorMessage = "Could not create user."
 
-    request.body.validate[RegistrationContent].asOpt match {
+    request.body.validate[RegistrationContent].asOpt
+      .map(rc => RegistrationContent(rc.name,rc.role,rc.email.toLowerCase,rc.password,rc.managerEmail.toLowerCase)) match {
       case None => BadRequest("{ \"body\": { \"message\": \"Could not parse request.\"}} ")
-      case Some(body) => credentials.findStatusByEmail(body.email) match {
+      case Some(body) => credentials.findStatusByEmail(body.email.toLowerCase) match {
         case Some((id, CredentialStatus.Nominated)) => translateResultAndActivate(person.update(Person(Some(id), body.name, body.role, Credentials(body.email, Authentication.hash(body.password), CredentialStatus.Inactive), body.managerEmail)), errorMessage)
         case Some((_, _)) => Conflict("{ \"body\": { \"message\": \"User is already registered.\"}} ")
         case None => translateResultAndActivate(person.create(Person(None, body.name, body.role, Credentials(body.email, Authentication.hash(body.password), CredentialStatus.Inactive), body.managerEmail)), errorMessage)
@@ -41,17 +42,26 @@ class Registration @Inject() (emailer: Emailer,
   }
 }
 
-class Account @Inject() (person: PersonDao) extends AuthenticatedController(person) {
+class Account @Inject() (person: PersonDao, nomination: NominationDao) extends AuthenticatedController(person) {
 
   def getUser = AuthenticatedAction { user =>
      Ok(Json.obj("body" -> Json.toJson(user)))
   }
 
   def getReports = AuthenticatedAction { user =>
-    Ok(Json.obj("body" -> Json.toJson(person.findDirectReports(user.credentials.email))))
+    val reports = person.findDirectReports(user.credentials.email).map{ report =>
+      Report(report,nomination.getCurrentNominationsFromUser(report.credentials.email))
+    }
+    Ok(Json.obj("body" -> Json.toJson(reports)))
   }
 
   // TODO: add update functions here
+}
+
+case class Report(person: Person, nominations: Seq[Nomination])
+
+object Report {
+  implicit val writes: Writes[Report] = Json.writes[Report]
 }
 
 case class RegistrationContent(name: String, role: String, email: String, password: String, managerEmail: String)
@@ -70,7 +80,7 @@ object RegistrationContent {
 class ActivationCtrl @Inject() (emailer: Emailer, person: PersonDao, activation: ActivationDao) extends Controller {
 
   def activate = LoggingAction { request =>
-    request.getQueryString("username").flatMap{username =>
+    request.getQueryString("username").map(_.toLowerCase).flatMap{username =>
       request.getQueryString("token").map{token => SessionToken(username, token.replaceAll(" ", "+"))}}
     match {
       case None => BadRequest
@@ -79,11 +89,11 @@ class ActivationCtrl @Inject() (emailer: Emailer, person: PersonDao, activation:
   }
 
   def sendActivationEmail = LoggingAction { request =>
-    request.body.asJson.flatMap ( json => (json \ "body" \ "username").asOpt[String].flatMap(person.findByEmail(_))) match {
+    request.body.asJson.flatMap ( json => (json \ "body" \ "username").asOpt[String].map(_.toLowerCase).flatMap(person.findByEmail(_))) match {
       case None => BadRequest
-      case Some(person) => activation.createActivationToken(person.credentials.email) match {
+      case Some(user) => activation.createActivationToken(user.credentials.email) match {
         case None => BadRequest
-        case Some(st) => emailer.sendActivationEmail(person.name, st); Ok
+        case Some(st) => emailer.sendActivationEmail(user.name, st); Ok
       }
     }
   }
@@ -115,7 +125,7 @@ class ResetPassword @Inject() (emailer: Emailer,
 
   def sendPasswordResetEmail = LoggingAction { request =>
     request.body.asJson
-      .flatMap { json => (json \ "body" \ "email").asOpt[String](Reads.email) } match {
+      .flatMap { json => (json \ "body" \ "email").asOpt[String](Reads.email) }.map(_.toLowerCase) match {
       case None => BadRequest
       case Some(username) => (person.findByEmail(username),activation.createActivationToken(username)) match {
         case (Some(p),Some(st)) => emailer.sendPasswordResetEmail(p.name, st); Ok
