@@ -27,8 +27,11 @@ class Emailer @Inject() (mailerClient: MailerClient, configuration: play.api.Con
       "Welcome to Feedbacker",
       from,
       to(name, st.username),
-      Some(Emailer.activationBody(name, st, getServerPath)),
-      None
+//      Some(Emailer.activationBody(name, st, getServerPath)),
+//      None
+      None,
+      Some(Emailer.activationBodyHtml(name, st, getServerPath))
+
     )
     sendEmail(email)
   }
@@ -38,8 +41,8 @@ class Emailer @Inject() (mailerClient: MailerClient, configuration: play.api.Con
       "Feedbacker Password Reset",
       from,
       to(name, st.username),
-      Some(Emailer.resetPasswordBody(name, st, getServerPath)),
-      None
+      None,
+      Some(Emailer.resetPasswordBodyHtml(name, st, getServerPath))
     )
     sendEmail(email)
   }
@@ -51,8 +54,10 @@ class Emailer @Inject() (mailerClient: MailerClient, configuration: play.api.Con
           "Feedbacker - You have been nominated to provide feedback",
           from,
           to(toUser.name, toUser.credentials.email),
-          Some(Emailer.nominationBody(toUser.name, fromUser.name, getServerPath)),
-          None
+//          Some(Emailer.nominationBody(toUser.name, fromUser.name, getServerPath)),
+//          None
+          None,
+          Some(Emailer.nominationBodyHtml(toUser.name, fromUser.name, getServerPath))
         )
         sendEmail(email)
       }
@@ -78,6 +83,19 @@ object Emailer {
             (Feedback is always welcome)
          """.stripMargin
 
+  private def activationBodyHtml(name: String, st: SessionToken, serverPath: String): String = s"""
+            <p>Hi $name,</p>
+            <p/>
+            <p>Thanks for registering to use Feedbacker.</p>
+            <p/>
+            <p>To activate your account please navigate to following link:
+            <a href="http://$serverPath/api/activate?username=${st.username}&token=${st.token}">Acitvate your account</a></p>
+            <p/>
+            <p>Thanks</p>
+            <p>The Feedback Team</p>
+            <p>(Feedback is always welcome)</p>
+         """.stripMargin
+
   private def nominationBody(toName: String, fromName: String, serverPath: String): String =
     s"""
        Hi $toName,
@@ -93,6 +111,21 @@ object Emailer {
        Thanks
        The Feedbacker Team
        (Feedback is always welcome)
+     """.stripMargin
+
+  private def nominationBodyHtml(toName: String, fromName: String, serverPath: String): String =
+    s"""
+      <p>Hi $toName,</p>
+      <p/>
+      <p>$fromName has nominated you to provide feedback on their performance using Feedbacker.</p>
+      <p/>
+      <p>Feedbacker is a simple web application which simplifies the submission and collations of feedback.</p>
+      <p/>
+      <p>To sign up to Feedbacker and submit your response, please navigate to: <a href="http://$serverPath/#/landing">Feebacker address</a></p>
+      <p/>
+      <p>Thanks</p>
+      <p>The Feedbacker Team</p>
+      <p>(Feedback is always welcome)</p>
      """.stripMargin
 
   private def nominationBody2(toName: String, fromName: String, serverPath: String): String =
@@ -126,6 +159,19 @@ object Emailer {
             Thanks
             The Feedback Team
             (Feedback is always welcome)
+         """.stripMargin
+
+  private def resetPasswordBodyHtml(name: String, st: SessionToken, serverPath: String): String = s"""
+            <p>Hi $name,</p>
+            <p/>
+            <p>Thanks for registering to use Feedbacker.</p>
+            <p/>
+            <p>To reset your password please navigate to following link:
+            <a href="http://$serverPath/#/resetPassword?username=${st.username}&token=${st.token}">Password reset</a></p>
+            <p/>
+            <p>Thanks</p>
+            <p>The Feedback Team</p>
+            <p>(Feedback is always welcome)</p>
          """.stripMargin
 
 }
