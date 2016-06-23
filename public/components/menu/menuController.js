@@ -14,8 +14,6 @@ fbControllers.controller('MenuCtrl', ['$rootScope', '$log', '$location', 'Sessio
 		// LG: 2016-04-26 use standard form validation only at this point
 		Session.login(ctrl.username, ctrl.password).then(function(result) {
 			$log.debug("Logged in...");
-			$log.info(result)
-			ctrl.isLeader = result.isLeader;
 			$location.path("/list");
 		}, function(response) {
 			$log.error("Login FAILED!");
@@ -44,7 +42,7 @@ fbControllers.controller('MenuCtrl', ['$rootScope', '$log', '$location', 'Sessio
 	}
 
 	ctrl.isLoggedInLeader = function() {
-		return ctrl.isLeader && Session.validSession();
+		return Session.validSession() && Session.isLeader();
 	}
 
 	ctrl.isActive = function (viewLocation) {

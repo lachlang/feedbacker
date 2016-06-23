@@ -56,7 +56,7 @@ class Authentication @Inject() (person: PersonDao) extends Controller {
           case Some(p) => if (p.credentials.status == CredentialStatus.Inactive) Unauthorized else
             SessionToken.initialiseToken(personOpt, password) match {
             case None => BadRequest
-            case Some(st) => st.signIn(Ok(Json.obj("isLeader" -> p.isLeader)))
+            case Some(st) => st.signIn(Ok)
           }
           case None => Forbidden
         }
@@ -81,7 +81,6 @@ object Authentication {
 }
 
 case class SessionToken(username: String, token: String) {
-  // TODO: pull this out into config
 
   def signIn: Result => Result = response => {
     SessionToken.initialiseSession(this)
@@ -104,6 +103,7 @@ case class SessionToken(username: String, token: String) {
 
 object SessionToken {
 
+  // TODO: pull this out into config
   protected val cookieName: String = "FEEDBACKER_SESSION"
   protected val cookieMaxAge: Option[Int] = Some(60 * 60 * 2) // 60 minutes * 60 seconds * 2 hours
   protected val cookiePathOption: String = "/"
