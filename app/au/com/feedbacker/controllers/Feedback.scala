@@ -136,7 +136,7 @@ class Nominations @Inject() (emailer: Emailer,
   }
 
   def createNomination = AuthenticatedRequestAction { (fromUser, json) =>
-    val toUsernameJson: JsResult[String] = json.validate[String]((JsPath \ "body" \ "username").read[String](Reads.email))
+    val toUsernameJson: JsResult[String] = json.validate[String]((JsPath \ "body" \ "username").read[String](Reads.email)).map(_.toLowerCase)
     val cycleIdJson: JsResult[Long] = json.validate[Long]((JsPath \ "body" \ "cycleId").read[Long])
     (toUsernameJson, cycleIdJson) match {
       case (JsSuccess(toUsername, _), JsSuccess(cycleId, _)) => {
