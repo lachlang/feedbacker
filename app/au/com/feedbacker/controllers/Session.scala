@@ -133,7 +133,7 @@ object SessionToken {
   def generateToken: String = {
     val bytes = new Array[Byte](64)
     tokenGenerator.nextBytes(bytes)
-    Base64.getEncoder.encodeToString(bytes)
+    Base64.getEncoder.encodeToString(bytes).dropRight(2)
   }
 
   private def initialiseSession(st: SessionToken): Unit = tokenMap.put(st.token, st.username)
