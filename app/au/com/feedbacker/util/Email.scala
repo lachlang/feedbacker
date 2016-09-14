@@ -89,7 +89,7 @@ object Emailer {
             <p>Thanks for registering to use Feedbacker.</p>
             <p/>
             <p>To activate your account please navigate to following link:
-            <a href="http://$serverPath/api/activate?username=${st.username}&token=${st.token}">Acitvate your account</a></p>
+            <a href="http://$serverPath/api/activate?username=${st.username}&token=${st.token}">Activate your account</a></p>
             <p/>
             <p>Thanks</p>
             <p>The Feedback Team</p>
@@ -121,7 +121,7 @@ object Emailer {
       <p/>
       <p>Feedbacker is a simple web application which simplifies the submission and collations of feedback.</p>
       <p/>
-      <p>To sign up to Feedbacker and submit your response, please navigate to: <a href="http://$serverPath/#/landing">Feebacker address</a></p>
+      <p>To sign up to Feedbacker and submit your response, please navigate to: <a href="http://$serverPath/#/landing">Feedbacker address</a></p>
       <p/>
       <p>Thanks</p>
       <p>The Feedbacker Team</p>
@@ -137,7 +137,7 @@ object Emailer {
       Feedbacker is a simple web application which simplifies the submission and collations of feedback.
 
       Feedbacker is currently only being used as a limited trail and a voluntary opt-in basis.  If you do
-      not wish to use Feedback or are uncomfortable in any way please use your standard HR process.
+      not wish to use Feedbacker or are uncomfortable in any way please use your standard HR process.
 
       To sign up to Feedbacker and submit your response, please navigate to:
 
