@@ -22,8 +22,8 @@ application.
 In particular there is *no* server code implemented at this point.
 
 Future implementation concerns include:
-* authentiation (both server and client side)
-* a staff heirachy model on the server side to drive visibility of published
+* authentication (both server and client side)
+* a staff hierarchy model on the server side to drive visibility of published
 feedback
 	* this could either be hard coded as a stand alone solution or
 	* integrated with a centralised directory
