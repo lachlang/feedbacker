@@ -55,7 +55,19 @@ class Account @Inject() (person: PersonDao, nomination: NominationDao) extends A
     Ok(Json.obj("body" -> Json.toJson(reports)))
   }
 
-  // TODO: add update functions here
+  def updateUserDetails = AuthenticatedRequestAction { (user, json) =>
+    val errorMessage = "Could not update user details."
+
+    json.validate[UpdateContent].asOpt.map(uc =>
+      Person(user.id, uc.name, uc.role, Credentials(uc.email.toLowerCase, user.credentials.hash, user.credentials.status), uc.managerEmail.toLowerCase, user.isLeader)) match {
+
+      case None => BadRequest(s"""{ "body": { "message": "$errorMessage "}} """)
+      case Some(updatedPerson) => person.update(updatedPerson) match {
+       case Left(e) => BadRequest(Json.obj("message" -> e.getMessage))
+       case Right(_) => Ok
+      }
+    }
+  }
 }
 
 case class Report(person: Person, nominations: Seq[Nomination])
@@ -75,6 +87,20 @@ object RegistrationContent {
     (JsPath \ "body" \ "password").format[String] and
     (JsPath \ "body" \ "managerEmail").format[String](Reads.email)
   )(RegistrationContent.apply, unlift(RegistrationContent.unapply))
+}
+
+
+// LG: 2016-09-15 I suspect there is a better way to do this...
+case class UpdateContent(name: String, role: String, email: String, managerEmail: String)
+
+object UpdateContent {
+
+  implicit val format: Format[UpdateContent] = (
+    (JsPath \ "body" \ "name").format[String] and
+      (JsPath \ "body" \ "role").format[String] and
+      (JsPath \ "body" \ "email").format[String](Reads.email) and
+      (JsPath \ "body" \ "managerEmail").format[String](Reads.email)
+    )(UpdateContent.apply, unlift(UpdateContent.unapply))
 }
 
 class ActivationCtrl @Inject() (emailer: Emailer, person: PersonDao, activation: ActivationDao) extends Controller {
