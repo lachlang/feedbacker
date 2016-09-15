@@ -10,8 +10,10 @@ fbControllers.controller('RegistrationCtrl',  ['$rootScope', '$log', '$location'
 	ctrl.register = function() {
 		ctrl.message = undefined;
 		ctrl.error = undefined;
+		ctrl.update = "We are processing your registration...";
 
 		Account.register(ctrl.name, ctrl.role, ctrl.email, ctrl.password, ctrl.managerEmail).then(function(response) {
+			ctrl.update = undefined
 			ctrl.message = "Thankyou for registering.  An activation email has been sent to your email address."
 			ctrl.name = undefined
 			ctrl.role = undefined
@@ -19,6 +21,7 @@ fbControllers.controller('RegistrationCtrl',  ['$rootScope', '$log', '$location'
 			ctrl.password = undefined
 			ctrl.managerEmail = undefined
 		}, function(response) {
+			ctrl.update = undefined
 			ctrl.error = "We could not register you at this time."
 			$log.error("it failed")
 			$log.error(response)

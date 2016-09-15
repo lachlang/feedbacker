@@ -33,6 +33,8 @@ class Registration @Inject() (emailer: Emailer,
     request.body.validate[RegistrationContent].asOpt
       .map(rc => RegistrationContent(rc.name,rc.role,rc.email.toLowerCase,rc.password,rc.managerEmail.toLowerCase)) match {
       case None => BadRequest("{ \"body\": { \"message\": \"Could not parse request.\"}} ")
+//      LG: Yes this will fix the problem here but I'd rather solve it properly
+//      case Some(body) if body.email == body.managerEmail => BadRequest("{ \"body\": { \"message\": \"Email and manager email cannot match.\"}} ")
       case Some(body) => credentials.findStatusByEmail(body.email.toLowerCase) match {
         case Some((id, CredentialStatus.Nominated)) => translateResultAndActivate(person.update(Person(Some(id), body.name, body.role, Credentials(body.email, Authentication.hash(body.password), CredentialStatus.Inactive), body.managerEmail)), errorMessage)
         case Some((_, _)) => Conflict("{ \"body\": { \"message\": \"User is already registered.\"}} ")
