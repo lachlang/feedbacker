@@ -25,12 +25,16 @@ fbControllers.controller('ProfileCtrl',  ['$log', 'Model', function($log, Model)
 		    return
 		}
 
+		if (!ctrl.email || !ctrl.role || !ctrl.name || !ctrl.managerEmail) {
+		    ctrl.error = "Cannot set blank values."
+		    return
+		}
+
 		Model.updateProfile(ctrl.name, ctrl.role, ctrl.email, ctrl.managerEmail).then(function(response) {
 			ctrl.initialise();
 			ctrl.message = "Your profile details have been successfully updated."
 		}, function(response) {
 			ctrl.error = "We could not update your profile at this time."
-			$log.error("it failed")
 			$log.error(response)
 		});
 	};
