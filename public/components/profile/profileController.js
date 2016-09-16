@@ -11,7 +11,6 @@ fbControllers.controller('ProfileCtrl',  ['$log', 'Model', function($log, Model)
         Model.getCurrentUser().then(function(result) {
             ctrl.name = result.name
             ctrl.role = result.role
-            ctrl.email = result.credentials.email
             ctrl.managerEmail = result.managerEmail
         });
     }
@@ -20,17 +19,12 @@ fbControllers.controller('ProfileCtrl',  ['$log', 'Model', function($log, Model)
 		ctrl.message = undefined;
 		ctrl.error = undefined;
 
-		if (ctrl.email == ctrl.managerEmail) {
-		    ctrl.error = "You cannot set your manager email to your be own email."
-		    return
-		}
-
-		if (!ctrl.email || !ctrl.role || !ctrl.name || !ctrl.managerEmail) {
+		if (!ctrl.name || !ctrl.role || !ctrl.managerEmail) {
 		    ctrl.error = "Cannot set blank values."
 		    return
 		}
 
-		Model.updateCurrentUser(ctrl.name, ctrl.role, ctrl.email, ctrl.managerEmail).then(function(response) {
+		Model.updateCurrentUser(ctrl.name, ctrl.role, ctrl.managerEmail).then(function(response) {
 			ctrl.initialise();
 			ctrl.message = "Your profile details have been successfully updated."
 		}, function(response) {

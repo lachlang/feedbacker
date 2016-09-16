@@ -46,21 +46,10 @@ describe('edit feedback detail controller [ProfileCtrl]', function() {
 
     describe('updates user details', function() {
 
-        it('should reject matching email addresses', function() {
-            profileController.email = "test"
-            profileController.managerEmail = "test"
-            profileController.update()
-
-            expect(profileController.error).toEqual("You cannot set your manager email to your be own email.");
-            expect(profileController.message).toBeUndefined();
-            expect(model.updateCurrentUser).not.toHaveBeenCalled();
-        });
-
         it('should call the update function', function() {
             profileController.name = "test 1"
             profileController.role = "test 2"
-            profileController.email = "test 3"
-            profileController.managerEmail = "test 4"
+            profileController.managerEmail = "test 3"
 
             profileController.update();
 
@@ -68,26 +57,23 @@ describe('edit feedback detail controller [ProfileCtrl]', function() {
                 {
                     "name": "result 1",
                     "role": "result 2",
-                    "credentials": {"email": "result 3"},
-                    "managerEmail": "result 4"
+                    "managerEmail": "result 3"
                 }
             );
             scope.$digest();
 
-            expect(model.updateCurrentUser).toHaveBeenCalledWith("test 1", "test 2", "test 3", "test 4");
+            expect(model.updateCurrentUser).toHaveBeenCalledWith("test 1", "test 2", "test 3");
             expect(profileController.error).toBeUndefined();
             expect(profileController.message).toEqual("Your profile details have been successfully updated.");
             expect(profileController.name).toEqual("result 1");
-            expect(profileController.email).toEqual("result 3");
             expect(profileController.role).toEqual("result 2");
-            expect(profileController.managerEmail).toEqual("result 4");
+            expect(profileController.managerEmail).toEqual("result 3");
         });
 
         it('should set error when update fails', function() {
             profileController.name = "test 1"
             profileController.role = "test 2"
-            profileController.email = "test 3"
-            profileController.managerEmail = "test 4"
+            profileController.managerEmail = "test 3"
 
             profileController.update();
 
@@ -102,14 +88,13 @@ describe('edit feedback detail controller [ProfileCtrl]', function() {
         it('should not allow null updates', function() {
             profileController.name = "test 1"
             profileController.role = "test 2"
-            profileController.email = "test 3"
 
             profileController.update();
             expect(model.updateCurrentUser).not.toHaveBeenCalled();
             expect(profileController.error).toEqual("Cannot set blank values.");
 
             profileController.name = undefined
-            profileController.managerEmail = "test 4"
+            profileController.managerEmail = "test 3"
             profileController.update();
             expect(model.updateCurrentUser).not.toHaveBeenCalled();
             expect(profileController.error).toEqual("Cannot set blank values.");
@@ -120,11 +105,6 @@ describe('edit feedback detail controller [ProfileCtrl]', function() {
             expect(model.updateCurrentUser).not.toHaveBeenCalled();
             expect(profileController.error).toEqual("Cannot set blank values.");
 
-            profileController.role = "test 2"
-            profileController.email = undefined
-            profileController.update();
-            expect(model.updateCurrentUser).not.toHaveBeenCalled();
-            expect(profileController.error).toEqual("Cannot set blank values.");
         })
     });
 });

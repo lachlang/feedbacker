@@ -51,9 +51,9 @@ describe('service [Account]', function() {
     	});
 
     	it('to register a user', function() {
-    		var result, promise = account.updateCurrentUser("string1", "string2", "string3", "string4");
+    		var result, promise = account.updateCurrentUser("string1", "string2", "string3");
 
-            $httpBackend.expectPUT('/api/user', '{"apiVersion":"1.0","body":{"name":"string1","role":"string2","email":"string3","managerEmail":"string4"}}').respond(200, dummyResult);
+            $httpBackend.expectPUT('/api/user', '{"apiVersion":"1.0","body":{"name":"string1","role":"string2","managerEmail":"string3"}}').respond(200, dummyResult);
 
     		// set the response value
     		promise.then(function(data) {

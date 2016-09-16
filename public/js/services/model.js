@@ -51,11 +51,11 @@ fbServices.service('Model', ['$log', '$q', 'Account', 'Feedback', 'Nomination', 
 									"Account.getReports");
 		},
 
-		updateCurrentUser: function(name, role, email, managerEmail) {
+		updateCurrentUser: function(name, role, managerEmail) {
 			var deferred = $q.defer();
 
 			$log.debug("[Account.updateCurrentUser] Updating to server...");
-			Account.updateCurrentUser(name, role, email, managerEmail).then(function(result){
+			Account.updateCurrentUser(name, role, managerEmail).then(function(result){
 				$log.debug("[Account.updateCurrentUser] Response from server...");
 				$log.debug(result)
 				self = result.data.body;

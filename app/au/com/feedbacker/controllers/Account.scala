@@ -61,7 +61,7 @@ class Account @Inject() (person: PersonDao, nomination: NominationDao) extends A
     val errorMessage = "Could not update user details."
 
     json.validate[UpdateContent].asOpt.map(uc =>
-      Person(user.id, uc.name, uc.role, Credentials(uc.email.toLowerCase, user.credentials.hash, user.credentials.status), uc.managerEmail.toLowerCase, user.isLeader)) match {
+      Person(user.id, uc.name, uc.role, user.credentials, uc.managerEmail.toLowerCase, user.isLeader)) match {
 
       case None => BadRequest(s"""{ "body": { "message": "$errorMessage "}} """)
       case Some(personUpdates) => person.update(personUpdates) match {
@@ -93,14 +93,13 @@ object RegistrationContent {
 
 
 // LG: 2016-09-15 I suspect there is a better way to do this...
-case class UpdateContent(name: String, role: String, email: String, managerEmail: String)
+case class UpdateContent(name: String, role: String, managerEmail: String)
 
 object UpdateContent {
 
   implicit val format: Format[UpdateContent] = (
     (JsPath \ "body" \ "name").format[String] and
       (JsPath \ "body" \ "role").format[String] and
-      (JsPath \ "body" \ "email").format[String](Reads.email) and
       (JsPath \ "body" \ "managerEmail").format[String](Reads.email)
     )(UpdateContent.apply, unlift(UpdateContent.unapply))
 }
