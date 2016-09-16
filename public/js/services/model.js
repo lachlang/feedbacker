@@ -11,6 +11,7 @@ fbServices.service('Model', ['$log', '$q', 'Account', 'Feedback', 'Nomination', 
 	var feedbackCycles = [];
 	var reports = [];
 	var errorResult = undefined;
+	var profile = undefined;
 
 	var cacheServiceCall = function(mutateCache, updateRequired, getCache, serviceFunction, serviceCallName, mapKey) {
 		var deferred = $q.defer();
@@ -119,8 +120,18 @@ fbServices.service('Model', ['$log', '$q', 'Account', 'Feedback', 'Nomination', 
 									Feedback.getFeedbackCycle,
 									"Feedback.getFeedbackCycle",
 									cycleId);
-		}
+		},
 
+
+		getProfile: function(flushCache) {
+			return cacheServiceCall(function(result) { profile = result.data.body },
+									function() {return ( profile == undefined || flushCache ) },
+									function() { return profile },
+									Account.getCurrentUser,
+									"Account.getCurrentUser");
+		},
+
+		updateProfile: function() {}
 	}
 	return model;
 }]);

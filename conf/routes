@@ -10,6 +10,7 @@ GET     /api/session/logout         au.com.feedbacker.controllers.Authentication
 
 GET    	/api/user                   au.com.feedbacker.controllers.Account.getUser
 GET    	/api/user/reports           au.com.feedbacker.controllers.Account.getReports
+PUT    	/api/user                   au.com.feedbacker.controllers.Account.updateUserDetails
 
 POST    /api/register               au.com.feedbacker.controllers.Registration.register
 GET     /api/activate               au.com.feedbacker.controllers.ActivationCtrl.activate

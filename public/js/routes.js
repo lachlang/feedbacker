@@ -28,6 +28,10 @@ feedbackerApp.config(['$routeProvider',
 			templateUrl: 'components/nominate/nominate.html',
 			requireLogin: false
 		});
+		$routeProvider.when('/profile', {
+			templateUrl: 'components/profile/profile.html',
+			requireLogin: false
+		});
 		$routeProvider.when('/resetPassword', {
 			templateUrl: 'components/reset/resetPassword.html',
 			requireLogin: false

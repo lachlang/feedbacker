@@ -1,0 +1,52 @@
+<div class="container-fluid" data-ng-controller="ProfileCtrl as profile">
+
+    <div class="row">
+        <div class="col-sm-12">
+            <h2>Profile</h2>
+            <p class="lead">Update your profile details.</p>
+        </div>
+    </div>
+
+    <div class="row top-buffer" data-ng-show="profile.message">
+        <div class="col-sm-12">
+            <div class="alert alert-success" role="alert">{{profile.message}}</div>
+        </div>
+    </div>
+    <div class="row top-buffer" data-ng-show="profile.error">
+        <div class="col-sm-12">
+            <div class="alert alert-danger" role="alert">{{profile.error}}</div>
+        </div>
+    </div>
+
+    <form class="form-group" data-ng-submit="profile.update()">
+        <div class="row">
+            <div class="col-sm-1"><p>Name:</p></div>
+            <div class="col-sm-5">
+                <input type="text" class="form-control" placeholder="Name" data-ng-model="profile.name" required>
+            </div>
+        </div>
+        <div class="row top-buffer-small">
+            <div class="col-sm-1"><p>Email:</p></div>
+            <div class="col-sm-5">
+                <input type="email" class="form-control" placeholder="Your Email" data-ng-model="profile.email" required>
+            </div>
+        </div>
+        <div class="row top-buffer-small">
+            <div class="col-sm-1"><p>Role:</p></div>
+            <div class="col-sm-5">
+                <input type="text" class="form-control" placeholder="Your Role" data-ng-model="profile.role" required>
+            </div>
+        </div>
+        <div class="row top-buffer-small">
+            <div class="col-sm-1"><p>Boss Email:</p></div>
+            <div class="col-sm-5">
+                <input type="email" class="form-control" placeholder="Boss's Email" data-ng-model="profile.managerEmail" required>
+            </div>
+        </div>
+        <div class="row top-buffer-small">
+            <div class="col-sm-6">
+                <button type="submit" class="btn btn-primary">Update</button>
+            </div>
+        </div>
+    </form>
+</div>
