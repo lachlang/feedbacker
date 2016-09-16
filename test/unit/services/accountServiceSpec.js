@@ -24,6 +24,7 @@ describe('service [Account]', function() {
     it('has defined functions', function() {
         expect(angular.isFunction(account.register)).toBe(true);
         expect(angular.isFunction(account.getCurrentUser)).toBe(true);
+        expect(angular.isFunction(account.updateCurrentUser)).toBe(true);
         expect(angular.isFunction(account.activate)).toBe(true);
         expect(angular.isFunction(account.sendActivationEmail)).toBe(true);
         expect(angular.isFunction(account.resetPassword)).toBe(true);
@@ -43,6 +44,22 @@ describe('service [Account]', function() {
     			result = data.data;
     		});
     		expect(result).toBeUndefined(); // it really should at this point
+    		$httpBackend.flush();
+
+    		expect(result).toBeDefined();
+            expect(result).toEqual(dummyResult);
+    	});
+
+    	it('to register a user', function() {
+    		var result, promise = account.updateCurrentUser("string1", "string2", "string3", "string4");
+
+            $httpBackend.expectPUT('/api/user', '{"apiVersion":"1.0","body":{"name":"string1","role":"string2","email":"string3","managerEmail":"string4"}}').respond(200, dummyResult);
+
+    		// set the response value
+    		promise.then(function(data) {
+    			result = data.data;
+    		});
+    		expect(result).toBeUndefined();
     		$httpBackend.flush();
 
     		expect(result).toBeDefined();

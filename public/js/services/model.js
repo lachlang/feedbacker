@@ -11,7 +11,6 @@ fbServices.service('Model', ['$log', '$q', 'Account', 'Feedback', 'Nomination', 
 	var feedbackCycles = [];
 	var reports = [];
 	var errorResult = undefined;
-	var profile = undefined;
 
 	var cacheServiceCall = function(mutateCache, updateRequired, getCache, serviceFunction, serviceCallName, mapKey) {
 		var deferred = $q.defer();
@@ -50,6 +49,23 @@ fbServices.service('Model', ['$log', '$q', 'Account', 'Feedback', 'Nomination', 
 									function() { return reports },
 									Account.getReports,
 									"Account.getReports");
+		},
+
+		updateCurrentUser: function(name, role, email, managerEmail) {
+			var deferred = $q.defer();
+
+			$log.debug("[Account.updateCurrentUser] Updating to server...");
+			Account.updateCurrentUser(name, role, email, managerEmail).then(function(result){
+				$log.debug("[Account.updateCurrentUser] Response from server...");
+				$log.debug(result)
+				self = result.data.body;
+				deferred.resolve(self);
+			}, function(result){
+				$log.error("[Account.updateCurrentUser] Error from server:  [" + result + "]");
+				errorResult = result.data;
+				deferred.reject(errorResult);
+			});
+			return deferred.promise;
 		},
 
 		getPendingFeedbackActions: function(flushCache) {
@@ -120,18 +136,8 @@ fbServices.service('Model', ['$log', '$q', 'Account', 'Feedback', 'Nomination', 
 									Feedback.getFeedbackCycle,
 									"Feedback.getFeedbackCycle",
 									cycleId);
-		},
+		}
 
-
-		getProfile: function(flushCache) {
-			return cacheServiceCall(function(result) { profile = result.data.body },
-									function() {return ( profile == undefined || flushCache ) },
-									function() { return profile },
-									Account.getCurrentUser,
-									"Account.getCurrentUser");
-		},
-
-		updateProfile: function() {}
 	}
 	return model;
 }]);

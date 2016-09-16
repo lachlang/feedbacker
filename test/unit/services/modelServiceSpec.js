@@ -14,6 +14,7 @@ describe('service [Model]', function() {
 
         account = _Account_;
         spyOn(account, 'getCurrentUser').and.returnValue(deferred.promise)
+        spyOn(account, 'updateCurrentUser').and.returnValue(deferred.promise)
         spyOn(account, 'getReports').and.returnValue(deferred.promise)
 
 		feedback = _Feedback_;
@@ -34,6 +35,7 @@ describe('service [Model]', function() {
         expect(angular.isFunction(model.getCurrentUser)).toBe(true);
         expect(angular.isFunction(model.getReports)).toBe(true);
         expect(angular.isFunction(model.getPendingFeedbackActions)).toBe(true);
+        expect(angular.isFunction(model.updateCurrentUser)).toBe(true);
         expect(angular.isFunction(model.getCurrentFeedback)).toBe(true);
         expect(angular.isFunction(model.getFeedbackHistory)).toBe(true);
         expect(angular.isFunction(model.getFeedbackDetail)).toBe(true);
@@ -154,6 +156,26 @@ describe('service [Model]', function() {
         it('should call the feedback.getFeedbackCycle service when flushed', function(){
             flushTest(model.getFeedbackCycle, feedback.getFeedbackCycle);
         });
+    });
+
+    describe('write through tests', function() {
+
+        it('should call the account.updateCurrentUser service', function() {
+            model.updateCurrentUser("1", "2","3","4");
+
+            expect(account.updateCurrentUser).toHaveBeenCalledWith("1", "2", "3", "4");
+        });
+
+        it('should set the cache when the account.updateCurrentUser service is called', function() {
+            model.updateCurrentUser("1", "2","3","4");
+
+            deferred.resolve({ "data": {"body":"value"}});
+            scope.$digest();
+
+            model.getCurrentUser();
+            expect(account.getCurrentUser).not.toHaveBeenCalled();
+        });
+
     });
 
 });

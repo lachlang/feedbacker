@@ -64,9 +64,9 @@ class Account @Inject() (person: PersonDao, nomination: NominationDao) extends A
       Person(user.id, uc.name, uc.role, Credentials(uc.email.toLowerCase, user.credentials.hash, user.credentials.status), uc.managerEmail.toLowerCase, user.isLeader)) match {
 
       case None => BadRequest(s"""{ "body": { "message": "$errorMessage "}} """)
-      case Some(updatedPerson) => person.update(updatedPerson) match {
+      case Some(personUpdates) => person.update(personUpdates) match {
        case Left(e) => BadRequest(Json.obj("message" -> e.getMessage))
-       case Right(_) => Ok
+       case Right(updatedPerson) => Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(updatedPerson)))
       }
     }
   }

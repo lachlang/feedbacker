@@ -8,7 +8,7 @@ fbControllers.controller('ProfileCtrl',  ['$log', 'Model', function($log, Model)
 	ctrl.message = undefined;
 
     ctrl.initialise = function() {
-        Model.getProfile().then(function(result) {
+        Model.getCurrentUser().then(function(result) {
             ctrl.name = result.name
             ctrl.role = result.role
             ctrl.email = result.credentials.email
@@ -30,7 +30,7 @@ fbControllers.controller('ProfileCtrl',  ['$log', 'Model', function($log, Model)
 		    return
 		}
 
-		Model.updateProfile(ctrl.name, ctrl.role, ctrl.email, ctrl.managerEmail).then(function(response) {
+		Model.updateCurrentUser(ctrl.name, ctrl.role, ctrl.email, ctrl.managerEmail).then(function(response) {
 			ctrl.initialise();
 			ctrl.message = "Your profile details have been successfully updated."
 		}, function(response) {

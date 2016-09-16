@@ -14,8 +14,8 @@ describe('edit feedback detail controller [ProfileCtrl]', function() {
 		deferred = $q.defer();
 
     	model = _Model_;
-        spyOn(model, 'getProfile').and.returnValue(deferred.promise);
-        spyOn(model, 'updateProfile').and.returnValue(deferred.promise);
+        spyOn(model, 'getCurrentUser').and.returnValue(deferred.promise);
+        spyOn(model, 'updateCurrentUser').and.returnValue(deferred.promise);
 
 		profileController = $controller('ProfileCtrl',{$scope: scope });
 		spyOn(profileController, 'initialise').and.callThrough();
@@ -39,7 +39,7 @@ describe('edit feedback detail controller [ProfileCtrl]', function() {
     	});
 
     	it('and calls the necessary services to pre-populate the model', function(){
-            expect(model.getProfile).toHaveBeenCalled();
+            expect(model.getCurrentUser).toHaveBeenCalled();
     	});
 
 	});
@@ -53,7 +53,7 @@ describe('edit feedback detail controller [ProfileCtrl]', function() {
 
             expect(profileController.error).toEqual("You cannot set your manager email to your be own email.");
             expect(profileController.message).toBeUndefined();
-            expect(model.updateProfile).not.toHaveBeenCalled();
+            expect(model.updateCurrentUser).not.toHaveBeenCalled();
         });
 
         it('should call the update function', function() {
@@ -74,7 +74,7 @@ describe('edit feedback detail controller [ProfileCtrl]', function() {
             );
             scope.$digest();
 
-            expect(model.updateProfile).toHaveBeenCalledWith("test 1", "test 2", "test 3", "test 4");
+            expect(model.updateCurrentUser).toHaveBeenCalledWith("test 1", "test 2", "test 3", "test 4");
             expect(profileController.error).toBeUndefined();
             expect(profileController.message).toEqual("Your profile details have been successfully updated.");
             expect(profileController.name).toEqual("result 1");
@@ -94,7 +94,7 @@ describe('edit feedback detail controller [ProfileCtrl]', function() {
             deferred.reject();
             scope.$digest();
 
-            expect(model.updateProfile).toHaveBeenCalled();
+            expect(model.updateCurrentUser).toHaveBeenCalled();
             expect(profileController.error).toEqual("We could not update your profile at this time.");
             expect(profileController.message).toBeUndefined();
         });
@@ -105,25 +105,25 @@ describe('edit feedback detail controller [ProfileCtrl]', function() {
             profileController.email = "test 3"
 
             profileController.update();
-            expect(model.updateProfile).not.toHaveBeenCalled();
+            expect(model.updateCurrentUser).not.toHaveBeenCalled();
             expect(profileController.error).toEqual("Cannot set blank values.");
 
             profileController.name = undefined
             profileController.managerEmail = "test 4"
             profileController.update();
-            expect(model.updateProfile).not.toHaveBeenCalled();
+            expect(model.updateCurrentUser).not.toHaveBeenCalled();
             expect(profileController.error).toEqual("Cannot set blank values.");
 
             profileController.name = "test 1"
             profileController.role = undefined
             profileController.update();
-            expect(model.updateProfile).not.toHaveBeenCalled();
+            expect(model.updateCurrentUser).not.toHaveBeenCalled();
             expect(profileController.error).toEqual("Cannot set blank values.");
 
             profileController.role = "test 2"
             profileController.email = undefined
             profileController.update();
-            expect(model.updateProfile).not.toHaveBeenCalled();
+            expect(model.updateCurrentUser).not.toHaveBeenCalled();
             expect(profileController.error).toEqual("Cannot set blank values.");
         })
     });

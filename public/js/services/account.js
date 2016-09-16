@@ -31,6 +31,22 @@ fbServices.service('Account', ['$log', '$http', '$q', function($log, $http, $q) 
 			return $http.get("/api/user")
 		},
 
+		updateCurrentUser: function(name, role, email, managerEmail) {
+			return $http({
+				method: "PUT",
+				url: "/api/user",
+				data: {
+					apiVersion: "1.0",
+					body: {
+						name: name,
+						role: role,
+						email: email,
+						managerEmail, managerEmail
+					}
+				}
+			});
+		},
+
 		activate: function(email, token) {
 			if (!email || !token) {
 				return invalidRequestError();
