@@ -131,22 +131,50 @@ class ResetPassword @Inject() (emailer: Emailer,
                                person: PersonDao,
                                activation: ActivationDao) extends Controller {
 
-  def resetPassword = LoggingAction(parse.json(maxLength = 200)) { request =>
+//  def resetPassword = LoggingAction(parse.json(maxLength = 200)) { request => {
+//    val activationResult = for {
+//      content <- request.body.validate[ResetPasswordContent].asOpt
+//      st       = SessionToken(content.username, content.token.replaceAll(" ", "+"))
+//      _       <- if (activation.validateToken(st)) Some(()) else None
+//      p       <- person.findByEmail(st.username)
+//      _       <- person.update(p.setNewHash(Authentication.hash(content.password))).right.toOption
+//      _        = activation.expireToken(st.token)
+//    } yield Ok
+//
+//    activationResult.getOrElse(Forbidden)
+//  }}
 
-    request.body.validate[ResetPasswordContent].asOpt match {
-      case None => Forbidden
-      case Some(content) =>
-        val st = SessionToken(content.username, content.token.replaceAll(" ", "+"))
-        if (!activation.validateToken(st)) Forbidden
-        else {
-          person.findByEmail(st.username) match {
-            case None => BadRequest
-            case Some(p) => person.update(p.setNewHash(Authentication.hash(content.password))) match {
-                  case Left(e) => BadRequest(Json.obj("message" -> e.getMessage))
-                  case Right(_) => activation.expireToken(st.token);Ok
-                }
+//  def resetPassword = LoggingAction(parse.json(maxLength = 200)) { request => {
+//    val activationResult = for {
+//      content <- request.body.validate[ResetPasswordContent].asEither.right
+//      st       = SessionToken(content.username, content.token.replaceAll(" ", "+"))
+//      _       <- Either.ensuring(activation.validateToken(st), Forbidden).right
+//      //      _       <- if (activation.validateToken(st)) Some(()) else None
+//      p       <- person.findByEmail(st.username).toRight(Forbidden)
+//      _       <- person.update(p.setNewHash(Authentication.hash(content.password))).right
+//      _        = activation.expireToken(st.token)
+//    } yield Ok
+//
+//    activationResult.getOrElse(Forbidden)
+//  }}
+//
+
+    def resetPassword = LoggingAction(parse.json(maxLength = 200)) { request => {
+      request.body.validate[ResetPasswordContent].asOpt match {
+        case None => Forbidden
+        case Some(content) =>
+          val st = SessionToken(content.username, content.token.replaceAll(" ", "+"))
+          if (!activation.validateToken(st)) Forbidden
+          else {
+            person.findByEmail(st.username) match {
+              case None => BadRequest
+              case Some(p) => person.update(p.setNewHash(Authentication.hash(content.password))) match {
+                case Left(e) => BadRequest(Json.obj("message" -> e.getMessage))
+                case Right(_) => activation.expireToken(st.token); Ok
+              }
+            }
           }
-        }
+      }
     }
   }
 
