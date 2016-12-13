@@ -134,6 +134,7 @@ class ResetPassword @Inject() (emailer: Emailer,
   def resetPassword = LoggingAction(parse.json(maxLength = 200)) { request =>
 
     request.body.validate[ResetPasswordContent].asOpt match {
+      case None => Forbidden
       case Some(content) =>
         val st = SessionToken(content.username, content.token.replaceAll(" ", "+"))
         if (!activation.validateToken(st)) Forbidden
@@ -146,7 +147,6 @@ class ResetPassword @Inject() (emailer: Emailer,
                 }
           }
         }
-      case _ => Forbidden
     }
   }
 
