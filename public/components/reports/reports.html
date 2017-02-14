@@ -30,7 +30,7 @@
                                 </tr>
                                 </thead>
                                 <tbody>
-                                <tr data-ng-repeat="nominee in person.nominations">
+                                <tr data-ng-repeat="nominee in person.nominations | orderBy: 'lastUpdated'">
                                     <td>{{$index + 1}}</td>
                                     <td>{{nominee.to.name}}</td>
                                     <td>{{nominee.to.role}}</td>

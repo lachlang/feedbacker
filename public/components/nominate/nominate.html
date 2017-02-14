@@ -48,36 +48,40 @@
 			<div data-ng-hide="nominate.nominations.length > 0">
 				<p class="lead">No colleagues currently nominated to provide feedback.</p>
 			</div>
-            <div class="table-responsive" data-ng-show="nominate.nominations.length > 0">
-                <table class="table table-hover">
-                    <caption class="lead">Colleagues nominated to provide you feedback.</caption>
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Colleague</th>
-                            <th>Role</th>
-                            <th>Status</th>
-                            <th>Last Updated</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr data-ng-repeat="nominee in nominate.nominations">
-                            <td>{{$index + 1}}</td>
-                            <td>{{nominee.to.name}}</td>
-                            <td>{{nominee.to.role}}</td>
-                            <td>{{nominee.status}}</td>
-                            <td>
-                                <span data-ng-show="nominee.lastUpdated">{{nominee.lastUpdated | date : 'medium'}}</span>
-                                <span data-ng-hide="nominee.lastUpdated">--</span>
-                            </td>
-                            <td>
-                                <a data-ng-show="nominee.status == 'New'" class="btn btn-info" data-ng-click="nominate.cancelNomination(nominee.id)">Remove</a>
-                                <a data-ng-show="nominee.status=='Submitted' && nominee.id" href="#/detailView?id={{nominee.id}}">View</a>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div data-ng-repeat="cycle in nominate.cycles" data-ng-show="nominate.nominations.length > 0">
+                <div>
+                    <span class="lead">Nominations for review cycle <strong>{{cycle.label}}</strong></span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Colleague</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Last Updated</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr data-ng-repeat="nominee in nominate.nominations | reviewCycle: cycle.id">
+                                <td>{{$index + 1}}</td>
+                                <td>{{nominee.to.name}}</td>
+                                <td>{{nominee.to.role}}</td>
+                                <td>{{nominee.status}}</td>
+                                <td>
+                                    <span data-ng-show="nominee.lastUpdated">{{nominee.lastUpdated | date : 'medium'}}</span>
+                                    <span data-ng-hide="nominee.lastUpdated">--</span>
+                                </td>
+                                <td>
+                                    <a data-ng-show="nominee.status == 'New'" class="btn btn-info" data-ng-click="nominate.cancelNomination(nominee.id)">Remove</a>
+                                    <a data-ng-show="nominee.status=='Submitted' && nominee.id" href="#/detailView?id={{nominee.id}}">View</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
 	        </div>
 		</div>
 	</div>
