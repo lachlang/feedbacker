@@ -446,7 +446,8 @@ object Nomination {
 class NominationDao @Inject() (db: play.api.db.Database,
                                person: PersonDao,
                                questionTemplate: QuestionTemplateDao,
-                               questionResponse: QuestionResponseDao) {
+                               questionResponse: QuestionResponseDao,
+                               feedbackCycle: FeedbackCycleDao) {
 
   def enrich: (Long, String, String, FeedbackStatus, Option[DateTime], Boolean, Long) => Nomination = {
     (id: Long, fromEmail: String, toEmail: String, status: FeedbackStatus, lastUpdated: Option[DateTime], shared: Boolean, cycleId: Long) =>
@@ -473,9 +474,19 @@ class NominationDao @Inject() (db: play.api.db.Database,
 
   def getCurrentNominationsFromUser(username: String): Seq[Nomination] = db.withConnection { implicit connection =>
     person.findByEmail(username) match {
-      case Some(_) => SQL( """select * from nominations where from_email = {email} and initiated_by = {email} and status NOT IN ({statusCancelled}, {statusCancelled}) and cycle_id in (select id from cycle where active = TRUE)""")
+      case Some(_) => SQL( """select * from nominations where from_email = {email} and initiated_by = {email} and status NOT IN ({statusCancelled}, {statusClosed}) and cycle_id in (select id from cycle where active = TRUE)""")
         .on('email -> username, 'statusCancelled -> FeedbackStatus.Cancelled.toString, 'statusClosed -> FeedbackStatus.Closed.toString)
         .as(Nomination.simple *).map { case (a, b, c, d, e, f, g) => enrich(a, b, c, d, e, f, g) }
+      case _ => Seq()
+    }
+  }
+
+  def getHistoryReportForUser(username: String): Seq[FeedbackGroup] = db.withConnection { implicit connection =>
+    person.findByEmail(username) match {
+      case Some(_) => SQL( """select * from nominations where from_email = {email} and initiated_by = {email} and status != {statusCancelled} ORDER BY cycle_id DESC, last_updated DESC""")
+        .on('email -> username, 'statusCancelled -> FeedbackStatus.Cancelled.toString, 'statusClosed -> FeedbackStatus.Closed.toString)
+        .as(Nomination.simple *).map { case (a, b, c, d, e, f, g) => enrich(a, b, c, d, e, f, g) }.groupBy(_.cycleId).toList
+        .map{ case (id, xs) => FeedbackGroup(feedbackCycle.findById(id).getOrElse(FeedbackCycle.orphan), xs)}
       case _ => Seq()
     }
   }
@@ -554,6 +565,11 @@ class NominationDao @Inject() (db: play.api.db.Database,
   }
 }
 
+case class FeedbackGroup(cycle: FeedbackCycle, feedback: Seq[Nomination])
+object FeedbackGroup {
+  implicit val writes: Writes[FeedbackGroup] = Json.writes[FeedbackGroup]
+}
+
 case class FeedbackCycle(id: Long, label: String, start_date: DateTime, end_date: DateTime, active: Boolean)
 
 object FeedbackCycle {
@@ -569,6 +585,8 @@ object FeedbackCycle {
       case id ~ label ~ start_date ~ end_date ~ active => FeedbackCycle(id, label, start_date, end_date, active)
     }
   }
+
+  val orphan = FeedbackCycle(0, "Review Cycle no longer maintained", new DateTime(0), new DateTime(0), false)
 }
 
 class FeedbackCycleDao @Inject() (db: play.api.db.Database) {

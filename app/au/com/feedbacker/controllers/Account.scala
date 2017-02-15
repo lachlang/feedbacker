@@ -52,7 +52,7 @@ class Account @Inject() (person: PersonDao, nomination: NominationDao) extends A
 
   def getReports = AuthenticatedAction { user =>
     val reports = person.findDirectReports(user.credentials.email).map{ report =>
-      Report(report,nomination.getCurrentNominationsFromUser(report.credentials.email))
+      Report(report,nomination.getHistoryReportForUser(report.credentials.email))
     }
     Ok(Json.obj("body" -> Json.toJson(reports)))
   }
@@ -72,7 +72,7 @@ class Account @Inject() (person: PersonDao, nomination: NominationDao) extends A
   }
 }
 
-case class Report(person: Person, nominations: Seq[Nomination])
+case class Report(person: Person, reviewCycle: Seq[FeedbackGroup])
 
 object Report {
   implicit val writes: Writes[Report] = Json.writes[Report]
