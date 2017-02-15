@@ -11,25 +11,12 @@ The nature of the feedback is in the form of a configurable set of questions
 with pick list answers and a free text comments section.  All questions are 
 optional by design since any feedback is better than none.
 
-A useful future extension would be to faciliate ad-hoc and unsolicited feedback
+A useful future extension would be to facilitate ad-hoc and unsolicited feedback
 however that is (quite a long way) out of scope of this exercise.
 
-### Scope and Objectives
-
-The current implemention is constrained to the UI components of a web 
-application.  
-
-In particular there is *no* server code implemented at this point.
-
-Future implementation concerns include:
-* authentication (both server and client side)
-* a staff hierarchy model on the server side to drive visibility of published
-feedback
-	* this could either be hard coded as a stand alone solution or
-	* integrated with a centralised directory
-* a consolidated feedback view for a given individual
-
 ### Getting started
+
+#### UI Demo
 
 To start having a look at the simple demo implemented here you will need a 
 basic webserver. The author used [npm http-server](https://www.npmjs.com/package/http-server)
@@ -39,6 +26,33 @@ To run the demo you will also need to copy the sample service responses from
 the ```/feedbacker/test/api/samples``` directory to the 
 ```/feedbacker/public/api``` directory.
 
-Finally unit tests are implemented using [Karma](https://karma-runner.github.io/0.13/intro/configuration.html)
-and can be exected via ```karma start conf/karma.conf.js``` from the base
+
+#### UI Tests
+
+User interface tests are implemented using [Karma](https://karma-runner.github.io/0.13/intro/configuration.html).
+
+Running these requires the following npm installations:
+
+```
+npm install karma --save-dev
+npm install karma-jasmine jasmine-core karma-chrome-launcher --save-dev
+npm install -g karma-cli
+```
+
+The test may be executed via ```karma start conf/karma.conf.js``` from the base
 project directory.
+
+#### Server config
+
+The server is implemented in Scala and by default uses a PostgreSQL database.
+
+### Future Scope
+
+There are are number of features which have been considered but not implemented at this point.  These include:
+
+* pre-configure an internal hierarchy model within Feedbacker
+* admin controls to set up additional review cycles and/or update questions
+* additional reporting for viewing and/or sharing feedback
+* export of feedback results to csv or excel for appropriate users
+* nomination for ad-hoc/immediate feedback for individuals without a nomination
+* renaming Feedbacker to remove needless vowels
