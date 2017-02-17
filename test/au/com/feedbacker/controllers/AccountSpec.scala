@@ -17,13 +17,14 @@ class AccountSpec extends PlaySpec with MockitoSugar with Results{
 
   val mockPersonDao = mock[PersonDao]
   val mockNominationDao = mock[NominationDao]
+  val mockSessionManager = mock[SessionManager]
   val testPerson = Person(Some(1),"Test Guy","User", Credentials("user@test.com","password",CredentialStatus.Active),"boss@test.com", false)
   when(mockPersonDao.findByEmail("valid@test.com")).thenReturn(Some(testPerson))
   when(mockPersonDao.findByEmail("invalid@test.com")).thenReturn(None)
 
   "Account#getUser" should {
     "should be forbidden" in {
-      val controller = new Account(mockPersonDao, mockNominationDao)
+      val controller = new Account(mockPersonDao, mockNominationDao, mockSessionManager)
       val result: Future[Result] = controller.getUser().apply(FakeRequest())
       val resultStatus: Int = status(result)
       resultStatus mustBe 403

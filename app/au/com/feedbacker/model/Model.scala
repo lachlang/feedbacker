@@ -1,10 +1,10 @@
 package au.com.feedbacker.model
 
-import au.com.feedbacker.controllers.SessionToken
+import au.com.feedbacker.controllers.{SessionManager, SessionToken}
 import org.joda.time.DateTime
 import anorm.JodaParameterMetaData._
-
 import javax.inject.Inject
+
 import anorm._
 import anorm.SqlParser._
 import play.api.libs.functional.syntax._
@@ -103,7 +103,7 @@ object Person {
   implicit val writes: Writes[Person] = Json.writes[Person]
 }
 
-class PersonDao @Inject() (db: play.api.db.Database, activation: ActivationDao) {
+class PersonDao @Inject() (db: play.api.db.Database, activation: ActivationDao, sessionManager: SessionManager) {
 
   // Queries
   /**
@@ -160,7 +160,7 @@ class PersonDao @Inject() (db: play.api.db.Database, activation: ActivationDao) 
             )
           """).on(
             'email -> username,
-            'pass_hash -> SessionToken.generateToken,
+            'pass_hash -> sessionManager.generateToken,
             'user_status -> CredentialStatus.Nominated.toString
           ).executeInsert() match {
           case None => Left(new Exception("Could not insert."))
@@ -296,7 +296,7 @@ object Activation {
   }
 }
 
-class ActivationDao @Inject() (db: play.api.db.Database) {
+class ActivationDao @Inject() (db: play.api.db.Database, sessionManager: SessionManager) {
   private val tokenExpiryInSeconds = 3600
 
   // Queries
@@ -334,7 +334,7 @@ class ActivationDao @Inject() (db: play.api.db.Database) {
    * @return
    */
   def createActivationToken(username: String): Option[SessionToken] = db.withConnection { implicit connection =>
-    val token: String = SessionToken.generateToken
+    val token: String = sessionManager.generateToken
     if (SQL(
       """insert into activations (token, email, created, expires, used) values
          ({token}, {email}, {created}, {expires}, false) """)

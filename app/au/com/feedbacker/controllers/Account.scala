@@ -44,7 +44,7 @@ class Registration @Inject() (emailer: Emailer,
   }
 }
 
-class Account @Inject() (person: PersonDao, nomination: NominationDao) extends AuthenticatedController(person) {
+class Account @Inject() (person: PersonDao, nomination: NominationDao, sessionManager: SessionManager) extends AuthenticatedController(person, sessionManager) {
 
   def getUser = AuthenticatedAction { user =>
     println("got user...")
@@ -106,14 +106,14 @@ object UpdateContent {
     )(UpdateContent.apply, unlift(UpdateContent.unapply))
 }
 
-class ActivationCtrl @Inject() (emailer: Emailer, person: PersonDao, activation: ActivationDao) extends Controller {
+class ActivationCtrl @Inject() (emailer: Emailer, person: PersonDao, activation: ActivationDao, sessionManager: SessionManager) extends Controller {
 
   def activate = LoggingAction { request =>
     request.getQueryString("username").map(_.toLowerCase).flatMap{username =>
       request.getQueryString("token").map{token => SessionToken(username, token.replaceAll(" ", "+"))}}
     match {
       case None => BadRequest
-      case Some(st) => if (!activation.validateToken(st)) Forbidden else if (activation.activate(st)) st.signIn(Redirect("/#/list")) else BadRequest
+      case Some(st) => if (!activation.validateToken(st)) Forbidden else if (activation.activate(st)) sessionManager.signIn(st, Redirect("/#/list")) else BadRequest
     }
   }
 

@@ -18,7 +18,7 @@ import scala.concurrent.Future
  * Created by lachlang on 09/05/2016.
  */
 
-class AuthenticatedController(person: PersonDao) extends Controller {
+class AuthenticatedController(person: PersonDao, sessionManager: SessionManager) extends Controller {
 
   def AuthenticatedAction(body: Person => Result) = LoggingAction { request =>
     getUser(request) match {
@@ -34,7 +34,7 @@ class AuthenticatedController(person: PersonDao) extends Controller {
     }
   }
 
-  private def getUser(request: RequestHeader): Option[Person] = SessionToken.extractToken(request).flatMap(st => person.findByEmail(st.username))
+  private def getUser(request: RequestHeader): Option[Person] = sessionManager.extractToken(request).flatMap(st => person.findByEmail(st.username))
 
   def wrapEither[A]: (Either[Throwable, A], A => Unit) => Result = (either, sideEffect) =>
     either match {
@@ -43,7 +43,7 @@ class AuthenticatedController(person: PersonDao) extends Controller {
     }
 }
 
-class Authentication @Inject() (person: PersonDao) extends Controller {
+class Authentication @Inject() (person: PersonDao, sessionManager: SessionManager) extends Controller {
 
   // NOTE: this is horrible but I'm tired
   def login = Action { request =>
@@ -54,9 +54,9 @@ class Authentication @Inject() (person: PersonDao) extends Controller {
         val personOpt = person.findByEmail(username)
         personOpt match {
           case Some(p) => if (p.credentials.status == CredentialStatus.Inactive) Unauthorized else
-            SessionToken.initialiseToken(personOpt, password) match {
+            sessionManager.initialiseToken(personOpt, password) match {
             case None => BadRequest
-            case Some(st) => st.signIn(Ok)
+            case Some(st) => sessionManager.signIn(st, Ok)
           }
           case None => Forbidden
         }
@@ -65,8 +65,8 @@ class Authentication @Inject() (person: PersonDao) extends Controller {
   }
 
   def logout = LoggingAction { request =>
-    SessionToken.extractToken(request) match {
-      case Some(st) => st.signOut(Ok)
+    sessionManager.extractToken(request) match {
+      case Some(st) => sessionManager.signOut(st, Ok)
       case None => BadRequest
     }
   }
@@ -80,28 +80,13 @@ object Authentication {
 
 }
 
-case class SessionToken(username: String, token: String) {
-
-  def signIn: Result => Result = response => {
-    SessionToken.initialiseSession(this)
-    response.withCookies(
-      Cookie(SessionToken.cookieName,
-        token,
-        SessionToken.cookieMaxAge,
-        SessionToken.cookiePathOption,
-        SessionToken.cookieDomainOption,
-        SessionToken.secureOnly,
-        SessionToken.httpOnly)
-    )
-  }
-
-  def signOut: Result => Result = response => {
-    SessionToken.destroySession(this)
-    response.discardingCookies(DiscardingCookie(SessionToken.cookieName))
-  }
-}
+case class SessionToken(username: String, token: String)
 
 object SessionToken {
+  implicit val format: Format[SessionToken] = Json.format[SessionToken]
+}
+
+class SessionManager {
 
   // TODO: pull this out into config
   protected val cookieName: String = "FEEDBACKER_SESSION"
@@ -111,15 +96,11 @@ object SessionToken {
   protected val secureOnly : Boolean = false
   protected val httpOnly: Boolean = false
 
-  implicit val format: Format[SessionToken] = Json.format[SessionToken]
-
-  private val tokenMap: ConcurrentMap[String, String] = new ConcurrentHashMap[String, String]
-
   private val tokenGenerator = SecureRandom.getInstanceStrong
 
   def extractToken(request: RequestHeader): Option[SessionToken] = request.cookies.get(cookieName).flatMap(c => validateToken(c.value))
 
-  def validateToken(token: String): Option[SessionToken] = Some(SessionToken(tokenMap.get(token),token))
+  def validateToken(token: String): Option[SessionToken] = Some(SessionToken(SessionManager.tokenMap.get(token),token))
 
   def initialiseToken(person: Option[Person], password: String): Option[SessionToken] = {
     person.filter{_.credentials.status == CredentialStatus.Active}.flatMap{p =>
@@ -136,9 +117,32 @@ object SessionToken {
     Base64.getEncoder.encodeToString(bytes).dropRight(2)
   }
 
-  private def initialiseSession(st: SessionToken): Unit = tokenMap.put(st.token, st.username)
+  private def initialiseSession(st: SessionToken): Unit = SessionManager.tokenMap.put(st.token, st.username)
 
-  private def destroySession(st: SessionToken): Unit = tokenMap.remove(st.token)
+  private def destroySession(st: SessionToken): Unit = SessionManager.tokenMap.remove(st.token)
+
+  def signIn: (SessionToken, Result) => Result = (st, response) => {
+    initialiseSession(st)
+    response.withCookies(
+      Cookie(cookieName,
+        st.token,
+        cookieMaxAge,
+        cookiePathOption,
+        cookieDomainOption,
+        secureOnly,
+        httpOnly)
+    )
+  }
+
+  def signOut: (SessionToken, Result) => Result = (st, response) => {
+    destroySession(st)
+    response.discardingCookies(DiscardingCookie(cookieName))
+  }
+
+}
+
+object SessionManager {
+  private val tokenMap: ConcurrentMap[String, String] = new ConcurrentHashMap[String, String]
 }
 
 object LoggingAction extends ActionBuilder[Request] {
