@@ -22,7 +22,8 @@ libraryDependencies ++= Seq(
   "com.typesafe.play" %% "anorm" 				        % "2.5.0",
   "com.typesafe.play" %% "play-mailer"          % "5.0.0-M1",
   "org.postgresql"    % "postgresql"            % "9.4-1201-jdbc41",
-  "org.mindrot"       % "jbcrypt"               % "0.3m"
+  "org.mindrot"       % "jbcrypt"               % "0.3m",
+  "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % "test"
 )
 
 resolvers += "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases"
