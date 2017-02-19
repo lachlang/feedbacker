@@ -34,7 +34,15 @@ class AuthenticatedController(person: PersonDao, sessionManager: SessionManager)
     }
   }
 
-  private def getUser(request: RequestHeader): Option[Person] = sessionManager.extractToken(request).flatMap(st => person.findByEmail(st.username))
+//  private def getUser(request: RequestHeader): Option[Person] = sessionManager.extractToken(request).flatMap(st => person.findByEmail(st.username))
+  private def getUser(request: RequestHeader): Option[Person] = {
+    val token = sessionManager.extractToken(request)
+    println("token")
+    println(token)
+    println(request)
+    println(sessionManager)
+    token.flatMap(st => person.findByEmail(st.username))
+  }
 
   def wrapEither[A]: (Either[Throwable, A], A => Unit) => Result = (either, sideEffect) =>
     either match {
@@ -88,19 +96,24 @@ object SessionToken {
 
 class SessionManager {
 
-  // TODO: pull this out into config
-  protected val cookieName: String = "FEEDBACKER_SESSION"
-  protected val cookieMaxAge: Option[Int] = Some(60 * 60 * 2) // 60 minutes * 60 seconds * 2 hours
-  protected val cookiePathOption: String = "/"
-  protected val cookieDomainOption: Option[String] = None
-  protected val secureOnly : Boolean = false
-  protected val httpOnly: Boolean = false
 
   private val tokenGenerator = SecureRandom.getInstanceStrong
 
-  def extractToken(request: RequestHeader): Option[SessionToken] = request.cookies.get(cookieName).flatMap(c => validateToken(c.value))
+//  def extractToken(request: RequestHeader): Option[SessionToken] = request.cookies.get(cookieName).flatMap(c => validateToken(c.value))
+  def extractToken(request: RequestHeader): Option[SessionToken] = {
+    val cookie = request.cookies.get(SessionManager.cookieName)
+    println("cookie")
+    println(cookie)
+      cookie.flatMap(c => validateToken(c.value))
+  }
 
-  def validateToken(token: String): Option[SessionToken] = Some(SessionToken(SessionManager.tokenMap.get(token),token))
+  def validateToken(token: String): Option[SessionToken] = {
+    if (SessionManager.tokenMap.containsKey(token)) {
+      Some(SessionToken(SessionManager.tokenMap.get(token), token))
+    } else {
+      None
+    }
+  }
 
   def initialiseToken(person: Option[Person], password: String): Option[SessionToken] = {
     person.filter{_.credentials.status == CredentialStatus.Active}.flatMap{p =>
@@ -123,26 +136,27 @@ class SessionManager {
 
   def signIn: (SessionToken, Result) => Result = (st, response) => {
     initialiseSession(st)
-    response.withCookies(
-      Cookie(cookieName,
-        st.token,
-        cookieMaxAge,
-        cookiePathOption,
-        cookieDomainOption,
-        secureOnly,
-        httpOnly)
-    )
+    response.withCookies(SessionManager.createSessionCookie(st.token))
   }
 
   def signOut: (SessionToken, Result) => Result = (st, response) => {
     destroySession(st)
-    response.discardingCookies(DiscardingCookie(cookieName))
+    response.discardingCookies(DiscardingCookie(SessionManager.cookieName))
   }
 
 }
 
 object SessionManager {
   private val tokenMap: ConcurrentMap[String, String] = new ConcurrentHashMap[String, String]
+
+  // TODO: pull this out into config
+  val cookieName: String = "FEEDBACKER_SESSION"
+  protected val cookieMaxAge: Option[Int] = Some(60 * 60 * 2) // 60 minutes * 60 seconds * 2 hours
+  protected val cookiePathOption: String = "/"
+  protected val cookieDomainOption: Option[String] = None
+  protected val secureOnly : Boolean = false
+  protected val httpOnly: Boolean = false
+  def createSessionCookie(token: String): Cookie = Cookie(cookieName, token, cookieMaxAge, cookiePathOption, cookieDomainOption, secureOnly, httpOnly)
 }
 
 object LoggingAction extends ActionBuilder[Request] {
