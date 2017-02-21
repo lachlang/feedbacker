@@ -47,8 +47,6 @@ class Registration @Inject() (emailer: Emailer,
 class Account @Inject() (person: PersonDao, nomination: NominationDao, sessionManager: SessionManager) extends AuthenticatedController(person, sessionManager) {
 
   def getUser = AuthenticatedAction { user =>
-    println("got user...")
-    println(user)
      Ok(Json.obj("body" -> Json.toJson(user)))
   }
 

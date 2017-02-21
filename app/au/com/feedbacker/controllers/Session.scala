@@ -35,14 +35,8 @@ class AuthenticatedController(person: PersonDao, sessionManager: SessionManager)
   }
 
 //  private def getUser(request: RequestHeader): Option[Person] = sessionManager.extractToken(request).flatMap(st => person.findByEmail(st.username))
-  private def getUser(request: RequestHeader): Option[Person] = {
-    val token = sessionManager.extractToken(request)
-    println("token")
-    println(token)
-    println(request)
-    println(sessionManager)
-    token.flatMap(st => person.findByEmail(st.username))
-  }
+  private def getUser(request: RequestHeader): Option[Person] =
+    sessionManager.extractToken(request).flatMap(st => person.findByEmail(st.username))
 
   def wrapEither[A]: (Either[Throwable, A], A => Unit) => Result = (either, sideEffect) =>
     either match {
@@ -102,8 +96,6 @@ class SessionManager {
 //  def extractToken(request: RequestHeader): Option[SessionToken] = request.cookies.get(cookieName).flatMap(c => validateToken(c.value))
   def extractToken(request: RequestHeader): Option[SessionToken] = {
     val cookie = request.cookies.get(SessionManager.cookieName)
-    println("cookie")
-    println(cookie)
       cookie.flatMap(c => validateToken(c.value))
   }
 
