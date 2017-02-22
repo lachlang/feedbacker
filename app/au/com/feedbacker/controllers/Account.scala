@@ -65,7 +65,7 @@ class Account @Inject() (person: PersonDao, nomination: NominationDao, sessionMa
 
       case None => BadRequest(s"""{ "body": { "message": "$errorMessage "}} """)
       case Some(personUpdates) => person.update(personUpdates) match {
-       case Left(e) => BadRequest(Json.obj("message" -> e.getMessage))
+       case Left(e) => BadRequest(Json.obj("body" -> Json.obj("message" -> e.getMessage)))
        case Right(updatedPerson) => Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(updatedPerson)))
       }
     }
