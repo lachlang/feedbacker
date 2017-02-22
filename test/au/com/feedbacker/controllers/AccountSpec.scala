@@ -1,8 +1,9 @@
 package au.com.feedbacker.controllers
 
-import au.com.feedbacker.model.{CredentialStatus, Credentials, Nomination, NominationDao, Person, PersonDao}
-
+import au.com.feedbacker.model._
+import org.joda.time.DateTime
 import play.api.libs.json._
+
 import scala.concurrent.Future
 import org.scalatestplus.play._
 import play.api.mvc._
@@ -107,14 +108,49 @@ class AccountSpec extends PlaySpec with MockitoSugar with Results{
     }
   }
 
-//  "Account#updateUserDetails" should {
-//    "should be valid" in {
-//      //      when(mockPersonDao.findDirectReports).thenReturn(Person())
-//      //      when(mockNominationDao.getHistoryReportForUser).thenReturn(Nomination())
-//      val controller = new Account(mockPersonDao, mockNominationDao)
-//      val result: Future[Result] = controller.updateUserDetails().apply(FakeRequest())
-//      val bodyText: String = contentAsString(result)
-//      bodyText mustBe "not nothing"
-//    }
-//  }
+
+  "Account#getReports" should {
+    "should render a report" in {
+      // mock
+      val feedbackGroup: FeedbackGroup = FeedbackGroup(FeedbackCycle.orphan, Seq(Nomination(Some(1), Some(testPerson), Some(testPerson), FeedbackStatus.Pending, None, Seq(), false, 1)))
+      val mockPersonDao = mock[PersonDao]
+      val mockNominationDao = mock[NominationDao]
+      val mockSessionManager = mock[SessionManager]
+      when(mockPersonDao.findByEmail(validEmail)).thenReturn(Some(testPerson))
+      when(mockSessionManager.extractToken(any())).thenReturn(Some(validSessionToken))
+      when(mockPersonDao.findDirectReports(validEmail)).thenReturn(Seq(testPerson))
+      when(mockNominationDao.getHistoryReportForUser(validEmail)).thenReturn(Seq(feedbackGroup))
+
+      // call
+      val controller = new Account(mockPersonDao, mockNominationDao, mockSessionManager)
+      val result: Future[Result] = controller.getReports().apply(FakeRequest().withCookies(SessionManager.createSessionCookie(validToken)))
+
+      // verify
+      verify(mockSessionManager).extractToken(any())
+      verify(mockPersonDao).findByEmail(validEmail)
+      verify(mockPersonDao).findDirectReports(validEmail)
+      verify(mockNominationDao).getHistoryReportForUser(validEmail)
+      status(result) mustBe 200
+      contentAsJson(result) mustEqual Json.obj("body" -> Json.arr(Json.toJson(Report(testPerson, Seq(feedbackGroup)))))
+    }
+  }
+
+  "Account#getReports" should {
+    "should be forbidden for invalid user" in {
+      // mock
+      val mockPersonDao = mock[PersonDao]
+      val mockNominationDao = mock[NominationDao]
+      val mockSessionManager = mock[SessionManager]
+      when(mockSessionManager.extractToken(any())).thenReturn(None)
+
+      // call
+      val controller = new Account(mockPersonDao, mockNominationDao, mockSessionManager)
+      val result: Future[Result] = controller.getReports().apply(FakeRequest().withCookies(SessionManager.createSessionCookie(validToken)))
+
+      // verify
+      verify(mockSessionManager).extractToken(any())
+      status(result) mustBe 403
+      contentAsString(result) mustEqual ""
+    }
+  }
 }
