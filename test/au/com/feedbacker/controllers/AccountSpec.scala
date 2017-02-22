@@ -17,26 +17,26 @@ import org.mockito.Matchers._
   */
 class AccountSpec extends PlaySpec with MockitoSugar with Results{
 
-  val mockPersonDao = mock[PersonDao]
-  val mockNominationDao = mock[NominationDao]
-  val mockSessionManager = mock[SessionManager]
   val validEmail: String = "valid@test.com"
   val invalidEmail: String = "invalid@test.com"
-  val validToken: String = "asdf1234"
-  val invalidToken: String = "1234asdf"
+  val validToken: String = "valid_token"
+  val invalidToken: String = "invalid_token"
   val testPerson = Person(Some(1),"Test Guy","User", Credentials(validEmail,"password",CredentialStatus.Active),"boss@test.com", false)
-  when(mockPersonDao.findByEmail(validEmail)).thenReturn(Some(testPerson))
-  when(mockPersonDao.findByEmail(invalidEmail)).thenReturn(None)
-  when(mockPersonDao.findDirectReports(validEmail)).thenReturn(Seq())
-  when(mockPersonDao.findDirectReports(invalidEmail)).thenReturn(Seq())
-  doCallRealMethod().when(mockSessionManager).extractToken(any())
-  when(mockSessionManager.validateToken(validToken)).thenReturn(Some(SessionToken(validEmail, validToken)))
-  when(mockSessionManager.validateToken(invalidToken)).thenReturn(None)
+  val validSessionToken = SessionToken(validEmail, validToken)
 
   "Account#getUser" should {
     "should be forbidden" in {
+      // mock
+      val mockPersonDao = mock[PersonDao]
+      val mockNominationDao = mock[NominationDao]
+      val mockSessionManager = mock[SessionManager]
+      doCallRealMethod().when(mockSessionManager).extractToken(any())
+
+      // call
       val controller = new Account(mockPersonDao, mockNominationDao, mockSessionManager)
       val result: Future[Result] = controller.getUser().apply(FakeRequest())
+
+      // verify
       status(result) mustBe 403
       contentAsString(result) mustBe ""
       verifyZeroInteractions(mockPersonDao)
@@ -45,33 +45,67 @@ class AccountSpec extends PlaySpec with MockitoSugar with Results{
 
   "Account#getUser" should {
     "should be valid" in {
+      // mocks
+      val mockPersonDao = mock[PersonDao]
+      val mockNominationDao = mock[NominationDao]
+      val mockSessionManager = mock[SessionManager]
+      when(mockSessionManager.extractToken(any())).thenReturn(Some(validSessionToken))
+      when(mockPersonDao.findByEmail(validEmail)).thenReturn(Some(testPerson))
+
+      // call
       val controller = new Account(mockPersonDao, mockNominationDao, mockSessionManager)
-      val result: Future[Result] = controller.getUser().apply(FakeRequest().withCookies(SessionManager.createSessionCookie(validToken)))
+      val fakeRequest = FakeRequest().withCookies(SessionManager.createSessionCookie(validToken))
+      val result: Future[Result] = controller.getUser().apply(fakeRequest)
+
+      // verify
       status(result) mustBe 200
       contentAsJson(result) mustEqual Json.obj("body" -> Json.toJson(testPerson))
-      verify(mockSessionManager).validateToken(validToken)
+      verify(mockSessionManager).extractToken(any())
       verify(mockPersonDao).findByEmail(validEmail)
     }
   }
 
   "Account#getUser" should {
     "should fail for invalid user" in {
+      // mock
+      val mockPersonDao = mock[PersonDao]
+      val mockNominationDao = mock[NominationDao]
+      val mockSessionManager = mock[SessionManager]
+      when(mockSessionManager.extractToken(any())).thenReturn(None)
+
+      // call
       val controller = new Account(mockPersonDao, mockNominationDao, mockSessionManager)
       val result: Future[Result] = controller.getUser().apply(FakeRequest().withCookies(SessionManager.createSessionCookie(invalidToken)))
-      verify(mockSessionManager).validateToken(invalidToken)
+
+      // verify
+      verify(mockSessionManager).extractToken(any())
       status(result) mustBe 403
       contentAsString(result) mustBe ""
     }
   }
 
-//  "Account#getReports" should {
-//    "should be valid" in {
-//      val controller = new Account(mockPersonDao, mockNominationDao, mockSessionManager)
-//      val result: Future[Result] = controller.getReports().apply(FakeRequest().withCookies(SessionManager.createSessionCookie(validToken)))
-//      status(result) mustBe 200
-//      contentAsJson(result) mustEqual Json.obj("body" -> Json.toJson(testPerson))
-//    }
-//  }
+  "Account#getReports" should {
+    "should return no reports" in {
+      // mock
+      val mockPersonDao = mock[PersonDao]
+      val mockNominationDao = mock[NominationDao]
+      val mockSessionManager = mock[SessionManager]
+      when(mockPersonDao.findByEmail(validEmail)).thenReturn(Some(testPerson))
+      when(mockSessionManager.extractToken(any())).thenReturn(Some(validSessionToken))
+      when(mockPersonDao.findDirectReports(validEmail)).thenReturn(Seq())
+
+      // call
+      val controller = new Account(mockPersonDao, mockNominationDao, mockSessionManager)
+      val result: Future[Result] = controller.getReports().apply(FakeRequest().withCookies(SessionManager.createSessionCookie(validToken)))
+
+      // verify
+      verify(mockSessionManager).extractToken(any())
+      verify(mockPersonDao).findByEmail(validEmail)
+      verify(mockPersonDao).findDirectReports(validEmail)
+      status(result) mustBe 200
+      contentAsJson(result) mustEqual Json.obj("body" -> Json.arr())
+    }
+  }
 
 //  "Account#updateUserDetails" should {
 //    "should be valid" in {
