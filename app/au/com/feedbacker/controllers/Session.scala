@@ -73,14 +73,6 @@ class Authentication @Inject() (person: PersonDao, sessionManager: SessionManage
   }
 }
 
-object Authentication {
-
-  def hash(planetext :String): String = BCrypt.hashpw(planetext, BCrypt.gensalt())
-
-  def validatePassword(cleartext: String, hash: String): Boolean = BCrypt.checkpw(cleartext, hash)
-
-}
-
 case class SessionToken(username: String, token: String)
 
 object SessionToken {
@@ -92,7 +84,10 @@ class SessionManager {
 
   private val tokenGenerator = SecureRandom.getInstanceStrong
 
-//  def extractToken(request: RequestHeader): Option[SessionToken] = request.cookies.get(cookieName).flatMap(c => validateToken(c.value))
+  def hash(planetext :String): String = BCrypt.hashpw(planetext, BCrypt.gensalt())
+
+  def validatePassword(cleartext: String, hash: String): Boolean = BCrypt.checkpw(cleartext, hash)
+
   def extractToken(request: RequestHeader): Option[SessionToken] = {
     val cookie = request.cookies.get(SessionManager.cookieName)
       cookie.flatMap(c => validateToken(c.value))
@@ -108,7 +103,7 @@ class SessionManager {
 
   def initialiseToken(person: Option[Person], password: String): Option[SessionToken] = {
     person.filter{_.credentials.status == CredentialStatus.Active}.flatMap{p =>
-      if (!Authentication.validatePassword(password, p.credentials.hash)) None else {
+      if (!validatePassword(password, p.credentials.hash)) None else {
         val token = generateToken
         Some(SessionToken(p.credentials.email, token))
       }
