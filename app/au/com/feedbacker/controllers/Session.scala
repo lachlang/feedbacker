@@ -46,7 +46,7 @@ class AuthenticatedController(person: PersonDao, sessionManager: SessionManager)
 
 class Authentication @Inject() (person: PersonDao, sessionManager: SessionManager) extends Controller {
 
-  // NOTE: this is horrible but I'm tired
+  // NOTE: LOGGING action is NOT appropriate since we don't want to log credentials in clear text
   def login = Action { request =>
     val jsonBody: Option[JsValue] = request.body.asJson
 
@@ -80,7 +80,6 @@ object SessionToken {
 }
 
 class SessionManager {
-
 
   private val tokenGenerator = SecureRandom.getInstanceStrong
 
