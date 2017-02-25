@@ -120,12 +120,12 @@ class SessionManager {
 
   private def destroySession(st: SessionToken): Unit = SessionManager.tokenMap.remove(st.token)
 
-  def signIn: (SessionToken, Result) => Result = (st, response) => {
+  def signIn(st: SessionToken, response: Result): Result = {
     initialiseSession(st)
     response.withCookies(SessionManager.createSessionCookie(st.token))
   }
 
-  def signOut: (SessionToken, Result) => Result = (st, response) => {
+  def signOut(st: SessionToken, response: Result) = {
     destroySession(st)
     response.discardingCookies(DiscardingCookie(SessionManager.cookieName))
   }

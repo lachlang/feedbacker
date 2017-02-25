@@ -122,7 +122,6 @@ class ActivationCtrl @Inject() (emailer: Emailer, person: PersonDao, activation:
       }
     }
   }
-
 }
 
 class ResetPassword @Inject() (emailer: Emailer,
