@@ -140,7 +140,7 @@ class ResetPassword @Inject() (emailer: Emailer,
             person.findByEmail(st.username) match {
               case None => BadRequest
               case Some(p) => person.update(p.setNewHash(sessionManager.hash(content.password))) match {
-                case Left(e) => BadRequest(Json.obj("message" -> e.getMessage))
+                case Left(e) => BadRequest(Json.obj("body" -> Json.obj("message" -> e.getMessage)))
                 case Right(_) => activation.expireToken(st.token); Ok
               }
             }
