@@ -37,11 +37,11 @@ class AuthenticatedController(person: PersonDao, sessionManager: SessionManager)
   private def getUser(request: RequestHeader): Option[Person] =
     sessionManager.extractToken(request).flatMap(st => person.findByEmail(st.username))
 
-  def wrapEither[A]: (Either[Throwable, A], A => Unit) => Result = (either, sideEffect) =>
-    either match {
-      case Left(e) => BadRequest(Json.obj("message" -> e.getMessage))
-      case Right(r) => sideEffect(r); Created
-    }
+//  def wrapEither[A]: (Either[Throwable, A], A => Unit) => Result = (either, sideEffect) =>
+//    either match {
+//      case Left(e) => BadRequest(Json.obj("message" -> e.getMessage))
+//      case Right(r) => sideEffect(r); Created
+//    }
 }
 
 class Authentication @Inject() (person: PersonDao, sessionManager: SessionManager) extends Controller {

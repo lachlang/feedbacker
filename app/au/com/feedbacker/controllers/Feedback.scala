@@ -10,6 +10,7 @@ import play.api.http.Writeable
 import play.api.libs.json._
 import au.com.feedbacker.model._
 import org.joda.time.DateTime
+import play.api.mvc.Result
 
 /**
  * Created by lachlang on 09/05/2016.
@@ -157,6 +158,12 @@ class Nominations @Inject() (emailer: Emailer,
       case _ => BadRequest
     }
   }
+
+  def wrapEither[A]: (Either[Throwable, A], A => Unit) => Result = (either, sideEffect) =>
+    either match {
+      case Left(e) => BadRequest(Json.obj("message" -> e.getMessage))
+      case Right(r) => sideEffect(r); Created
+    }
 
   private def createNominatedUser(username: String): Either[Throwable, Long] = person.createNominee(username)
 

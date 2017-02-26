@@ -24,206 +24,145 @@ class ResetPasswordSpec extends PlaySpec with MockitoSugar with Results {
   val name: String = "That Guy"
   val testPerson: Person = Person(Some(1), name, "role", Credentials(email, password, CredentialStatus.Active), "boss@test.com")
 
+  def fixture = {
+    new {
+      val mockEmailer = mock[Emailer]
+      val mockPersonDao = mock[PersonDao]
+      val mockActivationDao = mock[ActivationDao]
+      val mockSessionManager = mock[SessionManager]
+      val controller = new ResetPassword(mockEmailer, mockPersonDao, mockActivationDao, mockSessionManager)
+    }
+  }
   "ResetPassword#resetPassword" should {
     "should return forbidden for no request body" in {
-      // mocks
-      val mockEmailer = mock[Emailer]
-      val mockPersonDao = mock[PersonDao]
-      val mockActivationDao = mock[ActivationDao]
-      val mockSessionManager = mock[SessionManager]
-
-      // call
-      val controller = new ResetPassword(mockEmailer, mockPersonDao, mockActivationDao, mockSessionManager)
-      val result: Future[Result] = controller.resetPassword().apply(FakeRequest().withBody(JsNull))
+      val f = fixture
+      val result: Future[Result] = f.controller.resetPassword().apply(FakeRequest().withBody(JsNull))
 
       // verify
       status(result) mustBe 403
       contentAsString(result) mustBe ""
-      verifyZeroInteractions(mockActivationDao)
+      verifyZeroInteractions(f.mockActivationDao)
     }
     "should return forbidden for an invalid request" in {
-      // mocks
-      val mockEmailer = mock[Emailer]
-      val mockPersonDao = mock[PersonDao]
-      val mockActivationDao = mock[ActivationDao]
-      val mockSessionManager = mock[SessionManager]
-
-      // call
-      val controller = new ResetPassword(mockEmailer, mockPersonDao, mockActivationDao, mockSessionManager)
-      val result: Future[Result] = controller.resetPassword().apply(FakeRequest().withBody(Json.obj("some" -> "thing")))
+      val f = fixture
+      val result: Future[Result] = f.controller.resetPassword().apply(FakeRequest().withBody(Json.obj("some" -> "thing")))
 
       // verify
       status(result) mustBe 403
       contentAsString(result) mustBe ""
-      verifyZeroInteractions(mockActivationDao)
+      verifyZeroInteractions(f.mockActivationDao)
     }
     "should reject invalid tokens" in {
-      // mocks
-      val mockEmailer = mock[Emailer]
-      val mockPersonDao = mock[PersonDao]
-      val mockActivationDao = mock[ActivationDao]
-      val mockSessionManager = mock[SessionManager]
-      when(mockActivationDao.validateToken(SessionToken(email, token))).thenReturn(false)
-
-      // call
-      val controller = new ResetPassword(mockEmailer, mockPersonDao, mockActivationDao, mockSessionManager)
-      val result: Future[Result] = controller.resetPassword().apply(FakeRequest().withBody(Json.toJson(request)))
+      val f = fixture
+      val result: Future[Result] = f.controller.resetPassword().apply(FakeRequest().withBody(Json.toJson(request)))
 
       // verify
       status(result) mustBe 403
       contentAsString(result) mustBe ""
-      verify(mockActivationDao).validateToken(SessionToken(email, token))
-      verifyZeroInteractions(mockPersonDao)
+      verify(f.mockActivationDao).validateToken(SessionToken(email, token))
+      verifyZeroInteractions(f.mockPersonDao)
     }
     "should fail for invalid users" in {
-      // mocks
-      val mockEmailer = mock[Emailer]
-      val mockPersonDao = mock[PersonDao]
-      val mockActivationDao = mock[ActivationDao]
-      val mockSessionManager = mock[SessionManager]
-      when(mockActivationDao.validateToken(SessionToken(email, token))).thenReturn(true)
-      when(mockPersonDao.findByEmail(email)).thenReturn(None)
-
-      // call
-      val controller = new ResetPassword(mockEmailer, mockPersonDao, mockActivationDao, mockSessionManager)
-      val result: Future[Result] = controller.resetPassword().apply(FakeRequest().withBody(Json.toJson(request)))
+      val f = fixture
+      when(f.mockActivationDao.validateToken(SessionToken(email, token))).thenReturn(true)
+      when(f.mockPersonDao.findByEmail(email)).thenReturn(None)
+      val result: Future[Result] = f.controller.resetPassword().apply(FakeRequest().withBody(Json.toJson(request)))
 
       // verify
       status(result) mustBe 400
       contentAsString(result) mustBe ""
-      verify(mockActivationDao).validateToken(SessionToken(email, token))
-      verify(mockPersonDao).findByEmail(email)
-      verifyZeroInteractions(mockSessionManager)
-      verifyZeroInteractions(mockEmailer)
+      verify(f.mockActivationDao).validateToken(SessionToken(email, token))
+      verify(f.mockPersonDao).findByEmail(email)
+      verifyZeroInteractions(f.mockSessionManager)
+      verifyZeroInteractions(f.mockEmailer)
     }
     "should return a bad request code when the user update fails" in {
       // mocks
       val errorMessage: String = "error message"
-      val mockEmailer = mock[Emailer]
-      val mockPersonDao = mock[PersonDao]
-      val mockActivationDao = mock[ActivationDao]
-      val mockSessionManager = mock[SessionManager]
-      when(mockActivationDao.validateToken(SessionToken(email, token))).thenReturn(true)
-      when(mockPersonDao.findByEmail(email)).thenReturn(Some(testPerson))
-      when(mockPersonDao.update(testPerson)).thenReturn(Left(new Exception(errorMessage)))
-      when(mockSessionManager.hash(password)).thenReturn(password)
-
-      // call
-      val controller = new ResetPassword(mockEmailer, mockPersonDao, mockActivationDao, mockSessionManager)
-      val result: Future[Result] = controller.resetPassword().apply(FakeRequest().withBody(Json.toJson(request)))
+      val f = fixture
+      when(f.mockActivationDao.validateToken(SessionToken(email, token))).thenReturn(true)
+      when(f.mockPersonDao.findByEmail(email)).thenReturn(Some(testPerson))
+      when(f.mockPersonDao.update(testPerson)).thenReturn(Left(new Exception(errorMessage)))
+      when(f.mockSessionManager.hash(password)).thenReturn(password)
+      val result: Future[Result] = f.controller.resetPassword().apply(FakeRequest().withBody(Json.toJson(request)))
 
       // verify
       status(result) mustBe 400
       contentAsJson(result) mustBe Json.obj("body" -> Json.obj("message" -> errorMessage))
-      verify(mockActivationDao).validateToken(SessionToken(email, token))
-      verify(mockPersonDao).findByEmail(email)
-      verify(mockSessionManager).hash(password)
-      verify(mockPersonDao).update(testPerson)
-      verifyZeroInteractions(mockEmailer)
+      verify(f.mockActivationDao).validateToken(SessionToken(email, token))
+      verify(f.mockPersonDao).findByEmail(email)
+      verify(f.mockSessionManager).hash(password)
+      verify(f.mockPersonDao).update(testPerson)
+      verifyZeroInteractions(f.mockEmailer)
     }
     "should reset the users password" in {
-      // mocks
-      val mockEmailer = mock[Emailer]
-      val mockPersonDao = mock[PersonDao]
-      val mockActivationDao = mock[ActivationDao]
-      val mockSessionManager = mock[SessionManager]
-      when(mockActivationDao.validateToken(SessionToken(email, token))).thenReturn(true)
-      when(mockPersonDao.findByEmail(email)).thenReturn(Some(testPerson))
-      when(mockPersonDao.update(testPerson)).thenReturn(Right(testPerson))
-      when(mockSessionManager.hash(password)).thenReturn(password)
-
-      // call
-      val controller = new ResetPassword(mockEmailer, mockPersonDao, mockActivationDao, mockSessionManager)
-      val result: Future[Result] = controller.resetPassword().apply(FakeRequest().withBody(Json.toJson(request)))
+      val f = fixture
+      when(f.mockActivationDao.validateToken(SessionToken(email, token))).thenReturn(true)
+      when(f.mockPersonDao.findByEmail(email)).thenReturn(Some(testPerson))
+      when(f.mockPersonDao.update(testPerson)).thenReturn(Right(testPerson))
+      when(f.mockSessionManager.hash(password)).thenReturn(password)
+      val result: Future[Result] = f.controller.resetPassword().apply(FakeRequest().withBody(Json.toJson(request)))
 
       // verify
       status(result) mustBe 200
       contentAsString(result) mustBe ""
-      verify(mockActivationDao).validateToken(SessionToken(email, token))
-      verify(mockPersonDao).findByEmail(email)
-      verify(mockSessionManager).hash(password)
-      verify(mockPersonDao).update(testPerson)
-      verifyZeroInteractions(mockEmailer)
+      verify(f.mockActivationDao).validateToken(SessionToken(email, token))
+      verify(f.mockPersonDao).findByEmail(email)
+      verify(f.mockSessionManager).hash(password)
+      verify(f.mockPersonDao).update(testPerson)
+      verifyZeroInteractions(f.mockEmailer)
     }
   }
   "ResetPassword#sendPasswordResetEmail" should {
     "should fail when no email provided" in {
-      // mocks
-      val mockEmailer = mock[Emailer]
-      val mockPersonDao = mock[PersonDao]
-      val mockActivationDao = mock[ActivationDao]
-      val mockSessionManager = mock[SessionManager]
-
-      // call
-      val controller = new ResetPassword(mockEmailer, mockPersonDao, mockActivationDao, mockSessionManager)
-      val result = controller.sendPasswordResetEmail().apply(FakeRequest())
+      val f = fixture
+      val result = f.controller.sendPasswordResetEmail().apply(FakeRequest())
 
       // verify
       status(result) mustBe 400
       contentAsString(result) mustBe ""
-      verifyZeroInteractions(mockPersonDao)
-      verifyZeroInteractions(mockEmailer)
+      verifyZeroInteractions(f.mockPersonDao)
+      verifyZeroInteractions(f.mockEmailer)
     }
     "should fail when the user isn't registered" in {
-      // mocks
-      val mockEmailer = mock[Emailer]
-      val mockPersonDao = mock[PersonDao]
-      val mockActivationDao = mock[ActivationDao]
-      val mockSessionManager = mock[SessionManager]
-      when(mockPersonDao.findByEmail(email)).thenReturn(None)
-
-      // call
-      val controller = new ResetPassword(mockEmailer, mockPersonDao, mockActivationDao, mockSessionManager)
-      val result = controller.sendPasswordResetEmail().apply(FakeRequest().withJsonBody(Json.obj("body" -> Json.obj("email" -> email))))
+      val f = fixture
+      when(f.mockPersonDao.findByEmail(email)).thenReturn(None)
+      val result = f.controller.sendPasswordResetEmail().apply(FakeRequest().withJsonBody(Json.obj("body" -> Json.obj("email" -> email))))
 
       // verify
       status(result) mustBe 400
       contentAsString(result) mustBe ""
-      verify(mockPersonDao).findByEmail(email)
-      verifyZeroInteractions(mockEmailer)
+      verify(f.mockPersonDao).findByEmail(email)
+      verifyZeroInteractions(f.mockEmailer)
 
     }
     "should fail when cannot create token" in {
-      // mocks
-      val mockEmailer = mock[Emailer]
-      val mockPersonDao = mock[PersonDao]
-      val mockActivationDao = mock[ActivationDao]
-      val mockSessionManager = mock[SessionManager]
-      when(mockPersonDao.findByEmail(email)).thenReturn(Some(testPerson))
-      when(mockActivationDao.createActivationToken(email)).thenReturn(None)
-
-      // call
-      val controller = new ResetPassword(mockEmailer, mockPersonDao, mockActivationDao, mockSessionManager)
-      val result = controller.sendPasswordResetEmail().apply(FakeRequest().withJsonBody(Json.obj("body" -> Json.obj("email" -> email))))
+      val f = fixture
+      when(f.mockPersonDao.findByEmail(email)).thenReturn(Some(testPerson))
+      when(f.mockActivationDao.createActivationToken(email)).thenReturn(None)
+      val result = f.controller.sendPasswordResetEmail().apply(FakeRequest().withJsonBody(Json.obj("body" -> Json.obj("email" -> email))))
 
       // verify
       status(result) mustBe 400
       contentAsString(result) mustBe ""
-      verify(mockPersonDao).findByEmail(email)
-      verify(mockActivationDao).createActivationToken(email)
-      verifyZeroInteractions(mockEmailer)
-      verifyZeroInteractions(mockSessionManager)
+      verify(f.mockPersonDao).findByEmail(email)
+      verify(f.mockActivationDao).createActivationToken(email)
+      verifyZeroInteractions(f.mockEmailer)
+      verifyZeroInteractions(f.mockSessionManager)
     }
     "should send a password reset email" in {
-      // mocks
-      val mockEmailer = mock[Emailer]
-      val mockPersonDao = mock[PersonDao]
-      val mockActivationDao = mock[ActivationDao]
-      val mockSessionManager = mock[SessionManager]
-      when(mockPersonDao.findByEmail(email)).thenReturn(Some(testPerson))
-      when(mockActivationDao.createActivationToken(email)).thenReturn(Some(SessionToken(email, token)))
-
-      // call
-      val controller = new ResetPassword(mockEmailer, mockPersonDao, mockActivationDao, mockSessionManager)
-      val result = controller.sendPasswordResetEmail().apply(FakeRequest().withJsonBody(Json.obj("body" -> Json.obj("email" -> email))))
+      val f = fixture
+      when(f.mockPersonDao.findByEmail(email)).thenReturn(Some(testPerson))
+      when(f.mockActivationDao.createActivationToken(email)).thenReturn(Some(SessionToken(email, token)))
+      val result = f.controller.sendPasswordResetEmail().apply(FakeRequest().withJsonBody(Json.obj("body" -> Json.obj("email" -> email))))
 
       // verify
       status(result) mustBe 200
       contentAsString(result) mustBe ""
-      verify(mockPersonDao).findByEmail(email)
-      verify(mockActivationDao).createActivationToken(email)
-      verify(mockEmailer).sendPasswordResetEmail(name, SessionToken(email, token))
-      verifyZeroInteractions(mockSessionManager)
+      verify(f.mockPersonDao).findByEmail(email)
+      verify(f.mockActivationDao).createActivationToken(email)
+      verify(f.mockEmailer).sendPasswordResetEmail(name, SessionToken(email, token))
+      verifyZeroInteractions(f.mockSessionManager)
     }
   }
 }
