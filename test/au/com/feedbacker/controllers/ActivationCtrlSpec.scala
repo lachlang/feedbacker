@@ -11,7 +11,6 @@ import play.api.test._
 import play.api.test.Helpers._
 import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
-import org.mockito.Matchers._
 
 /**
   * Created by lachlang on 16/02/2017.
@@ -22,35 +21,31 @@ class ActivationCtrlSpec extends PlaySpec with MockitoSugar with Results {
   val validToken: String = "valid_token"
   val validSessionToken = SessionToken(validEmail, validToken)
 
-  "ActivationCtrl#activate" should {
-    "should return an error for an empty request" in {
-      // mocks
+  def fixture = {
+    new {
       val mockEmailer = mock[Emailer]
       val mockPersonDao = mock[PersonDao]
       val mockActivationDao = mock[ActivationDao]
       val mockSessionManager = mock[SessionManager]
-
-      // call
       val controller = new ActivationCtrl(mockEmailer, mockPersonDao, mockActivationDao, mockSessionManager)
-      val result: Future[Result] = controller.activate().apply(FakeRequest())
+    }
+  }
+
+  "ActivationCtrl#activate" should {
+    "should return an error for an empty request" in {
+      val f = fixture
+      val result: Future[Result] = f.controller.activate().apply(FakeRequest())
 
       // verify
       status(result) mustBe 400
       contentAsString(result) mustBe ""
-      verifyZeroInteractions(mockPersonDao)
+      verifyZeroInteractions(f.mockPersonDao)
     }
     "should return an error for an invalid request" in {
-      // mocks
-      val mockEmailer = mock[Emailer]
-      val mockPersonDao = mock[PersonDao]
-      val mockActivationDao = mock[ActivationDao]
-      val mockSessionManager = mock[SessionManager]
-
-      // call
-      val controller = new ActivationCtrl(mockEmailer, mockPersonDao, mockActivationDao, mockSessionManager)
-      val result1: Future[Result] = controller.activate().apply(FakeRequest(GET, "/api/activate?some=things&other=whatsit"))
-      val result2: Future[Result] = controller.activate().apply(FakeRequest(GET, s"/api/activate?username=$validEmail&some=thing"))
-      val result3: Future[Result] = controller.activate().apply(FakeRequest(GET, s"/api/activate?token=$validToken&some=thing"))
+      val f = fixture
+      val result1: Future[Result] = f.controller.activate().apply(FakeRequest(GET, "/api/activate?some=things&other=whatsit"))
+      val result2: Future[Result] = f.controller.activate().apply(FakeRequest(GET, s"/api/activate?username=$validEmail&some=thing"))
+      val result3: Future[Result] = f.controller.activate().apply(FakeRequest(GET, s"/api/activate?token=$validToken&some=thing"))
 
       // verify
       status(result1) mustBe 400
@@ -59,160 +54,106 @@ class ActivationCtrlSpec extends PlaySpec with MockitoSugar with Results {
       contentAsString(result2) mustBe ""
       status(result2) mustBe 400
       contentAsString(result3) mustBe ""
-      verifyZeroInteractions(mockPersonDao)
+      verifyZeroInteractions(f.mockPersonDao)
     }
     "should return a forbidden response for invalid tokens" in {
-      // mocks
-      val mockEmailer = mock[Emailer]
-      val mockPersonDao = mock[PersonDao]
-      val mockActivationDao = mock[ActivationDao]
-      val mockSessionManager = mock[SessionManager]
-      when(mockActivationDao.validateToken(validSessionToken)).thenReturn(false)
-
-      // call
-      val controller = new ActivationCtrl(mockEmailer, mockPersonDao, mockActivationDao, mockSessionManager)
-      val result: Future[Result] = controller.activate().apply(FakeRequest(GET, s"/api/activate?username=$validEmail&token=$validToken&some=thing"))
+      val f = fixture
+      when(f.mockActivationDao.validateToken(validSessionToken)).thenReturn(false)
+      val result: Future[Result] = f.controller.activate().apply(FakeRequest(GET, s"/api/activate?username=$validEmail&token=$validToken&some=thing"))
 
       // verify
       status(result) mustBe 403
       contentAsString(result) mustBe ""
-      verify(mockActivationDao).validateToken(validSessionToken)
-      verifyZeroInteractions(mockActivationDao)
+      verify(f.mockActivationDao).validateToken(validSessionToken)
+      verifyZeroInteractions(f.mockActivationDao)
     }
     "should return an error when unable to activate the user" in {
-      val mockEmailer = mock[Emailer]
-      val mockPersonDao = mock[PersonDao]
-      val mockActivationDao = mock[ActivationDao]
-      val mockSessionManager = mock[SessionManager]
-      when(mockActivationDao.validateToken(validSessionToken)).thenReturn(true)
-      when(mockActivationDao.activate(validSessionToken)).thenReturn(false)
-
-      // call
-      val controller = new ActivationCtrl(mockEmailer, mockPersonDao, mockActivationDao, mockSessionManager)
-      val result: Future[Result] = controller.activate().apply(FakeRequest(GET, s"/api/activate?username=$validEmail&token=$validToken&some=thing"))
+      val f = fixture
+      when(f.mockActivationDao.validateToken(validSessionToken)).thenReturn(true)
+      when(f.mockActivationDao.activate(validSessionToken)).thenReturn(false)
+      val result: Future[Result] = f.controller.activate().apply(FakeRequest(GET, s"/api/activate?username=$validEmail&token=$validToken&some=thing"))
 
       // verify
       status(result) mustBe 400
       contentAsString(result) mustBe ""
-      verify(mockActivationDao).validateToken(validSessionToken)
-      verify(mockActivationDao).activate(validSessionToken)
-      verifyZeroInteractions(mockSessionManager)
+      verify(f.mockActivationDao).validateToken(validSessionToken)
+      verify(f.mockActivationDao).activate(validSessionToken)
+      verifyZeroInteractions(f.mockSessionManager)
     }
     "should redirect the user when the activation succeeds" in {
-      val mockEmailer = mock[Emailer]
-      val mockPersonDao = mock[PersonDao]
-      val mockActivationDao = mock[ActivationDao]
-      val mockSessionManager = mock[SessionManager]
+      val f = fixture
       val targetUrl: String = "/#/list"
-      when(mockActivationDao.validateToken(validSessionToken)).thenReturn(true)
-      when(mockActivationDao.activate(validSessionToken)).thenReturn(true)
-      when(mockSessionManager.signIn(validSessionToken, Redirect(targetUrl))).thenReturn(Redirect(targetUrl))
-
-      // call
-      val controller = new ActivationCtrl(mockEmailer, mockPersonDao, mockActivationDao, mockSessionManager)
-      val result: Future[Result] = controller.activate().apply(FakeRequest(GET, s"/api/activate?username=$validEmail&token=$validToken&some=thing"))
+      when(f.mockActivationDao.validateToken(validSessionToken)).thenReturn(true)
+      when(f.mockActivationDao.activate(validSessionToken)).thenReturn(true)
+      when(f.mockSessionManager.signIn(validSessionToken, Redirect(targetUrl))).thenReturn(Redirect(targetUrl))
+      val result: Future[Result] = f.controller.activate().apply(FakeRequest(GET, s"/api/activate?username=$validEmail&token=$validToken&some=thing"))
 
       // verify
       status(result) mustBe 303
       contentAsString(result) mustBe ""
-      verify(mockActivationDao).validateToken(validSessionToken)
-      verify(mockActivationDao).activate(validSessionToken)
-      verify(mockSessionManager).signIn(validSessionToken, Redirect(targetUrl))
+      verify(f.mockActivationDao).validateToken(validSessionToken)
+      verify(f.mockActivationDao).activate(validSessionToken)
+      verify(f.mockSessionManager).signIn(validSessionToken, Redirect(targetUrl))
     }
   }
   "ActivationCtrl#sendActivationEmail" should {
     "should return and error for an empty request" in {
-      // mocks
-      val mockEmailer = mock[Emailer]
-      val mockPersonDao = mock[PersonDao]
-      val mockActivationDao = mock[ActivationDao]
-      val mockSessionManager = mock[SessionManager]
-
-      // call
-      val controller = new ActivationCtrl(mockEmailer, mockPersonDao, mockActivationDao, mockSessionManager)
-      val result: Future[Result] = controller.sendActivationEmail().apply(FakeRequest())
+      val f = fixture
+      val result: Future[Result] = f.controller.sendActivationEmail().apply(FakeRequest())
 
       // verify
       status(result) mustBe 400
       contentAsString(result) mustBe ""
-      verifyZeroInteractions(mockPersonDao)
+      verifyZeroInteractions(f.mockPersonDao)
     }
     "should return an error for an invalid request format" in {
-      // mocks
-      val mockEmailer = mock[Emailer]
-      val mockPersonDao = mock[PersonDao]
-      val mockActivationDao = mock[ActivationDao]
-      val mockSessionManager = mock[SessionManager]
-
-      // call
-      val controller = new ActivationCtrl(mockEmailer, mockPersonDao, mockActivationDao, mockSessionManager)
-      val result: Future[Result] = controller.sendActivationEmail().apply(FakeRequest().withJsonBody(Json.obj("some" -> "thing")))
+      val f = fixture
+      val result: Future[Result] = f.controller.sendActivationEmail().apply(FakeRequest().withJsonBody(Json.obj("some" -> "thing")))
 
       // verify
       status(result) mustBe 400
       contentAsString(result) mustBe ""
-      verifyZeroInteractions(mockPersonDao)
+      verifyZeroInteractions(f.mockPersonDao)
     }
     "should return an error for unregistered users" in {
-      // mocks
-      val mockEmailer = mock[Emailer]
-      val mockPersonDao = mock[PersonDao]
-      val mockActivationDao = mock[ActivationDao]
-      val mockSessionManager = mock[SessionManager]
-      when(mockPersonDao.findByEmail(validEmail)).thenReturn(None)
-
-      // call
-      val controller = new ActivationCtrl(mockEmailer, mockPersonDao, mockActivationDao, mockSessionManager)
-      val result: Future[Result] = controller.sendActivationEmail().apply(FakeRequest().withJsonBody(Json.obj("body" -> Json.obj("username" -> validEmail))))
+      val f = fixture
+      when(f.mockPersonDao.findByEmail(validEmail)).thenReturn(None)
+      val result: Future[Result] = f.controller.sendActivationEmail().apply(FakeRequest().withJsonBody(Json.obj("body" -> Json.obj("username" -> validEmail))))
 
       // verify
       status(result) mustBe 400
       contentAsString(result) mustBe ""
-      verify(mockPersonDao).findByEmail(validEmail)
-      verifyZeroInteractions(mockActivationDao)
+      verify(f.mockPersonDao).findByEmail(validEmail)
+      verifyZeroInteractions(f.mockActivationDao)
     }
     "should return an error when unable to create a token" in {
-      // mocks
-      val mockEmailer = mock[Emailer]
-      val mockPersonDao = mock[PersonDao]
-      val mockActivationDao = mock[ActivationDao]
-      val mockSessionManager = mock[SessionManager]
+      val f = fixture
       val testPerson = Person(Some(1),"Test Guy","User", Credentials(validEmail,"password",CredentialStatus.Active),"boss@test.com", false)
-      when(mockPersonDao.findByEmail(validEmail)).thenReturn(Some(testPerson))
-      when(mockActivationDao.createActivationToken(validEmail)).thenReturn(None)
-
-      // call
-      val controller = new ActivationCtrl(mockEmailer, mockPersonDao, mockActivationDao, mockSessionManager)
-      val result: Future[Result] = controller.sendActivationEmail().apply(FakeRequest().withJsonBody(Json.obj("body" -> Json.obj("username" -> validEmail))))
+      when(f.mockPersonDao.findByEmail(validEmail)).thenReturn(Some(testPerson))
+      when(f.mockActivationDao.createActivationToken(validEmail)).thenReturn(None)
+      val result: Future[Result] = f.controller.sendActivationEmail().apply(FakeRequest().withJsonBody(Json.obj("body" -> Json.obj("username" -> validEmail))))
 
       // verify
       status(result) mustBe 400
       contentAsString(result) mustBe ""
-      verify(mockPersonDao).findByEmail(validEmail)
-      verify(mockActivationDao).createActivationToken(validEmail)
-      verifyZeroInteractions(mockEmailer)
+      verify(f.mockPersonDao).findByEmail(validEmail)
+      verify(f.mockActivationDao).createActivationToken(validEmail)
+      verifyZeroInteractions(f.mockEmailer)
     }
     "should send an activation email" in {
-      // mocks
-      val mockEmailer = mock[Emailer]
-      val mockPersonDao = mock[PersonDao]
-      val mockActivationDao = mock[ActivationDao]
-      val mockSessionManager = mock[SessionManager]
+      val f = fixture
       val name: String = "Test Guy"
       val testPerson = Person(Some(1),name,"User", Credentials(validEmail,"password",CredentialStatus.Active),"boss@test.com", false)
-      when(mockPersonDao.findByEmail(validEmail)).thenReturn(Some(testPerson))
-      when(mockActivationDao.createActivationToken(validEmail)).thenReturn(Some(validSessionToken))
-
-      // call
-      val controller = new ActivationCtrl(mockEmailer, mockPersonDao, mockActivationDao, mockSessionManager)
-      val result: Future[Result] = controller.sendActivationEmail().apply(FakeRequest().withJsonBody(Json.obj("body" -> Json.obj("username" -> validEmail))))
+      when(f.mockPersonDao.findByEmail(validEmail)).thenReturn(Some(testPerson))
+      when(f.mockActivationDao.createActivationToken(validEmail)).thenReturn(Some(validSessionToken))
+      val result: Future[Result] = f.controller.sendActivationEmail().apply(FakeRequest().withJsonBody(Json.obj("body" -> Json.obj("username" -> validEmail))))
 
       // verify
       status(result) mustBe 200
       contentAsString(result) mustBe ""
-      verify(mockPersonDao).findByEmail(validEmail)
-      verify(mockActivationDao).createActivationToken(validEmail)
-      verify(mockEmailer).sendActivationEmail(name, validSessionToken)
+      verify(f.mockPersonDao).findByEmail(validEmail)
+      verify(f.mockActivationDao).createActivationToken(validEmail)
+      verify(f.mockEmailer).sendActivationEmail(name, validSessionToken)
     }
   }
 }

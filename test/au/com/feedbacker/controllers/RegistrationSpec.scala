@@ -26,40 +26,34 @@ class RegistrationSpec extends PlaySpec with MockitoSugar with Results {
   val password: String = "passwordThisIsAHilariousPassword"
   val registrationContent = RegistrationContent(name, role, upperEmail, password, bossEmail)
 
-  "Registration#register" should {
-    "should reject empty requests" in {
-      // mock
+  def fixture = {
+    new {
       val mockEmailer = mock[Emailer]
       val mockPersonDao = mock[PersonDao]
       val mockCredentialsDao = mock[CredentialsDao]
       val mockActivationDao = mock[ActivationDao]
       val mockSessionManager = mock[SessionManager]
-
-      // call
-      val body: JsValue = JsNull
       val controller = new Registration(mockEmailer, mockPersonDao, mockCredentialsDao, mockActivationDao, mockSessionManager)
-      val result: Future[Result] = controller.register().apply(FakeRequest().withBody(body))
+    }
+  }
+  "Registration#register" should {
+    "should reject empty requests" in {
+      val f = fixture
+      val body: JsValue = JsNull
+      val result: Future[Result] = f.controller.register().apply(FakeRequest().withBody(body))
 
       // verify
       status(result) mustBe 400
       contentAsJson(result) mustBe Json.obj("body" -> Json.obj("message" -> "Could not parse request."))
-      verifyZeroInteractions(mockEmailer)
-      verifyZeroInteractions(mockPersonDao)
-      verifyZeroInteractions(mockCredentialsDao)
-      verifyZeroInteractions(mockActivationDao)
+      verifyZeroInteractions(f.mockEmailer)
+      verifyZeroInteractions(f.mockPersonDao)
+      verifyZeroInteractions(f.mockCredentialsDao)
+      verifyZeroInteractions(f.mockActivationDao)
     }
     "should reject invalid payloads" in {
-      // mocks
-      val mockEmailer = mock[Emailer]
-      val mockPersonDao = mock[PersonDao]
-      val mockCredentialsDao = mock[CredentialsDao]
-      val mockActivationDao = mock[ActivationDao]
-      val mockSessionManager = mock[SessionManager]
-
-      // call
+      val f = fixture
       val body: JsValue = Json.obj("some" -> "object")
-      val controller = new Registration(mockEmailer, mockPersonDao, mockCredentialsDao, mockActivationDao, mockSessionManager)
-      val result: Future[Result] = controller.register().apply(FakeRequest().withBody(body))
+      val result: Future[Result] = f.controller.register().apply(FakeRequest().withBody(body))
 
       // verify
       status(result) mustBe 400
@@ -67,67 +61,43 @@ class RegistrationSpec extends PlaySpec with MockitoSugar with Results {
 
     }
     "should reject duplicate user names" in {
-      // mock
-      val mockEmailer = mock[Emailer]
-      val mockPersonDao = mock[PersonDao]
-      val mockCredentialsDao = mock[CredentialsDao]
-      val mockActivationDao = mock[ActivationDao]
-      val mockSessionManager = mock[SessionManager]
-      when(mockCredentialsDao.findStatusByEmail(validEmail)).thenReturn(Some(1L, CredentialStatus.Active))
-
-      // call
+      val f = fixture
+      when(f.mockCredentialsDao.findStatusByEmail(validEmail)).thenReturn(Some(1L, CredentialStatus.Active))
       val body: JsValue = Json.toJson(registrationContent)
-      val controller = new Registration(mockEmailer, mockPersonDao, mockCredentialsDao, mockActivationDao, mockSessionManager)
-      val result: Future[Result] = controller.register().apply(FakeRequest().withBody(body))
+      val result: Future[Result] = f.controller.register().apply(FakeRequest().withBody(body))
 
       // verify
-      verify(mockCredentialsDao).findStatusByEmail(validEmail)
+      verify(f.mockCredentialsDao).findStatusByEmail(validEmail)
       status(result) mustBe 409
       contentAsJson(result) mustBe Json.obj("body" -> Json.obj("message" -> "User is already registered."))
     }
     "should return bad request when failing to send email" in {
-      // mocks
       val testPerson = Person(Some(1), name,role, Credentials(validEmail,password,CredentialStatus.Inactive),bossEmail, false)
-      val mockEmailer = mock[Emailer]
-      val mockPersonDao = mock[PersonDao]
-      val mockCredentialsDao = mock[CredentialsDao]
-      val mockActivationDao = mock[ActivationDao]
-      val mockSessionManager = mock[SessionManager]
-      when(mockSessionManager.hash(password)).thenReturn(password)
-      when(mockCredentialsDao.findStatusByEmail(validEmail)).thenReturn(None)
-      when(mockPersonDao.create(any())).thenReturn(Right(testPerson))
-      when(mockActivationDao.createActivationToken(validEmail)).thenReturn(None)
-
-      // call
+      val f = fixture
+      when(f.mockSessionManager.hash(password)).thenReturn(password)
+      when(f.mockCredentialsDao.findStatusByEmail(validEmail)).thenReturn(None)
+      when(f.mockPersonDao.create(any())).thenReturn(Right(testPerson))
+      when(f.mockActivationDao.createActivationToken(validEmail)).thenReturn(None)
       val body: JsValue = Json.toJson(registrationContent)
-      val controller = new Registration(mockEmailer, mockPersonDao, mockCredentialsDao, mockActivationDao, mockSessionManager)
-      val result: Future[Result] = controller.register().apply(FakeRequest().withBody(body))
+      val result: Future[Result] = f.controller.register().apply(FakeRequest().withBody(body))
 
       // verify
       status(result) mustBe 400
       contentAsJson(result) mustBe Json.obj("body" -> Json.obj("message" -> "Could not send activation email."))
     }
     "should return an error when the db write fails" in {
-      // mocks
       val testPerson = Person(None, name,role, Credentials(validEmail,password,CredentialStatus.Inactive),bossEmail, false)
-      val mockEmailer = mock[Emailer]
-      val mockPersonDao = mock[PersonDao]
-      val mockCredentialsDao = mock[CredentialsDao]
-      val mockActivationDao = mock[ActivationDao]
-      val mockSessionManager = mock[SessionManager]
-      when(mockSessionManager.hash(password)).thenReturn(password)
-      when(mockCredentialsDao.findStatusByEmail(validEmail)).thenReturn(None)
-      when(mockPersonDao.create(any())).thenReturn(Left(new Exception()))
-
-      // call
+      val f = fixture
+      when(f.mockSessionManager.hash(password)).thenReturn(password)
+      when(f.mockCredentialsDao.findStatusByEmail(validEmail)).thenReturn(None)
+      when(f.mockPersonDao.create(any())).thenReturn(Left(new Exception()))
       val body: JsValue = Json.toJson(registrationContent)
-      val controller = new Registration(mockEmailer, mockPersonDao, mockCredentialsDao, mockActivationDao, mockSessionManager)
-      val result: Future[Result] = controller.register().apply(FakeRequest().withBody(body))
+      val result: Future[Result] = f.controller.register().apply(FakeRequest().withBody(body))
 
       // verify
-      verify(mockSessionManager).hash(password)
-      verify(mockPersonDao, never()).update(testPerson)
-      verify(mockPersonDao).create(testPerson)
+      verify(f.mockSessionManager).hash(password)
+      verify(f.mockPersonDao, never()).update(testPerson)
+      verify(f.mockPersonDao).create(testPerson)
       status(result) mustBe 400
       contentAsJson(result) mustBe Json.obj("body" -> Json.obj("message" -> "Could not create user."))
     }
@@ -135,26 +105,19 @@ class RegistrationSpec extends PlaySpec with MockitoSugar with Results {
       // mocks
       val testPerson = Person(None, name,role, Credentials(validEmail,password,CredentialStatus.Inactive),bossEmail, false)
       val sessionToken: SessionToken = SessionToken(validEmail, password)
-      val mockEmailer = mock[Emailer]
-      val mockPersonDao = mock[PersonDao]
-      val mockCredentialsDao = mock[CredentialsDao]
-      val mockActivationDao = mock[ActivationDao]
-      val mockSessionManager = mock[SessionManager]
-      when(mockSessionManager.hash(password)).thenReturn(password)
-      when(mockCredentialsDao.findStatusByEmail(validEmail)).thenReturn(None)
-      when(mockPersonDao.create(any())).thenReturn(Right(testPerson))
-      when(mockActivationDao.createActivationToken(validEmail)).thenReturn(Some(sessionToken))
-
-      // call
+      val f = fixture
+      when(f.mockSessionManager.hash(password)).thenReturn(password)
+      when(f.mockCredentialsDao.findStatusByEmail(validEmail)).thenReturn(None)
+      when(f.mockPersonDao.create(any())).thenReturn(Right(testPerson))
+      when(f.mockActivationDao.createActivationToken(validEmail)).thenReturn(Some(sessionToken))
       val body: JsValue = Json.toJson(registrationContent)
-      val controller = new Registration(mockEmailer, mockPersonDao, mockCredentialsDao, mockActivationDao, mockSessionManager)
-      val result: Future[Result] = controller.register().apply(FakeRequest().withBody(body))
+      val result: Future[Result] = f.controller.register().apply(FakeRequest().withBody(body))
 
       // verify
-      verify(mockSessionManager).hash(password)
-      verify(mockPersonDao, never()).update(testPerson)
-      verify(mockPersonDao).create(testPerson)
-      verify(mockEmailer).sendActivationEmail(testPerson.name, sessionToken)
+      verify(f.mockSessionManager).hash(password)
+      verify(f.mockPersonDao, never()).update(testPerson)
+      verify(f.mockPersonDao).create(testPerson)
+      verify(f.mockEmailer).sendActivationEmail(testPerson.name, sessionToken)
       status(result) mustBe 200
       contentAsJson(result) mustBe Json.toJson(testPerson)
     }
@@ -162,26 +125,19 @@ class RegistrationSpec extends PlaySpec with MockitoSugar with Results {
       // mocks
       val testPerson = Person(Some(1), name,role, Credentials(validEmail,password,CredentialStatus.Inactive),bossEmail, false)
       val sessionToken: SessionToken = SessionToken(validEmail, password)
-      val mockEmailer = mock[Emailer]
-      val mockPersonDao = mock[PersonDao]
-      val mockCredentialsDao = mock[CredentialsDao]
-      val mockActivationDao = mock[ActivationDao]
-      val mockSessionManager = mock[SessionManager]
-      when(mockSessionManager.hash(password)).thenReturn(password)
-      when(mockCredentialsDao.findStatusByEmail(validEmail)).thenReturn(Some(1L, CredentialStatus.Nominated))
-      when(mockPersonDao.update(any())).thenReturn(Right(testPerson))
-      when(mockActivationDao.createActivationToken(validEmail)).thenReturn(Some(sessionToken))
-
-      // call
+      val f = fixture
+      when(f.mockSessionManager.hash(password)).thenReturn(password)
+      when(f.mockCredentialsDao.findStatusByEmail(validEmail)).thenReturn(Some(1L, CredentialStatus.Nominated))
+      when(f.mockPersonDao.update(any())).thenReturn(Right(testPerson))
+      when(f.mockActivationDao.createActivationToken(validEmail)).thenReturn(Some(sessionToken))
       val body: JsValue = Json.toJson(registrationContent)
-      val controller = new Registration(mockEmailer, mockPersonDao, mockCredentialsDao, mockActivationDao, mockSessionManager)
-      val result: Future[Result] = controller.register().apply(FakeRequest().withBody(body))
+      val result: Future[Result] = f.controller.register().apply(FakeRequest().withBody(body))
 
       // verify
-      verify(mockSessionManager).hash(password)
-      verify(mockPersonDao, never()).create(testPerson)
-      verify(mockPersonDao).update(testPerson)
-      verify(mockEmailer).sendActivationEmail(testPerson.name, sessionToken)
+      verify(f.mockSessionManager).hash(password)
+      verify(f.mockPersonDao, never()).create(testPerson)
+      verify(f.mockPersonDao).update(testPerson)
+      verify(f.mockEmailer).sendActivationEmail(testPerson.name, sessionToken)
       status(result) mustBe 200
       contentAsJson(result) mustBe Json.toJson(testPerson)
     }
