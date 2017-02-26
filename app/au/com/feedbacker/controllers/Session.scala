@@ -37,11 +37,6 @@ class AuthenticatedController(person: PersonDao, sessionManager: SessionManager)
   private def getUser(request: RequestHeader): Option[Person] =
     sessionManager.extractToken(request).flatMap(st => person.findByEmail(st.username))
 
-//  def wrapEither[A]: (Either[Throwable, A], A => Unit) => Result = (either, sideEffect) =>
-//    either match {
-//      case Left(e) => BadRequest(Json.obj("message" -> e.getMessage))
-//      case Right(r) => sideEffect(r); Created
-//    }
 }
 
 class Authentication @Inject() (person: PersonDao, sessionManager: SessionManager) extends Controller {
@@ -54,12 +49,12 @@ class Authentication @Inject() (person: PersonDao, sessionManager: SessionManage
       case Some((Some(username), Some(password))) =>
         val personOpt = person.findByEmail(username)
         personOpt match {
+          case None => Forbidden
           case Some(p) => if (p.credentials.status == CredentialStatus.Inactive) Unauthorized else
-            sessionManager.initialiseToken(personOpt, password) match {
+            sessionManager.initialiseToken(p, password) match {
             case None => BadRequest
             case Some(st) => sessionManager.signIn(st, Ok)
           }
-          case None => Forbidden
         }
       case _ => BadRequest
     }
@@ -100,12 +95,12 @@ class SessionManager {
     }
   }
 
-  def initialiseToken(person: Option[Person], password: String): Option[SessionToken] = {
-    person.filter{_.credentials.status == CredentialStatus.Active}.flatMap{p =>
-      if (!validatePassword(password, p.credentials.hash)) None else {
-        val token = generateToken
-        Some(SessionToken(p.credentials.email, token))
-      }
+  def initialiseToken(person: Person, password: String): Option[SessionToken] = {
+    if (person.credentials.status != CredentialStatus.Active ||
+        !validatePassword(password, person.credentials.hash)) None
+    else {
+      val token = generateToken
+      Some(SessionToken(person.credentials.email, token))
     }
   }
 

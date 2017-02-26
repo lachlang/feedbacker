@@ -30,7 +30,7 @@ class AuthenticatedControllerSpec extends PlaySpec with MockitoSugar with Result
       val controller = new AuthenticatedController(mockPersonDao, mockSessionManager)
     }
   }
-  "AuthenticationController#AuthenticatedAction" should {
+  "AuthenticatedController#AuthenticatedAction" should {
 
     "should return forbidden when no session token is provided" in {
       val f = fixture
