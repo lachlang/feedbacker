@@ -6,7 +6,7 @@
   </div>
   <div class="row top-buffer">
 	<div class="col-md-12">
-	  <p class="lead">Feedback for <strong>{{edit.feedback.fromName}}</strong> from <strong>{{edit.feedback.toName}}</strong>.  Feedback is be visible by <em>{{edit.feedback.bossEmail}}</em></p>
+	  <p class="lead">Feedback for <strong>{{edit.feedback.fromName}}</strong> from <strong>{{edit.feedback.toName}}</strong>.  Feedback is be visible by <em>{{edit.feedback.bossEmail}}</em> <data-ng-show if="edit.feedback.shareFeedback">and <em>{{edit.feedback.fromName}}</em> </data-ng-show></p>
 	</div>
   </div>
 	<div class="row top-buffer" data-ng-show="edit.feedback.cycleLabel">

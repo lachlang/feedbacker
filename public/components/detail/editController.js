@@ -15,9 +15,8 @@ fbControllers.controller('EditCtrl',  ['$scope', '$log', 'Model','Feedback', 'ui
 		var feedbackId = $location.search()["id"];
 
 		// TODO: fix this when I'm not on the plane
-		// if (feedbackId && Number.isInteger(feedbackId)) {
+        //if (feedbackId && Number.isInteger(feedbackId)) {
 		if (feedbackId) {
-
 			Model.getFeedbackDetail(feedbackId).then(function(response) {
 				ctrl.feedback = response;
 				if (!ctrl.feedback.shareFeedback) {
