@@ -37,7 +37,7 @@ class RegistrationSpec extends PlaySpec with MockitoSugar with Results {
     }
   }
   "Registration#register" should {
-    "should reject empty requests" in {
+    "reject empty requests" in {
       val f = fixture
       val body: JsValue = JsNull
       val result: Future[Result] = f.controller.register().apply(FakeRequest().withBody(body))
@@ -50,7 +50,7 @@ class RegistrationSpec extends PlaySpec with MockitoSugar with Results {
       verifyZeroInteractions(f.mockCredentialsDao)
       verifyZeroInteractions(f.mockActivationDao)
     }
-    "should reject invalid payloads" in {
+    "reject invalid payloads" in {
       val f = fixture
       val body: JsValue = Json.obj("some" -> "object")
       val result: Future[Result] = f.controller.register().apply(FakeRequest().withBody(body))
@@ -60,7 +60,7 @@ class RegistrationSpec extends PlaySpec with MockitoSugar with Results {
       contentAsJson(result) mustEqual Json.obj("body" -> Json.obj("message" -> "Could not parse request."))
 
     }
-    "should reject duplicate user names" in {
+    "reject duplicate user names" in {
       val f = fixture
       when(f.mockCredentialsDao.findStatusByEmail(validEmail)).thenReturn(Some(1L, CredentialStatus.Active))
       val body: JsValue = Json.toJson(registrationContent)
@@ -71,7 +71,7 @@ class RegistrationSpec extends PlaySpec with MockitoSugar with Results {
       status(result) mustBe 409
       contentAsJson(result) mustBe Json.obj("body" -> Json.obj("message" -> "User is already registered."))
     }
-    "should return bad request when failing to send email" in {
+    "return bad request when failing to send email" in {
       val testPerson = Person(Some(1), name,role, Credentials(validEmail,password,CredentialStatus.Inactive),bossEmail, false)
       val f = fixture
       when(f.mockSessionManager.hash(password)).thenReturn(password)
@@ -85,7 +85,7 @@ class RegistrationSpec extends PlaySpec with MockitoSugar with Results {
       status(result) mustBe 400
       contentAsJson(result) mustBe Json.obj("body" -> Json.obj("message" -> "Could not send activation email."))
     }
-    "should return an error when the db write fails" in {
+    "return an error when the db write fails" in {
       val testPerson = Person(None, name,role, Credentials(validEmail,password,CredentialStatus.Inactive),bossEmail, false)
       val f = fixture
       when(f.mockSessionManager.hash(password)).thenReturn(password)
@@ -101,7 +101,7 @@ class RegistrationSpec extends PlaySpec with MockitoSugar with Results {
       status(result) mustBe 400
       contentAsJson(result) mustBe Json.obj("body" -> Json.obj("message" -> "Could not create user."))
     }
-    "should create a new user" in {
+    "create a new user" in {
       // mocks
       val testPerson = Person(None, name,role, Credentials(validEmail,password,CredentialStatus.Inactive),bossEmail, false)
       val sessionToken: SessionToken = SessionToken(validEmail, password)
@@ -121,7 +121,7 @@ class RegistrationSpec extends PlaySpec with MockitoSugar with Results {
       status(result) mustBe 200
       contentAsJson(result) mustBe Json.toJson(testPerson)
     }
-    "should create a new user for an existing nominee" in {
+    "create a new user for an existing nominee" in {
       // mocks
       val testPerson = Person(Some(1), name,role, Credentials(validEmail,password,CredentialStatus.Inactive),bossEmail, false)
       val sessionToken: SessionToken = SessionToken(validEmail, password)

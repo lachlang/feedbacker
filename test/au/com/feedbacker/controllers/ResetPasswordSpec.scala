@@ -34,7 +34,7 @@ class ResetPasswordSpec extends PlaySpec with MockitoSugar with Results {
     }
   }
   "ResetPassword#resetPassword" should {
-    "should return forbidden for no request body" in {
+    "return forbidden for no request body" in {
       val f = fixture
       val result: Future[Result] = f.controller.resetPassword().apply(FakeRequest().withBody(JsNull))
 
@@ -43,7 +43,7 @@ class ResetPasswordSpec extends PlaySpec with MockitoSugar with Results {
       contentAsString(result) mustBe ""
       verifyZeroInteractions(f.mockActivationDao)
     }
-    "should return forbidden for an invalid request" in {
+    "return forbidden for an invalid request" in {
       val f = fixture
       val result: Future[Result] = f.controller.resetPassword().apply(FakeRequest().withBody(Json.obj("some" -> "thing")))
 
@@ -52,7 +52,7 @@ class ResetPasswordSpec extends PlaySpec with MockitoSugar with Results {
       contentAsString(result) mustBe ""
       verifyZeroInteractions(f.mockActivationDao)
     }
-    "should reject invalid tokens" in {
+    "reject invalid tokens" in {
       val f = fixture
       val result: Future[Result] = f.controller.resetPassword().apply(FakeRequest().withBody(Json.toJson(request)))
 
@@ -62,7 +62,7 @@ class ResetPasswordSpec extends PlaySpec with MockitoSugar with Results {
       verify(f.mockActivationDao).validateToken(SessionToken(email, token))
       verifyZeroInteractions(f.mockPersonDao)
     }
-    "should fail for invalid users" in {
+    "fail for invalid users" in {
       val f = fixture
       when(f.mockActivationDao.validateToken(SessionToken(email, token))).thenReturn(true)
       when(f.mockPersonDao.findByEmail(email)).thenReturn(None)
@@ -76,7 +76,7 @@ class ResetPasswordSpec extends PlaySpec with MockitoSugar with Results {
       verifyZeroInteractions(f.mockSessionManager)
       verifyZeroInteractions(f.mockEmailer)
     }
-    "should return a bad request code when the user update fails" in {
+    "return a bad request code when the user update fails" in {
       // mocks
       val errorMessage: String = "error message"
       val f = fixture
@@ -95,7 +95,7 @@ class ResetPasswordSpec extends PlaySpec with MockitoSugar with Results {
       verify(f.mockPersonDao).update(testPerson)
       verifyZeroInteractions(f.mockEmailer)
     }
-    "should reset the users password" in {
+    "reset the users password" in {
       val f = fixture
       when(f.mockActivationDao.validateToken(SessionToken(email, token))).thenReturn(true)
       when(f.mockPersonDao.findByEmail(email)).thenReturn(Some(testPerson))
@@ -114,7 +114,7 @@ class ResetPasswordSpec extends PlaySpec with MockitoSugar with Results {
     }
   }
   "ResetPassword#sendPasswordResetEmail" should {
-    "should fail when no email provided" in {
+    "fail when no email provided" in {
       val f = fixture
       val result = f.controller.sendPasswordResetEmail().apply(FakeRequest())
 
@@ -124,7 +124,7 @@ class ResetPasswordSpec extends PlaySpec with MockitoSugar with Results {
       verifyZeroInteractions(f.mockPersonDao)
       verifyZeroInteractions(f.mockEmailer)
     }
-    "should fail when the user isn't registered" in {
+    "fail when the user isn't registered" in {
       val f = fixture
       when(f.mockPersonDao.findByEmail(email)).thenReturn(None)
       val result = f.controller.sendPasswordResetEmail().apply(FakeRequest().withJsonBody(Json.obj("body" -> Json.obj("email" -> email))))
@@ -136,7 +136,7 @@ class ResetPasswordSpec extends PlaySpec with MockitoSugar with Results {
       verifyZeroInteractions(f.mockEmailer)
 
     }
-    "should fail when cannot create token" in {
+    "fail when cannot create token" in {
       val f = fixture
       when(f.mockPersonDao.findByEmail(email)).thenReturn(Some(testPerson))
       when(f.mockActivationDao.createActivationToken(email)).thenReturn(None)
@@ -150,7 +150,7 @@ class ResetPasswordSpec extends PlaySpec with MockitoSugar with Results {
       verifyZeroInteractions(f.mockEmailer)
       verifyZeroInteractions(f.mockSessionManager)
     }
-    "should send a password reset email" in {
+    "send a password reset email" in {
       val f = fixture
       when(f.mockPersonDao.findByEmail(email)).thenReturn(Some(testPerson))
       when(f.mockActivationDao.createActivationToken(email)).thenReturn(Some(SessionToken(email, token)))

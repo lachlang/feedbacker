@@ -1,11 +1,11 @@
 package au.com.feedbacker.controllers
 
 import au.com.feedbacker.model.{CredentialStatus, Credentials, Person, PersonDao}
-import play.api.test._
 import play.api.test.Helpers._
 import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
 import org.mockito.Matchers._
+import org.scalatest.prop.PropertyChecks
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 import play.api.mvc.{Result, Results}
@@ -16,7 +16,7 @@ import scala.concurrent.Future
 /**
   * Created by lachlang on 25/02/2017.
   */
-class AuthenticationSpec extends PlaySpec with MockitoSugar with Results {
+class AuthenticationSpec extends PlaySpec with MockitoSugar with Results with PropertyChecks {
 
   val email: String = "email@test.com"
   val password: String = "password"
@@ -31,7 +31,7 @@ class AuthenticationSpec extends PlaySpec with MockitoSugar with Results {
 
   "Authentication#login" should {
 
-    "should return bad request when no request body" in {
+    "return bad request when no request body" in {
       // setup
       val f = fixture
       val result: Future[Result] = f.controller.login().apply(FakeRequest())
@@ -42,7 +42,7 @@ class AuthenticationSpec extends PlaySpec with MockitoSugar with Results {
       verifyZeroInteractions(f.mockSessionManager)
       verifyZeroInteractions(f.mockPersonDao)
     }
-    "should return bad request when username not provided" in {
+    "return bad request when username not provided" in {
       // setup
       val f = fixture
       val result: Future[Result] = f.controller.login().apply(FakeRequest().withJsonBody(Json.obj("body" -> Json.obj("password" -> password))))
@@ -53,7 +53,7 @@ class AuthenticationSpec extends PlaySpec with MockitoSugar with Results {
       verifyZeroInteractions(f.mockSessionManager)
       verifyZeroInteractions(f.mockPersonDao)
     }
-    "should return bad request when password not provided" in {
+    "return bad request when password not provided" in {
       // setup
       val f = fixture
       val result: Future[Result] = f.controller.login().apply(FakeRequest().withJsonBody(Json.obj("body" -> Json.obj("username" -> email))))
@@ -64,7 +64,7 @@ class AuthenticationSpec extends PlaySpec with MockitoSugar with Results {
       verifyZeroInteractions(f.mockSessionManager)
       verifyZeroInteractions(f.mockPersonDao)
     }
-    "should return forbidden when person not registered" in {
+    "return forbidden when person not registered" in {
       // setup
       val f = fixture
       when(f.mockPersonDao.findByEmail(email)).thenReturn(None)
@@ -77,7 +77,7 @@ class AuthenticationSpec extends PlaySpec with MockitoSugar with Results {
       contentAsString(result) mustBe ""
       verifyZeroInteractions(f.mockSessionManager)
     }
-    "should return unauthorised when person is inactive" in {
+    "return unauthorised when person is inactive" in {
       // setup
       val f = fixture
       val testPerson: Person = Person(Some(1), "name", "role", Credentials(email, password, CredentialStatus.Inactive), "boss@test.com")
@@ -91,7 +91,7 @@ class AuthenticationSpec extends PlaySpec with MockitoSugar with Results {
       contentAsString(result) mustBe ""
       verifyZeroInteractions(f.mockSessionManager)
     }
-    "should return bad request when no session token is created" in {
+    "return bad request when no session token is created" in {
       // setup
       val f = fixture
       val testPerson: Person = Person(Some(1), "name", "role", Credentials(email, password, CredentialStatus.Active), "boss@test.com")
@@ -106,7 +106,7 @@ class AuthenticationSpec extends PlaySpec with MockitoSugar with Results {
       status(result) mustBe 400
       contentAsString(result) mustBe ""
     }
-    "should return success when login succeeds" in {
+    "return success when login succeeds" in {
       // setup
       val f = fixture
       val testPerson: Person = Person(Some(1), "name", "role", Credentials(email, password, CredentialStatus.Active), "boss@test.com")

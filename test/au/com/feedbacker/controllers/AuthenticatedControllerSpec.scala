@@ -9,6 +9,7 @@ import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Result, Results}
 import play.api.test.FakeRequest
+import au.com.feedbacker.AllFixtures
 
 import scala.concurrent.Future
 
@@ -16,10 +17,8 @@ import scala.concurrent.Future
 /**
   * Created by lachlang on 25/02/2017.
   */
-class AuthenticatedControllerSpec extends PlaySpec with MockitoSugar with Results {
+class AuthenticatedControllerSpec extends PlaySpec with MockitoSugar with AllFixtures {
 
-  val testBody: Person => Result = { _ => Ok }
-  val testRequestBody: (Person, JsValue) => Result = { (_, _) => Ok }
   val email: String = "test@email.com"
   val token: String = "token"
 
@@ -32,94 +31,128 @@ class AuthenticatedControllerSpec extends PlaySpec with MockitoSugar with Result
   }
   "AuthenticatedController#AuthenticatedAction" should {
 
-    "should return forbidden when no session token is provided" in {
-      val f = fixture
-      when(f.mockSessionManager.extractToken(any())).thenReturn(None)
-      val result: Future[Result] = f.controller.AuthenticatedAction(testBody).apply(FakeRequest())
+    "return forbidden when no session token is provided" in {
+      forAll(responseStatuses) { arbResult =>
+        val f = fixture
+        when(f.mockSessionManager.extractToken(any())).thenReturn(None)
+        val testBody: Person => Result = { _ => arbResult }
+        val result: Future[Result] = f.controller.AuthenticatedAction(testBody).apply(FakeRequest())
 
-      // verify
-      status(result) mustBe 403
-      contentAsString(result) mustBe ""
-      verify(f.mockSessionManager).extractToken(any())
-      verifyZeroInteractions(f.mockPersonDao)
+        // verify
+        status(result) mustBe 403
+        contentAsString(result) mustBe ""
+        verify(f.mockSessionManager).extractToken(any())
+        verifyZeroInteractions(f.mockPersonDao)
+      }
     }
-    "should return forbidden for an invalid user" in {
-      val f = fixture
-      when(f.mockSessionManager.extractToken(any())).thenReturn(Some(SessionToken(email, token)))
-      when(f.mockPersonDao.findByEmail(email)).thenReturn(None)
-      val result: Future[Result] = f.controller.AuthenticatedAction(testBody).apply(FakeRequest())
+    "return forbidden for an invalid user" in {
+      forAll(responseStatuses) { arbResult =>
+        val f = fixture
+        when(f.mockSessionManager.extractToken(any())).thenReturn(Some(SessionToken(email, token)))
+        when(f.mockPersonDao.findByEmail(email)).thenReturn(None)
+        val testBody: Person => Result = { _ => arbResult }
+        val result: Future[Result] = f.controller.AuthenticatedAction(testBody).apply(FakeRequest())
 
-      // verify
-      status(result) mustBe 403
-      contentAsString(result) mustBe ""
-      verify(f.mockSessionManager).extractToken(any())
-      verify(f.mockPersonDao).findByEmail(email)
+        // verify
+        status(result) mustBe 403
+        contentAsString(result) mustBe ""
+        verify(f.mockSessionManager).extractToken(any())
+        verify(f.mockPersonDao).findByEmail(email)
+      }
     }
-    "should return the body function for a valid user and session" in {
-      // TODO: would like to test this with a property
-      val f = fixture
-      val testPerson: Person = Person(Some(1), "name", "role", Credentials(email, "password", CredentialStatus.Active), "boss@test.com")
-      when(f.mockSessionManager.extractToken(any())).thenReturn(Some(SessionToken(email, token)))
-      when(f.mockPersonDao.findByEmail(email)).thenReturn(Some(testPerson))
-      val result: Future[Result] = f.controller.AuthenticatedAction(testBody).apply(FakeRequest())
+    "return the body function for a valid user and session" in {
+      forAll(responseStatuses) { arbResult =>
+        val f = fixture
+        val testPerson: Person = Person(Some(1), "name", "role", Credentials(email, "password", CredentialStatus.Active), "boss@test.com")
+        val testBody: Person => Result = { _ => arbResult }
+        when(f.mockSessionManager.extractToken(any())).thenReturn(Some(SessionToken(email, token)))
+        when(f.mockPersonDao.findByEmail(email)).thenReturn(Some(testPerson))
+        val result: Future[Result] = f.controller.AuthenticatedAction(testBody).apply(FakeRequest())
 
-      // verify
-      status(result) mustBe 200
-      contentAsString(result) mustBe ""
-      verify(f.mockSessionManager).extractToken(any())
-      verify(f.mockPersonDao).findByEmail(email)
+        // verify
+        status(result) mustBe arbResult.header.status
+        verify(f.mockSessionManager).extractToken(any())
+        verify(f.mockPersonDao).findByEmail(email)
+      }
     }
   }
   "AuthenticationController#AuthenticatedRequestAction" should {
-    "should return forbidden when no session token is provided" in {
-      val f = fixture
-      when(f.mockSessionManager.extractToken(any())).thenReturn(None)
-      val result: Future[Result] = f.controller.AuthenticatedRequestAction(testRequestBody).apply(FakeRequest())
+    "return forbidden when no session token is provided" in {
+      forAll(responseStatuses) { arbResult =>
+        val f = fixture
+        when(f.mockSessionManager.extractToken(any())).thenReturn(None)
+        val testRequestBody: (Person, JsValue) => Result = { (_, _) => arbResult }
+        val result: Future[Result] = f.controller.AuthenticatedRequestAction(testRequestBody).apply(FakeRequest())
 
-      // verify
-      status(result) mustBe 403
-      contentAsString(result) mustBe ""
-      verify(f.mockSessionManager).extractToken(any())
-      verifyZeroInteractions(f.mockPersonDao)
+        // verify
+        status(result) mustBe 403
+        contentAsString(result) mustBe ""
+        verify(f.mockSessionManager).extractToken(any())
+        verifyZeroInteractions(f.mockPersonDao)
+      }
     }
-    "should return forbidden for an invalid user" in {
-      val f = fixture
-      when(f.mockSessionManager.extractToken(any())).thenReturn(Some(SessionToken(email, token)))
-      when(f.mockPersonDao.findByEmail(email)).thenReturn(None)
-      val result: Future[Result] = f.controller.AuthenticatedRequestAction(testRequestBody).apply(FakeRequest())
+    "return forbidden for an invalid user" in {
+      forAll(responseStatuses) { arbResult =>
+        val f = fixture
+        when(f.mockSessionManager.extractToken(any())).thenReturn(Some(SessionToken(email, token)))
+        when(f.mockPersonDao.findByEmail(email)).thenReturn(None)
+        val testRequestBody: (Person, JsValue) => Result = { (_, _) => arbResult }
+        val result: Future[Result] = f.controller.AuthenticatedRequestAction(testRequestBody).apply(FakeRequest())
 
-      // verify
-      status(result) mustBe 403
-      contentAsString(result) mustBe ""
-      verify(f.mockSessionManager).extractToken(any())
-      verify(f.mockPersonDao).findByEmail(email)
+        // verify
+        status(result) mustBe 403
+        contentAsString(result) mustBe ""
+        verify(f.mockSessionManager).extractToken(any())
+        verify(f.mockPersonDao).findByEmail(email)
+      }
     }
-    "should return forbidden without a Json request body" in {
-      val f = fixture
-      val testPerson: Person = Person(Some(1), "name", "role", Credentials(email, "password", CredentialStatus.Active), "boss@test.com")
-      when(f.mockSessionManager.extractToken(any())).thenReturn(Some(SessionToken(email, token)))
-      when(f.mockPersonDao.findByEmail(email)).thenReturn(Some(testPerson))
-      val result: Future[Result] = f.controller.AuthenticatedRequestAction(testRequestBody).apply(FakeRequest().withTextBody("this is a text body"))
+    "return forbidden without a Json request body" in {
+      forAll(responseStatuses) { arbResult =>
+        val f = fixture
+        val testPerson: Person = Person(Some(1), "name", "role", Credentials(email, "password", CredentialStatus.Active), "boss@test.com")
+        when(f.mockSessionManager.extractToken(any())).thenReturn(Some(SessionToken(email, token)))
+        when(f.mockPersonDao.findByEmail(email)).thenReturn(Some(testPerson))
+        val testRequestBody: (Person, JsValue) => Result = { (_, _) => arbResult }
+        val result: Future[Result] = f.controller.AuthenticatedRequestAction(testRequestBody).apply(FakeRequest().withTextBody("this is a text body"))
 
-      // verify
-      status(result) mustBe 403
-      contentAsString(result) mustBe ""
-      verify(f.mockSessionManager).extractToken(any())
-      verify(f.mockPersonDao).findByEmail(email)
+        // verify
+        status(result) mustBe 403
+        contentAsString(result) mustBe ""
+        verify(f.mockSessionManager).extractToken(any())
+        verify(f.mockPersonDao).findByEmail(email)
+      }
     }
-    "should return the body function for a valid user and session" in {
-      // TODO: would like to test this with a property
-      val f = fixture
-      val testPerson: Person = Person(Some(1), "name", "role", Credentials(email, "password", CredentialStatus.Active), "boss@test.com")
-      when(f.mockSessionManager.extractToken(any())).thenReturn(Some(SessionToken(email, token)))
-      when(f.mockPersonDao.findByEmail(email)).thenReturn(Some(testPerson))
-      val result: Future[Result] = f.controller.AuthenticatedRequestAction(testRequestBody).apply(FakeRequest().withJsonBody(Json.obj("some" -> "thing")))
+    "return the body function for a valid user and session" in {
+      forAll(responseStatuses) { arbResult =>
 
-      // verify
-      status(result) mustBe 200
-      contentAsString(result) mustBe ""
-      verify(f.mockSessionManager).extractToken(any())
-      verify(f.mockPersonDao).findByEmail(email)
+        val f = fixture
+        val testPerson: Person = Person(Some(1), "name", "role", Credentials(email, "password", CredentialStatus.Active), "boss@test.com")
+        when(f.mockSessionManager.extractToken(any())).thenReturn(Some(SessionToken(email, token)))
+        when(f.mockPersonDao.findByEmail(email)).thenReturn(Some(testPerson))
+        val testRequestBody: (Person, JsValue) => Result = { (_, _) => arbResult }
+        val result: Future[Result] = f.controller.AuthenticatedRequestAction(testRequestBody).apply(FakeRequest().withJsonBody(Json.obj("some" -> "thing")))
+
+        // verify
+        status(result) mustBe arbResult.header.status
+        verify(f.mockSessionManager).extractToken(any())
+        verify(f.mockPersonDao).findByEmail(email)
+      }
     }
+//    "return the body function for a valid user and session" in {
+//      Prop.forAll(arbPersonGen, responseStatuses) { (arbPerson: Person, arbResult: Result) =>
+//
+//        val f = fixture
+//        when(f.mockSessionManager.extractToken(any())).thenReturn(Some(SessionToken(email, token)))
+//        when(f.mockPersonDao.findByEmail(email)).thenReturn(Some(arbPerson))
+//        val testRequestBody: (Person, JsValue) => Result = { (_, _) => arbResult }
+//        val result: Future[Result] = f.controller.AuthenticatedRequestAction(testRequestBody).apply(FakeRequest().withJsonBody(Json.obj("some" -> "thing")))
+//
+//        // verify
+//        status(result) mustBe 200
+//        contentAsString(result) mustBe ""
+//        verify(f.mockSessionManager).extractToken(any())
+//        verify(f.mockPersonDao).findByEmail(email)
+//      }
+//    }
   }
 }

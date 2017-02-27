@@ -32,7 +32,7 @@ class AccountSpec extends PlaySpec with MockitoSugar with Results{
   }
 
   "Account#getUser" should {
-    "should be forbidden when no session token is found" in {
+    "be forbidden when no session token is found" in {
       val f = fixture
       when(f.mockSessionManager.extractToken(any())).thenReturn(None)
       val result: Future[Result] = f.controller.getUser().apply(FakeRequest())
@@ -42,7 +42,7 @@ class AccountSpec extends PlaySpec with MockitoSugar with Results{
       contentAsString(result) mustBe ""
       verifyZeroInteractions(f.mockPersonDao)
     }
-    "should fail for invalid username" in {
+    "fail for invalid username" in {
       val f = fixture
       when(f.mockSessionManager.extractToken(any())).thenReturn(None)
       val result: Future[Result] = f.controller.getUser().apply(FakeRequest().withCookies(SessionManager.createSessionCookie(token)))
@@ -52,7 +52,7 @@ class AccountSpec extends PlaySpec with MockitoSugar with Results{
       status(result) mustBe 403
       contentAsString(result) mustBe ""
     }
-    "should return a valid user" in {
+    "return a valid user" in {
       val f = fixture
       when(f.mockSessionManager.extractToken(any())).thenReturn(Some(sessionToken))
       when(f.mockPersonDao.findByEmail(email)).thenReturn(Some(testPerson))
@@ -66,7 +66,7 @@ class AccountSpec extends PlaySpec with MockitoSugar with Results{
     }
   }
   "Account#getReports" should {
-    "should successfully return no reports when none are found" in {
+    "successfully return no reports when none are found" in {
       val f = fixture
       when(f.mockPersonDao.findByEmail(email)).thenReturn(Some(testPerson))
       when(f.mockSessionManager.extractToken(any())).thenReturn(Some(sessionToken))
@@ -80,7 +80,7 @@ class AccountSpec extends PlaySpec with MockitoSugar with Results{
       status(result) mustBe 200
       contentAsJson(result) mustEqual Json.obj("body" -> Json.arr())
     }
-    "should render a report when found" in {
+    "render a report when found" in {
       // mock
       val feedbackGroup: FeedbackGroup = FeedbackGroup(FeedbackCycle.orphan, Seq(Nomination(Some(1), Some(testPerson), Some(testPerson), FeedbackStatus.Pending, None, Seq(), false, 1)))
       val f = fixture
@@ -100,7 +100,7 @@ class AccountSpec extends PlaySpec with MockitoSugar with Results{
       status(result) mustBe 200
       contentAsJson(result) mustEqual Json.obj("body" -> Json.arr(Json.toJson(Report(testPerson, Seq(feedbackGroup)))))
     }
-    "should be forbidden for invalid user" in {
+    "be forbidden for invalid user" in {
       val f = fixture
       when(f.mockSessionManager.extractToken(any())).thenReturn(None)
       val result: Future[Result] = f.controller.getReports().apply(FakeRequest().withCookies(SessionManager.createSessionCookie(token)))
@@ -112,7 +112,7 @@ class AccountSpec extends PlaySpec with MockitoSugar with Results{
     }
   }
   "Account#updateUserDetails" should {
-    "should be forbidden for an invalid user" in {
+    "be forbidden for an invalid user" in {
       val f = fixture
       when(f.mockSessionManager.extractToken(any())).thenReturn(None)
       val result: Future[Result] = f.controller.updateUserDetails().apply(FakeRequest().withCookies(SessionManager.createSessionCookie(token)))
@@ -122,7 +122,7 @@ class AccountSpec extends PlaySpec with MockitoSugar with Results{
       contentAsString(result) mustBe ""
       verifyZeroInteractions(f.mockPersonDao)
     }
-    "should require a request body" in {
+    "require a request body" in {
       val f = fixture
       when(f.mockSessionManager.extractToken(any())).thenReturn(Some(sessionToken))
       when(f.mockPersonDao.findByEmail(email)).thenReturn(Some(testPerson))
@@ -133,7 +133,7 @@ class AccountSpec extends PlaySpec with MockitoSugar with Results{
       verify(f.mockPersonDao).findByEmail(email)
       status(result) mustBe 403
     }
-    "should require a json request body" in {
+    "require a json request body" in {
       val f = fixture
       when(f.mockSessionManager.extractToken(any())).thenReturn(Some(sessionToken))
       when(f.mockPersonDao.findByEmail(email)).thenReturn(Some(testPerson))
@@ -145,7 +145,7 @@ class AccountSpec extends PlaySpec with MockitoSugar with Results{
       verify(f.mockPersonDao).findByEmail(email)
       status(result) mustBe 403
     }
-    "should require a valid request body to update" in {
+    "require a valid request body to update" in {
       val f = fixture
       when(f.mockSessionManager.extractToken(any())).thenReturn(Some(sessionToken))
       when(f.mockPersonDao.findByEmail(email)).thenReturn(Some(testPerson))
@@ -166,7 +166,7 @@ class AccountSpec extends PlaySpec with MockitoSugar with Results{
       status(result2) mustBe 400
       contentAsJson(result2) mustBe Json.obj("body" -> Json.obj("message" -> "Could not update user details. "))
     }
-    "should return an error when the update fails" in {
+    "return an error when the update fails" in {
       val f = fixture
       when(f.mockSessionManager.extractToken(any())).thenReturn(Some(sessionToken))
       when(f.mockPersonDao.findByEmail(email)).thenReturn(Some(testPerson))
@@ -183,7 +183,7 @@ class AccountSpec extends PlaySpec with MockitoSugar with Results{
       status(result) mustBe 400
       contentAsJson(result) mustBe Json.obj("body" -> Json.obj("message" -> errorMessage))
     }
-    "should return the updated user on success" in {
+    "return the updated user on success" in {
       val f = fixture
       when(f.mockSessionManager.extractToken(any())).thenReturn(Some(sessionToken))
       when(f.mockPersonDao.findByEmail(email)).thenReturn(Some(testPerson))

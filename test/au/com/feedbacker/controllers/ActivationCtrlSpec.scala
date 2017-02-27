@@ -32,7 +32,7 @@ class ActivationCtrlSpec extends PlaySpec with MockitoSugar with Results {
   }
 
   "ActivationCtrl#activate" should {
-    "should return an error for an empty request" in {
+    "return an error for an empty request" in {
       val f = fixture
       val result: Future[Result] = f.controller.activate().apply(FakeRequest())
 
@@ -41,7 +41,7 @@ class ActivationCtrlSpec extends PlaySpec with MockitoSugar with Results {
       contentAsString(result) mustBe ""
       verifyZeroInteractions(f.mockPersonDao)
     }
-    "should return an error for an invalid request" in {
+    "return an error for an invalid request" in {
       val f = fixture
       val result1: Future[Result] = f.controller.activate().apply(FakeRequest(GET, "/api/activate?some=things&other=whatsit"))
       val result2: Future[Result] = f.controller.activate().apply(FakeRequest(GET, s"/api/activate?username=$validEmail&some=thing"))
@@ -56,7 +56,7 @@ class ActivationCtrlSpec extends PlaySpec with MockitoSugar with Results {
       contentAsString(result3) mustBe ""
       verifyZeroInteractions(f.mockPersonDao)
     }
-    "should return a forbidden response for invalid tokens" in {
+    "return a forbidden response for invalid tokens" in {
       val f = fixture
       when(f.mockActivationDao.validateToken(validSessionToken)).thenReturn(false)
       val result: Future[Result] = f.controller.activate().apply(FakeRequest(GET, s"/api/activate?username=$validEmail&token=$validToken&some=thing"))
@@ -67,7 +67,7 @@ class ActivationCtrlSpec extends PlaySpec with MockitoSugar with Results {
       verify(f.mockActivationDao).validateToken(validSessionToken)
       verifyZeroInteractions(f.mockActivationDao)
     }
-    "should return an error when unable to activate the user" in {
+    "return an error when unable to activate the user" in {
       val f = fixture
       when(f.mockActivationDao.validateToken(validSessionToken)).thenReturn(true)
       when(f.mockActivationDao.activate(validSessionToken)).thenReturn(false)
@@ -80,7 +80,7 @@ class ActivationCtrlSpec extends PlaySpec with MockitoSugar with Results {
       verify(f.mockActivationDao).activate(validSessionToken)
       verifyZeroInteractions(f.mockSessionManager)
     }
-    "should redirect the user when the activation succeeds" in {
+    "redirect the user when the activation succeeds" in {
       val f = fixture
       val targetUrl: String = "/#/list"
       when(f.mockActivationDao.validateToken(validSessionToken)).thenReturn(true)
@@ -97,7 +97,7 @@ class ActivationCtrlSpec extends PlaySpec with MockitoSugar with Results {
     }
   }
   "ActivationCtrl#sendActivationEmail" should {
-    "should return and error for an empty request" in {
+    "return and error for an empty request" in {
       val f = fixture
       val result: Future[Result] = f.controller.sendActivationEmail().apply(FakeRequest())
 
@@ -106,7 +106,7 @@ class ActivationCtrlSpec extends PlaySpec with MockitoSugar with Results {
       contentAsString(result) mustBe ""
       verifyZeroInteractions(f.mockPersonDao)
     }
-    "should return an error for an invalid request format" in {
+    "return an error for an invalid request format" in {
       val f = fixture
       val result: Future[Result] = f.controller.sendActivationEmail().apply(FakeRequest().withJsonBody(Json.obj("some" -> "thing")))
 
@@ -115,7 +115,7 @@ class ActivationCtrlSpec extends PlaySpec with MockitoSugar with Results {
       contentAsString(result) mustBe ""
       verifyZeroInteractions(f.mockPersonDao)
     }
-    "should return an error for unregistered users" in {
+    "return an error for unregistered users" in {
       val f = fixture
       when(f.mockPersonDao.findByEmail(validEmail)).thenReturn(None)
       val result: Future[Result] = f.controller.sendActivationEmail().apply(FakeRequest().withJsonBody(Json.obj("body" -> Json.obj("username" -> validEmail))))
@@ -126,7 +126,7 @@ class ActivationCtrlSpec extends PlaySpec with MockitoSugar with Results {
       verify(f.mockPersonDao).findByEmail(validEmail)
       verifyZeroInteractions(f.mockActivationDao)
     }
-    "should return an error when unable to create a token" in {
+    "return an error when unable to create a token" in {
       val f = fixture
       val testPerson = Person(Some(1),"Test Guy","User", Credentials(validEmail,"password",CredentialStatus.Active),"boss@test.com", false)
       when(f.mockPersonDao.findByEmail(validEmail)).thenReturn(Some(testPerson))
@@ -140,7 +140,7 @@ class ActivationCtrlSpec extends PlaySpec with MockitoSugar with Results {
       verify(f.mockActivationDao).createActivationToken(validEmail)
       verifyZeroInteractions(f.mockEmailer)
     }
-    "should send an activation email" in {
+    "send an activation email" in {
       val f = fixture
       val name: String = "Test Guy"
       val testPerson = Person(Some(1),name,"User", Credentials(validEmail,"password",CredentialStatus.Active),"boss@test.com", false)
