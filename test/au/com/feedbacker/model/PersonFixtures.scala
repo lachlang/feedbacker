@@ -1,23 +1,33 @@
 package au.com.feedbacker.model
 
 import au.com.feedbacker.model.CredentialStatus.CredentialStatus
-import org.scalacheck.{Arbitrary, Gen}
-import org.scalatest.prop.PropertyChecks
+import org.scalacheck.Arbitrary
+import org.scalacheck.Gen.oneOf
+import org.scalacheck.Arbitrary.arbitrary
 
 /**
   * Created by lachlang on 27/02/2017.
   */
-trait PersonFixtures extends PropertyChecks {
+trait PersonFixtures {
 
-  implicit val arbCredentialGen = Arbitrary(Gen.resultOf({
-    (email: String, hash: String, status: CredentialStatus) =>
-      Credentials(email, hash, status)
-  }))
+  implicit val arbCredential = Arbitrary(
+    for {
+      email  <- arbitrary[String]
+      hash   <- arbitrary[String]
+      status <- arbitrary[CredentialStatus]
+    } yield Credentials(email = email, hash, status)
+  )
 
-  implicit val arbPersonGen: Arbitrary[Gen[Person]] = Arbitrary(Gen.resultOf({
-    (id: Option[Long], name: String, role: String, credentials: Credentials, managerEmail: String, isLeader: Boolean) =>
-      Person(id, name, role, credentials, managerEmail, isLeader)
-  }))
+  implicit val arbPerson = Arbitrary(
+    for {
+      id <- arbitrary[Option[Long]]
+      name <- arbitrary[String]
+      role <- arbitrary[String]
+      credentials <- arbitrary[Credentials]
+      managerEmail <- arbitrary[String]
+      isLeader <- arbitrary[Boolean]
+    } yield Person(id, name, role, credentials, managerEmail, isLeader)
+  )
 
-  implicit val arbCredentialStatusGen = Arbitrary(Gen.oneOf(CredentialStatus.values.toSeq))
+  implicit val arbCredentialStatusGen = Arbitrary(oneOf(CredentialStatus.values.toSeq))
 }

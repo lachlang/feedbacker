@@ -7,9 +7,10 @@ import org.mockito.Matchers._
 import play.api.test.Helpers._
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsValue, Json}
-import play.api.mvc.{Result, Results}
+import play.api.mvc.Result
 import play.api.test.FakeRequest
 import au.com.feedbacker.AllFixtures
+import org.scalatest.prop.PropertyChecks
 
 import scala.concurrent.Future
 
@@ -17,7 +18,7 @@ import scala.concurrent.Future
 /**
   * Created by lachlang on 25/02/2017.
   */
-class AuthenticatedControllerSpec extends PlaySpec with MockitoSugar with AllFixtures {
+class AuthenticatedControllerSpec extends PlaySpec with MockitoSugar with AllFixtures with PropertyChecks {
 
   val email: String = "test@email.com"
   val token: String = "token"
@@ -32,7 +33,7 @@ class AuthenticatedControllerSpec extends PlaySpec with MockitoSugar with AllFix
   "AuthenticatedController#AuthenticatedAction" should {
 
     "return forbidden when no session token is provided" in {
-      forAll(responseStatuses) { arbResult =>
+      forAll{ (arbResult: Result) =>
         val f = fixture
         when(f.mockSessionManager.extractToken(any())).thenReturn(None)
         val testBody: Person => Result = { _ => arbResult }
@@ -46,7 +47,7 @@ class AuthenticatedControllerSpec extends PlaySpec with MockitoSugar with AllFix
       }
     }
     "return forbidden for an invalid user" in {
-      forAll(responseStatuses) { arbResult =>
+      forAll() { (arbResult: Result) =>
         val f = fixture
         when(f.mockSessionManager.extractToken(any())).thenReturn(Some(SessionToken(email, token)))
         when(f.mockPersonDao.findByEmail(email)).thenReturn(None)
@@ -61,12 +62,11 @@ class AuthenticatedControllerSpec extends PlaySpec with MockitoSugar with AllFix
       }
     }
     "return the body function for a valid user and session" in {
-      forAll(responseStatuses) { arbResult =>
+      forAll() { (arbResult: Result, person: Person) =>
         val f = fixture
-        val testPerson: Person = Person(Some(1), "name", "role", Credentials(email, "password", CredentialStatus.Active), "boss@test.com")
         val testBody: Person => Result = { _ => arbResult }
         when(f.mockSessionManager.extractToken(any())).thenReturn(Some(SessionToken(email, token)))
-        when(f.mockPersonDao.findByEmail(email)).thenReturn(Some(testPerson))
+        when(f.mockPersonDao.findByEmail(email)).thenReturn(Some(person))
         val result: Future[Result] = f.controller.AuthenticatedAction(testBody).apply(FakeRequest())
 
         // verify
@@ -78,7 +78,7 @@ class AuthenticatedControllerSpec extends PlaySpec with MockitoSugar with AllFix
   }
   "AuthenticationController#AuthenticatedRequestAction" should {
     "return forbidden when no session token is provided" in {
-      forAll(responseStatuses) { arbResult =>
+      forAll { (arbResult: Result) =>
         val f = fixture
         when(f.mockSessionManager.extractToken(any())).thenReturn(None)
         val testRequestBody: (Person, JsValue) => Result = { (_, _) => arbResult }
@@ -92,7 +92,7 @@ class AuthenticatedControllerSpec extends PlaySpec with MockitoSugar with AllFix
       }
     }
     "return forbidden for an invalid user" in {
-      forAll(responseStatuses) { arbResult =>
+      forAll() { (arbResult: Result) =>
         val f = fixture
         when(f.mockSessionManager.extractToken(any())).thenReturn(Some(SessionToken(email, token)))
         when(f.mockPersonDao.findByEmail(email)).thenReturn(None)
@@ -107,7 +107,7 @@ class AuthenticatedControllerSpec extends PlaySpec with MockitoSugar with AllFix
       }
     }
     "return forbidden without a Json request body" in {
-      forAll(responseStatuses) { arbResult =>
+      forAll() { (arbResult: Result) =>
         val f = fixture
         val testPerson: Person = Person(Some(1), "name", "role", Credentials(email, "password", CredentialStatus.Active), "boss@test.com")
         when(f.mockSessionManager.extractToken(any())).thenReturn(Some(SessionToken(email, token)))
@@ -123,12 +123,10 @@ class AuthenticatedControllerSpec extends PlaySpec with MockitoSugar with AllFix
       }
     }
     "return the body function for a valid user and session" in {
-      forAll(responseStatuses) { arbResult =>
-
+      forAll() { (person: Person, arbResult: Result) =>
         val f = fixture
-        val testPerson: Person = Person(Some(1), "name", "role", Credentials(email, "password", CredentialStatus.Active), "boss@test.com")
         when(f.mockSessionManager.extractToken(any())).thenReturn(Some(SessionToken(email, token)))
-        when(f.mockPersonDao.findByEmail(email)).thenReturn(Some(testPerson))
+        when(f.mockPersonDao.findByEmail(email)).thenReturn(Some(person))
         val testRequestBody: (Person, JsValue) => Result = { (_, _) => arbResult }
         val result: Future[Result] = f.controller.AuthenticatedRequestAction(testRequestBody).apply(FakeRequest().withJsonBody(Json.obj("some" -> "thing")))
 
@@ -138,21 +136,5 @@ class AuthenticatedControllerSpec extends PlaySpec with MockitoSugar with AllFix
         verify(f.mockPersonDao).findByEmail(email)
       }
     }
-//    "return the body function for a valid user and session" in {
-//      Prop.forAll(arbPersonGen, responseStatuses) { (arbPerson: Person, arbResult: Result) =>
-//
-//        val f = fixture
-//        when(f.mockSessionManager.extractToken(any())).thenReturn(Some(SessionToken(email, token)))
-//        when(f.mockPersonDao.findByEmail(email)).thenReturn(Some(arbPerson))
-//        val testRequestBody: (Person, JsValue) => Result = { (_, _) => arbResult }
-//        val result: Future[Result] = f.controller.AuthenticatedRequestAction(testRequestBody).apply(FakeRequest().withJsonBody(Json.obj("some" -> "thing")))
-//
-//        // verify
-//        status(result) mustBe 200
-//        contentAsString(result) mustBe ""
-//        verify(f.mockSessionManager).extractToken(any())
-//        verify(f.mockPersonDao).findByEmail(email)
-//      }
-//    }
   }
 }
