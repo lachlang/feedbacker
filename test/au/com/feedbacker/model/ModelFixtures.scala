@@ -13,8 +13,8 @@ trait ModelFixtures {
 
   implicit val arbCredential: Arbitrary[Credentials] = Arbitrary(
     for {
-      email  <- arbitrary[String]
-      hash   <- arbitrary[String]
+      email  <- validEmailAddresses()
+      hash   <- arbitrary[String].suchThat(_.length > 0)
       status <- arbitrary[CredentialStatus]
     } yield Credentials(email = email, hash, status)
   )
@@ -22,10 +22,10 @@ trait ModelFixtures {
   implicit val arbPerson: Arbitrary[Person] = Arbitrary(
     for {
       id <- arbitrary[Option[Long]]
-      name <- arbitrary[String]
-      role <- arbitrary[String]
+      name <- arbitrary[String].suchThat(_.length > 0)
+      role <- arbitrary[String].suchThat(_.length > 0)
       credentials <- arbitrary[Credentials]
-      managerEmail <- arbitrary[String]
+      managerEmail <- arbitrary[String].suchThat(_.length > 0)
       isLeader <- arbitrary[Boolean]
     } yield Person(id, name, role, credentials, managerEmail, isLeader)
   )
@@ -34,17 +34,16 @@ trait ModelFixtures {
 
   implicit val arbSessionToken: Arbitrary[SessionToken] = Arbitrary(
     for {
-      a       <- Gen.choose(10,100)
-      email   <- Gen.listOfN(a, Gen.alphaNumChar).map(_.mkString)
+      email   <- validEmailAddresses()
       token   <- Gen.listOfN(86, Gen.alphaNumChar).map(_.mkString)
     } yield SessionToken(email, token)
   )
 
   implicit val arbResetPasswordContent: Arbitrary[ResetPasswordContent] = Arbitrary(
     for {
-      password  <- arbitrary[String]
-      username  <-validEmailAddresses()
-      token     <- arbitrary[String]
+      password  <- arbitrary[String].suchThat(_.length > 0)
+      username  <- validEmailAddresses()
+      token     <- arbitrary[String].suchThat(_.length > 0)
     } yield ResetPasswordContent(password.take(100), username, token.take(80))
   )
 

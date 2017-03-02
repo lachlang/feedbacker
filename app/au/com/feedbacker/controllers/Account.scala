@@ -129,28 +129,28 @@ class ResetPassword @Inject() (emailer: Emailer,
                                activation: ActivationDao,
                                sessionManager: SessionManager) extends Controller {
 
-    def resetPassword = LoggingAction(parse.json(maxLength = 300)) { request => {
-      request.body.validate[ResetPasswordContent].asOpt match {
-        case None => BadRequest
-        case Some(content) =>
-          val st = SessionToken(content.username, content.token.replaceAll(" ", "+"))
-          if (!activation.validateToken(st)) Forbidden
-          else {
-            person.findByEmail(st.username) match {
-              case None => BadRequest
-              case Some(p) => person.update(p.setNewHash(sessionManager.hash(content.password))) match {
+  def resetPassword = LoggingAction(parse.json(maxLength = 300)) { request => {
+    request.body.validate[ResetPasswordContent].asOpt match {
+      case None => BadRequest
+      case Some(content) =>
+        val st = SessionToken(content.username, content.token.replaceAll(" ", "+"))
+        if (!activation.validateToken(st)) Forbidden
+        else {
+          person.findByEmail(st.username) match {
+            case None => BadRequest
+            case Some(p) => person.update(p.setNewHash(sessionManager.hash(content.password))) match {
                 case Left(e) => BadRequest(Json.obj("body" -> Json.obj("message" -> e.getMessage)))
                 case Right(_) => activation.expireToken(st.token); Ok
               }
             }
           }
-      }
+        }
     }
   }
 
+
   def sendPasswordResetEmail = LoggingAction { request =>
-    request.body.asJson
-      .flatMap { json => (json \ "body" \ "email").asOpt[String](Reads.email) }.map(_.toLowerCase) match {
+    request.body.asJson.flatMap { json => (json \ "body" \ "email").asOpt[String](Reads.email) }.map(_.toLowerCase) match {
       case None => BadRequest
       case Some(username) => (person.findByEmail(username),activation.createActivationToken(username)) match {
         case (Some(p),Some(st)) => emailer.sendPasswordResetEmail(p.name, st); Ok

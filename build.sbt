@@ -34,6 +34,9 @@ resolvers += "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases"
 routesGenerator := InjectedRoutesGenerator
 
 
+//val testSettings = Seq(
+  fork in Test := false
+//)
 dockerCommands := Seq(
   Cmd("FROM", "java:latest"),
   Cmd("WORKDIR", "/opt/docker"),

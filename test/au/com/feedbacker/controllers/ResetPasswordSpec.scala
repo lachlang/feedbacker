@@ -12,19 +12,20 @@ import play.api.test._
 import play.api.test.Helpers._
 import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
+import org.mockito.Matchers.any
 import org.scalatest.prop.PropertyChecks
 
 /**
   * Created by lachlang on 16/02/2017.
   */
-class ResetPasswordSpec extends PlaySpec with MockitoSugar with Results with AllFixtures with PropertyChecks {
+class ResetPasswordSpec extends PlaySpec with MockitoSugar with AllFixtures with PropertyChecks {
 
-  val staticEmail: String = "test@email.com"
-  val staticPassword: String = "thisIsAnAwesomePassword"
-  val staticToken: String = "oneTimeToken"
-  val staticRequest: ResetPasswordContent = ResetPasswordContent(staticPassword, staticEmail, staticToken)
-  val name: String = "That Guy"
-  val testPerson: Person = Person(Some(1), name, "role", Credentials(staticEmail, staticPassword, CredentialStatus.Active), "boss@test.com")
+//  val staticEmail: String = "test@email.com"
+//  val staticPassword: String = "thisIsAnAwesomePassword"
+//  val staticToken: String = "oneTimeToken"
+//  val staticRequest: ResetPasswordContent = ResetPasswordContent(staticPassword, staticEmail, staticToken)
+//  val name: String = "That Guy"
+//  val testPerson: Person = Person(Some(1), name, "role", Credentials(staticEmail, staticPassword, CredentialStatus.Active), "boss@test.com")
 
   def fixture = {
     new {
@@ -68,54 +69,61 @@ class ResetPasswordSpec extends PlaySpec with MockitoSugar with Results with All
       }
     }
     "fail for invalid users" in {
-      val f = fixture
-      when(f.mockActivationDao.validateToken(SessionToken(staticEmail, staticToken))).thenReturn(true)
-      when(f.mockPersonDao.findByEmail(staticEmail)).thenReturn(None)
-      val result: Future[Result] = f.controller.resetPassword().apply(FakeRequest().withBody(Json.toJson(staticRequest)))
+      forAll() { request: ResetPasswordContent =>
+        val f = fixture
+        when(f.mockActivationDao.validateToken(SessionToken(request.username, request.token))).thenReturn(true)
+        when(f.mockPersonDao.findByEmail(request.username)).thenReturn(None)
+        val result: Future[Result] = f.controller.resetPassword().apply(FakeRequest().withBody(Json.toJson(request)))
 
-      // verify
-      status(result) mustBe 400
-      contentAsString(result) mustBe ""
-      verify(f.mockActivationDao).validateToken(SessionToken(staticEmail, staticToken))
-      verify(f.mockPersonDao).findByEmail(staticEmail)
-      verifyZeroInteractions(f.mockSessionManager)
-      verifyZeroInteractions(f.mockEmailer)
+        // verify
+        status(result) mustBe 400
+        contentAsString(result) mustBe ""
+        verify(f.mockActivationDao).validateToken(SessionToken(request.username, request.token))
+        verify(f.mockPersonDao).findByEmail(request.username)
+        verifyZeroInteractions(f.mockSessionManager)
+        verifyZeroInteractions(f.mockEmailer)
+      }
     }
     "return a bad request code when the user update fails" in {
-      // mocks
-      val errorMessage: String = "error message"
-      val f = fixture
-      when(f.mockActivationDao.validateToken(SessionToken(staticEmail, staticToken))).thenReturn(true)
-      when(f.mockPersonDao.findByEmail(staticEmail)).thenReturn(Some(testPerson))
-      when(f.mockPersonDao.update(testPerson)).thenReturn(Left(new Exception(errorMessage)))
-      when(f.mockSessionManager.hash(staticPassword)).thenReturn(staticPassword)
-      val result: Future[Result] = f.controller.resetPassword().apply(FakeRequest().withBody(Json.toJson(staticRequest)))
+      forAll() { (request: ResetPasswordContent, person: Person) =>
+        // mocks
 
-      // verify
-      status(result) mustBe 400
-      contentAsJson(result) mustBe Json.obj("body" -> Json.obj("message" -> errorMessage))
-      verify(f.mockActivationDao).validateToken(SessionToken(staticEmail, staticToken))
-      verify(f.mockPersonDao).findByEmail(staticEmail)
-      verify(f.mockSessionManager).hash(staticPassword)
-      verify(f.mockPersonDao).update(testPerson)
-      verifyZeroInteractions(f.mockEmailer)
+        val errorMessage: String = "error message"
+        val f = fixture
+        when(f.mockActivationDao.validateToken(SessionToken(request.username, request.token))).thenReturn(true)
+        when(f.mockPersonDao.findByEmail(request.username)).thenReturn(Some(person))
+        when(f.mockPersonDao.update(person)).thenReturn(Left(new Exception(errorMessage)))
+        when(f.mockSessionManager.hash(request.password)).thenReturn(person.credentials.hash)
+        val result: Future[Result] = f.controller.resetPassword().apply(FakeRequest().withBody(Json.toJson(request)))
+
+        // verify
+        status(result) mustBe 400
+        contentAsJson(result) mustBe Json.obj("body" -> Json.obj("message" -> errorMessage))
+        verify(f.mockActivationDao).validateToken(SessionToken(request.username, request.token))
+        verify(f.mockPersonDao).findByEmail(request.username)
+        verify(f.mockSessionManager).hash(request.password)
+        verify(f.mockPersonDao).update(person)
+        verifyZeroInteractions(f.mockEmailer)
+      }
     }
     "reset the users password" in {
-      val f = fixture
-      when(f.mockActivationDao.validateToken(SessionToken(staticEmail, staticToken))).thenReturn(true)
-      when(f.mockPersonDao.findByEmail(staticEmail)).thenReturn(Some(testPerson))
-      when(f.mockPersonDao.update(testPerson)).thenReturn(Right(testPerson))
-      when(f.mockSessionManager.hash(staticPassword)).thenReturn(staticPassword)
-      val result: Future[Result] = f.controller.resetPassword().apply(FakeRequest().withBody(Json.toJson(staticRequest)))
+      forAll() { (request: ResetPasswordContent, person: Person) =>
+        val f = fixture
+        when(f.mockActivationDao.validateToken(SessionToken(request.username, request.token))).thenReturn(true)
+        when(f.mockPersonDao.findByEmail(request.username)).thenReturn(Some(person))
+        when(f.mockPersonDao.update(person)).thenReturn(Right(person))
+        when(f.mockSessionManager.hash(request.password)).thenReturn(person.credentials.hash)
+        val result: Future[Result] = f.controller.resetPassword().apply(FakeRequest().withBody(Json.toJson(request)))
 
-      // verify
-      status(result) mustBe 200
-      contentAsString(result) mustBe ""
-      verify(f.mockActivationDao).validateToken(SessionToken(staticEmail, staticToken))
-      verify(f.mockPersonDao).findByEmail(staticEmail)
-      verify(f.mockSessionManager).hash(staticPassword)
-      verify(f.mockPersonDao).update(testPerson)
-      verifyZeroInteractions(f.mockEmailer)
+        // verify
+        status(result) mustBe 200
+        contentAsString(result) mustBe ""
+        verify(f.mockActivationDao).validateToken(SessionToken(request.username, request.token))
+        verify(f.mockPersonDao).findByEmail(request.username)
+        verify(f.mockSessionManager).hash(request.password)
+        verify(f.mockPersonDao).update(any())
+        verifyZeroInteractions(f.mockEmailer)
+      }
     }
   }
   "ResetPassword#sendPasswordResetEmail" should {
@@ -130,44 +138,49 @@ class ResetPasswordSpec extends PlaySpec with MockitoSugar with Results with All
       verifyZeroInteractions(f.mockEmailer)
     }
     "fail when the user isn't registered" in {
-      val f = fixture
-      when(f.mockPersonDao.findByEmail(staticEmail)).thenReturn(None)
-      val result = f.controller.sendPasswordResetEmail().apply(FakeRequest().withJsonBody(Json.obj("body" -> Json.obj("email" -> staticEmail))))
+      forAll(validEmailAddresses()) { email =>
+        val f = fixture
+        when(f.mockPersonDao.findByEmail(email)).thenReturn(None)
+        val result = f.controller.sendPasswordResetEmail().apply(FakeRequest().withJsonBody(Json.obj("body" -> Json.obj("email" -> email))))
 
-      // verify
-      status(result) mustBe 400
-      contentAsString(result) mustBe ""
-      verify(f.mockPersonDao).findByEmail(staticEmail)
-      verifyZeroInteractions(f.mockEmailer)
-
+        // verify
+        status(result) mustBe 400
+        contentAsString(result) mustBe ""
+        verify(f.mockPersonDao).findByEmail(email.toLowerCase)
+        verifyZeroInteractions(f.mockEmailer)
+      }
     }
     "fail when cannot create token" in {
-      val f = fixture
-      when(f.mockPersonDao.findByEmail(staticEmail)).thenReturn(Some(testPerson))
-      when(f.mockActivationDao.createActivationToken(staticEmail)).thenReturn(None)
-      val result = f.controller.sendPasswordResetEmail().apply(FakeRequest().withJsonBody(Json.obj("body" -> Json.obj("email" -> staticEmail))))
+      forAll() { person:Person =>
+        val f = fixture
+        when(f.mockPersonDao.findByEmail(person.credentials.email.toLowerCase)).thenReturn(Some(person))
+        when(f.mockActivationDao.createActivationToken(person.credentials.email.toLowerCase)).thenReturn(None)
+        val result = f.controller.sendPasswordResetEmail().apply(FakeRequest().withJsonBody(Json.obj("body" -> Json.obj("email" -> person.credentials.email))))
 
-      // verify
-      status(result) mustBe 400
-      contentAsString(result) mustBe ""
-      verify(f.mockPersonDao).findByEmail(staticEmail)
-      verify(f.mockActivationDao).createActivationToken(staticEmail)
-      verifyZeroInteractions(f.mockEmailer)
-      verifyZeroInteractions(f.mockSessionManager)
+        // verify
+        status(result) mustBe 400
+        contentAsString(result) mustBe ""
+        verify(f.mockPersonDao).findByEmail(person.credentials.email.toLowerCase)
+        verify(f.mockActivationDao).createActivationToken(person.credentials.email.toLowerCase)
+        verifyZeroInteractions(f.mockEmailer)
+        verifyZeroInteractions(f.mockSessionManager)
+      }
     }
     "send a password reset email" in {
-      val f = fixture
-      when(f.mockPersonDao.findByEmail(staticEmail)).thenReturn(Some(testPerson))
-      when(f.mockActivationDao.createActivationToken(staticEmail)).thenReturn(Some(SessionToken(staticEmail, staticToken)))
-      val result = f.controller.sendPasswordResetEmail().apply(FakeRequest().withJsonBody(Json.obj("body" -> Json.obj("email" -> staticEmail))))
+      forAll() { (person: Person, token: String) =>
+        val f = fixture
+        when(f.mockPersonDao.findByEmail(person.credentials.email.toLowerCase)).thenReturn(Some(person))
+        when(f.mockActivationDao.createActivationToken(person.credentials.email.toLowerCase)).thenReturn(Some(SessionToken(person.credentials.email, token)))
+        val result = f.controller.sendPasswordResetEmail().apply(FakeRequest().withJsonBody(Json.obj("body" -> Json.obj("email" -> person.credentials.email))))
 
-      // verify
-      status(result) mustBe 200
-      contentAsString(result) mustBe ""
-      verify(f.mockPersonDao).findByEmail(staticEmail)
-      verify(f.mockActivationDao).createActivationToken(staticEmail)
-      verify(f.mockEmailer).sendPasswordResetEmail(name, SessionToken(staticEmail, staticToken))
-      verifyZeroInteractions(f.mockSessionManager)
+        // verify
+        status(result) mustBe 200
+        contentAsString(result) mustBe ""
+        verify(f.mockPersonDao).findByEmail(person.credentials.email.toLowerCase)
+        verify(f.mockActivationDao).createActivationToken(person.credentials.email.toLowerCase)
+        verify(f.mockEmailer).sendPasswordResetEmail(person.name, SessionToken(person.credentials.email, token))
+        verifyZeroInteractions(f.mockSessionManager)
+      }
     }
   }
 }

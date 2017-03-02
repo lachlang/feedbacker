@@ -73,7 +73,7 @@ class SessionManagerSpec extends PlaySpec with AllFixtures with PropertyChecks {
   "SessionManager#initialiseToken" should {
     "return None when the credentials are not active" in {
       forAll(minSuccessful(3)) { (person:Person, password:String) =>
-        whenever(person.credentials.status != CredentialStatus.Active) {
+        whenever(person.credentials.status != CredentialStatus.Active && password.length > 0) {
           val sessionManager = new SessionManager
           val result = sessionManager.initialiseToken(person.setNewHash(sessionManager.hash(password)), password)
           result mustBe None
