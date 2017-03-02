@@ -50,10 +50,13 @@ class Authentication @Inject() (person: PersonDao, sessionManager: SessionManage
         val personOpt = person.findByEmail(username)
         personOpt match {
           case None => Forbidden
-          case Some(p) => if (p.credentials.status == CredentialStatus.Inactive) Unauthorized else
-            sessionManager.initialiseToken(p, password) match {
-            case None => BadRequest
-            case Some(st) => sessionManager.signIn(st, Ok)
+          case Some(p) =>
+            if (p.credentials.status != CredentialStatus.Active) Unauthorized
+            else {
+              sessionManager.initialiseToken(p, password) match {
+                case None => BadRequest
+                case Some(st) => sessionManager.signIn(st, Ok)
+            }
           }
         }
       case _ => BadRequest

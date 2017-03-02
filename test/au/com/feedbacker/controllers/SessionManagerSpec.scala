@@ -44,7 +44,7 @@ class SessionManagerSpec extends PlaySpec with AllFixtures with PropertyChecks {
     }
     "never validate the incorrect password" in {
       forAll (minSuccessful(3)) { (arbString1:String, arbString2:String) =>
-        whenever (arbString1.length >= 8 && arbString2.length >= 8 && arbString1 != arbString2) {
+        whenever (arbString1 != arbString2) {
           val sessionManager = new SessionManager
           val hash = sessionManager.hash(arbString1)
           sessionManager.validatePassword(arbString2, hash) mustBe false
