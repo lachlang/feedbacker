@@ -22,10 +22,10 @@ describe('feedback action controller [FeedbackActionCtrl]', function() {
 		feedbackActionController = $controller('FeedbackActionCtrl',{$scope: scope });
 	}));
 
-    describe('has valid intialisation values', function() {
+    describe('has valid initialisation values', function() {
 
     	it('should define functions', function() {
-    		expect(angular.isFunction(feedbackActionController.viewFeedbackDetail)).toBe(true);
+            // TODO: add functions here if they get added to the controller
     	});
 
     	it('for global controller variables', function() {

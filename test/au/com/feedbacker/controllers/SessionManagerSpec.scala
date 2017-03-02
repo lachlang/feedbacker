@@ -1,8 +1,11 @@
 package au.com.feedbacker.controllers
 
 import au.com.feedbacker.AllFixtures
+import au.com.feedbacker.model.{CredentialStatus, Person}
 import org.scalatest.prop.PropertyChecks
 import org.scalatestplus.play.PlaySpec
+import play.api.mvc.Result
+import play.api.test.FakeRequest
 
 /**
   * Created by lachlang on 25/02/2017.
@@ -29,7 +32,7 @@ class SessionManagerSpec extends PlaySpec with AllFixtures with PropertyChecks {
       }
     }
   }
-  "SessionManager#validateToken" should {
+  "SessionManager#validatePassword" should {
     "always validate the correct password" in {
       forAll (minSuccessful(3)) { (arbString:String) =>
         whenever (arbString.length >= 8) {
@@ -49,36 +52,108 @@ class SessionManagerSpec extends PlaySpec with AllFixtures with PropertyChecks {
       }
     }
   }
+  "SessionManager#extractToken" should {
+    "return a valid session token when it exists" in {
+      forAll() { (sessionToken:SessionToken, result: Result) =>
+
+        val sessionManager = new SessionManager
+        sessionManager.signIn(sessionToken, result)
+        val sessionTokenResponse = sessionManager.extractToken(FakeRequest().withCookies(SessionManager.createSessionCookie(sessionToken.token)))
+        sessionTokenResponse mustEqual Some(sessionToken)
+      }
+    }
+    "return None for invalid session" in {
+      forAll() { (sessionToken: SessionToken) =>
+        val sessionManager = new SessionManager
+        val sessionTokenResponse = sessionManager.extractToken(FakeRequest().withCookies(SessionManager.createSessionCookie(sessionToken.token)))
+        sessionTokenResponse mustBe None
+      }
+    }
+  }
   "SessionManager#initialiseToken" should {
-    "return None when the credendials are not active" in {
-//      fail()
+    "return None when the credentials are not active" in {
+      forAll(minSuccessful(3)) { (person:Person, password:String) =>
+        whenever(person.credentials.status != CredentialStatus.Active) {
+          val sessionManager = new SessionManager
+          val result = sessionManager.initialiseToken(person.setNewHash(sessionManager.hash(password)), password)
+          result mustBe None
+        }
+      }
     }
     "return None when the password is incorrect" in {
-
+      forAll(minSuccessful(10)) { (person:Person, password:String) =>
+        whenever(person.credentials.status == CredentialStatus.Active) {
+          val sessionManager = new SessionManager
+          val result = sessionManager.initialiseToken(person.setNewHash(sessionManager.hash(person.credentials.hash)),password)
+          result mustBe None
+        }
+      }
     }
     "create a session token" in {
-
+      forAll(minSuccessful(10)) { person:Person =>
+        whenever (person.credentials.status == CredentialStatus.Active) {
+          val sessionManager = new SessionManager
+          val result = sessionManager.initialiseToken(person.setNewHash(sessionManager.hash(person.credentials.hash)),person.credentials.hash)
+          result must not be None
+        }
+      }
     }
   }
   "SessionManager#generateToken" should {
-    "generate a string of length 30" in {
-//      fail()
+    "generate a string of length 86" in {
+      val sessionManager = new SessionManager
+      val result = sessionManager.generateToken
+      result.length mustBe 86
+    }
+    "generate different strings from consecutive calls" in {
+      val sessionManager = new SessionManager
+      val result1 = sessionManager.generateToken
+      val result2 = sessionManager.generateToken
+      val result3 = sessionManager.generateToken
+      val result4 = sessionManager.generateToken
+      val result5 = sessionManager.generateToken
+      result1 must not equal result2
+      result1 must not equal result3
+      result1 must not equal result4
+      result1 must not equal result5
+      result2 must not equal result3
+      result2 must not equal result4
+      result2 must not equal result5
+      result3 must not equal result4
+      result3 must not equal result5
+      result4 must not equal result5
     }
   }
   "SessionManager#signIn" should {
-    "add the session to the cache" in {
-
-    }
+    // cache is already checked by signout and extract token
     "add the session cookie to the response" in {
-
+      forAll { (sessionToken: SessionToken, arbResult: Result) =>
+        val sessionManager = new SessionManager
+        val result = sessionManager.signIn(sessionToken, arbResult)
+        result.header.headers.getOrElse("Set-Cookie","") contains(sessionToken.token) mustBe true
+      }
     }
   }
   "SessionManager#signOut" should {
     "remove the session from the cache" in {
-
+      forAll { (sessionToken:SessionToken, arbResult:Result) =>
+        val sessionManager = new SessionManager
+        sessionManager.signIn(sessionToken, arbResult)
+        val signInResponse = sessionManager.extractToken(FakeRequest().withCookies(SessionManager.createSessionCookie(sessionToken.token)))
+        signInResponse mustEqual Some(sessionToken)
+        sessionManager.signOut(sessionToken, arbResult)
+        val signOutResponse = sessionManager.extractToken(FakeRequest().withCookies(SessionManager.createSessionCookie(sessionToken.token)))
+        signOutResponse mustBe None
+      }
     }
     "remove the session cookie from the response" in {
-
+      forAll { (sessionToken: SessionToken, arbResult: Result) =>
+        val sessionManager = new SessionManager
+        val resultIn = sessionManager.signIn(sessionToken, arbResult)
+        resultIn.header.headers.getOrElse("Set-Cookie","") contains(sessionToken.token) mustBe true
+        val resultOut = sessionManager.signOut(sessionToken, arbResult)
+        resultOut.header.headers.getOrElse("Set-Cookie","") contains(sessionToken.token) mustBe false
+      }
     }
   }
 }

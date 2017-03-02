@@ -129,9 +129,9 @@ class ResetPassword @Inject() (emailer: Emailer,
                                activation: ActivationDao,
                                sessionManager: SessionManager) extends Controller {
 
-    def resetPassword = LoggingAction(parse.json(maxLength = 200)) { request => {
+    def resetPassword = LoggingAction(parse.json(maxLength = 300)) { request => {
       request.body.validate[ResetPasswordContent].asOpt match {
-        case None => Forbidden
+        case None => BadRequest
         case Some(content) =>
           val st = SessionToken(content.username, content.token.replaceAll(" ", "+"))
           if (!activation.validateToken(st)) Forbidden

@@ -87,7 +87,7 @@ class SessionManager {
       cookie.flatMap(c => validateToken(c.value))
   }
 
-  def validateToken(token: String): Option[SessionToken] = {
+  private def validateToken(token: String): Option[SessionToken] = {
     if (SessionManager.tokenMap.containsKey(token)) {
       Some(SessionToken(SessionManager.tokenMap.get(token), token))
     } else {

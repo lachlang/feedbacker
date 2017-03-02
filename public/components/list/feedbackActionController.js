@@ -26,12 +26,4 @@ fbControllers.controller('FeedbackActionCtrl',  ['$scope', '$log', 'Model', func
 	Model.getFeedbackHistory().then(function(response) {
 		ctrl.feedbackHistoryList = response;
 	});
-
-	ctrl.viewFeedbackDetail = function(feedbackId) {
-		// $location.path("/detailView");
-	};
-
-	ctrl.editFeedbackDetail = function(feedbackId) {
-		// $location.path("/detailEdit");
-	};
 }]);
