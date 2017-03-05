@@ -14,16 +14,16 @@ class SessionManagerSpec extends PlaySpec with AllFixtures with PropertyChecks {
 
   "SessionManager#hash" should {
     "never return the value it is given" in {
-      forAll (minSuccessful(3)) { arbString:String =>
-        whenever (arbString.length >= 8) {
+      forAll (minSuccessful(10)) { arbString:String =>
+        whenever (arbString.length >= 1 && arbString.length <= 100) {
           val sessionManager = new SessionManager
           sessionManager.hash(arbString) must not equal arbString
         }
       }
     }
     "never return two values from the same seed" in {
-      forAll (minSuccessful(3)) { arbString:String =>
-        whenever (arbString.length >= 8) {
+      forAll (minSuccessful(10)) { arbString:String =>
+        whenever (arbString.length >= 1 && arbString.length <= 100) {
           val sessionManager = new SessionManager
           val hash1 = sessionManager.hash(arbString)
           val hash2 = sessionManager.hash(arbString)

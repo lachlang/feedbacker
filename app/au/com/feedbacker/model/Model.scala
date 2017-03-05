@@ -76,6 +76,7 @@ import FeedbackStatus._
 
 case class Person(id: Option[Long], name: String, role: String, credentials: Credentials, managerEmail: String, isLeader: Boolean = false) {
   def setNewHash(hash: String)  = Person(id, name, role, Credentials(credentials.email, hash, credentials.status), managerEmail, isLeader)
+  def setCredentialStatus(credentialStatus: CredentialStatus)  = Person(id, name, role, Credentials(credentials.email, credentials.hash, credentialStatus), managerEmail, isLeader)
 }
 
 object Person {
@@ -114,7 +115,7 @@ class PersonDao @Inject() (db: play.api.db.Database, activation: ActivationDao, 
   }
 
   def findByEmail(email: String): Option[Person] = db.withConnection { implicit connection =>
-    SQL("select * from person where email = {email}").on('email -> email).as(Person.simple.singleOpt)
+    SQL("select * from person where email = {email}").on('email -> email.toLowerCase).as(Person.simple.singleOpt)
   }
 
   def create(person: Person): Either[Throwable, Person] = db.withConnection { implicit connection =>

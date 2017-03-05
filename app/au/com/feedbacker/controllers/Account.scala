@@ -114,7 +114,7 @@ class ActivationCtrl @Inject() (emailer: Emailer, person: PersonDao, activation:
   }
 
   def sendActivationEmail = LoggingAction { request =>
-    request.body.asJson.flatMap ( json => (json \ "body" \ "username").asOpt[String].map(_.toLowerCase).flatMap(person.findByEmail(_))) match {
+    request.body.asJson.flatMap ( json => (json \ "body" \ "username").asOpt[String](Reads.email).flatMap(person.findByEmail(_))) match {
       case None => BadRequest
       case Some(user) => activation.createActivationToken(user.credentials.email) match {
         case None => BadRequest
@@ -133,7 +133,7 @@ class ResetPassword @Inject() (emailer: Emailer,
     request.body.validate[ResetPasswordContent].asOpt match {
       case None => BadRequest
       case Some(content) =>
-        val st = SessionToken(content.username, content.token.replaceAll(" ", "+"))
+        val st = SessionToken(content.username.toLowerCase, content.token.replaceAll(" ", "+"))
         if (!activation.validateToken(st)) Forbidden
         else {
           person.findByEmail(st.username) match {

@@ -47,8 +47,6 @@ trait ModelFixtures {
     } yield ResetPasswordContent(password.take(100), username, token.take(80))
   )
 
-
-
   def noShrink[T] = Shrink[T](_ => Stream.empty)
   implicit val dontShrinkStrings: Shrink[String] = noShrink[String]
 

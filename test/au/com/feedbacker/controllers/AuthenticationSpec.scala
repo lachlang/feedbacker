@@ -113,42 +113,39 @@ class AuthenticationSpec extends PlaySpec with MockitoSugar with AllFixtures wit
     }
     "return bad request when no session token is created" in {
       forAll() { (person: Person, password: String) =>
-        whenever(person.credentials.status == CredentialStatus.Active) {
-          // setup
-          val f = fixture
-          //      val testPerson: Person = Person(Some(1), "name", "role", Credentials(email, password, CredentialStatus.Active), "boss@test.com")
-          when(f.mockPersonDao.findByEmail(person.credentials.email.toLowerCase)).thenReturn(Some(person))
-          when(f.mockSessionManager.initialiseToken(person, password)).thenReturn(None)
-          val jsonRequest = Json.obj("body" -> (Json.obj("password" -> password) ++ Json.obj("username" -> person.credentials.email)))
-          val result: Future[Result] = f.controller.login().apply(FakeRequest().withJsonBody(jsonRequest))
+        // setup
+        val testPerson = person.setCredentialStatus(CredentialStatus.Active)
+        val f = fixture
+        when(f.mockPersonDao.findByEmail(testPerson.credentials.email.toLowerCase)).thenReturn(Some(testPerson))
+        when(f.mockSessionManager.initialiseToken(testPerson, password)).thenReturn(None)
+        val jsonRequest = Json.obj("body" -> (Json.obj("password" -> password) ++ Json.obj("username" -> testPerson.credentials.email)))
+        val result: Future[Result] = f.controller.login().apply(FakeRequest().withJsonBody(jsonRequest))
 
-          // verify
-          verify(f.mockPersonDao).findByEmail(person.credentials.email.toLowerCase)
-          verify(f.mockSessionManager).initialiseToken(person, password)
-          status(result) mustBe 400
-          contentAsString(result) mustBe ""
-        }
+        // verify
+        verify(f.mockPersonDao).findByEmail(testPerson.credentials.email.toLowerCase)
+        verify(f.mockSessionManager).initialiseToken(testPerson, password)
+        status(result) mustBe 400
+        contentAsString(result) mustBe ""
       }
     }
     "return success when login succeeds" in {
       forAll() { (person: Person, password: String) =>
-        whenever(person.credentials.status == CredentialStatus.Active) {
-          // setup
-          val f = fixture
-          val sessionToken: SessionToken = SessionToken(person.credentials.email.toLowerCase, password)
-          when(f.mockPersonDao.findByEmail(person.credentials.email.toLowerCase)).thenReturn(Some(person))
-          when(f.mockSessionManager.initialiseToken(person, password)).thenReturn(Some(sessionToken))
-          when(f.mockSessionManager.signIn(sessionToken, Ok)).thenReturn(Ok)
-          val jsonRequest = Json.obj("body" -> (Json.obj("password" -> password) ++ Json.obj("username" -> person.credentials.email)))
-          val result: Future[Result] = f.controller.login().apply(FakeRequest().withJsonBody(jsonRequest))
+        // setup
+        val testPerson = person.setCredentialStatus(CredentialStatus.Active)
+        val f = fixture
+        val sessionToken: SessionToken = SessionToken(testPerson.credentials.email.toLowerCase, password)
+        when(f.mockPersonDao.findByEmail(testPerson.credentials.email.toLowerCase)).thenReturn(Some(testPerson))
+        when(f.mockSessionManager.initialiseToken(testPerson, password)).thenReturn(Some(sessionToken))
+        when(f.mockSessionManager.signIn(sessionToken, Ok)).thenReturn(Ok)
+        val jsonRequest = Json.obj("body" -> (Json.obj("password" -> password) ++ Json.obj("username" -> testPerson.credentials.email)))
+        val result: Future[Result] = f.controller.login().apply(FakeRequest().withJsonBody(jsonRequest))
 
-          // verify
-          verify(f.mockPersonDao).findByEmail(person.credentials.email.toLowerCase)
-          verify(f.mockSessionManager).initialiseToken(person, password)
-          verify(f.mockSessionManager).signIn(sessionToken, Ok)
-          status(result) mustBe 200
-          contentAsString(result) mustBe ""
-        }
+        // verify
+        verify(f.mockPersonDao).findByEmail(testPerson.credentials.email.toLowerCase)
+        verify(f.mockSessionManager).initialiseToken(testPerson, password)
+        verify(f.mockSessionManager).signIn(sessionToken, Ok)
+        status(result) mustBe 200
+        contentAsString(result) mustBe ""
       }
     }
   }

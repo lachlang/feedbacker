@@ -20,13 +20,6 @@ import org.scalatest.prop.PropertyChecks
   */
 class ResetPasswordSpec extends PlaySpec with MockitoSugar with AllFixtures with PropertyChecks {
 
-//  val staticEmail: String = "test@email.com"
-//  val staticPassword: String = "thisIsAnAwesomePassword"
-//  val staticToken: String = "oneTimeToken"
-//  val staticRequest: ResetPasswordContent = ResetPasswordContent(staticPassword, staticEmail, staticToken)
-//  val name: String = "That Guy"
-//  val testPerson: Person = Person(Some(1), name, "role", Credentials(staticEmail, staticPassword, CredentialStatus.Active), "boss@test.com")
-
   def fixture = {
     new {
       val mockEmailer = mock[Emailer]
@@ -64,22 +57,22 @@ class ResetPasswordSpec extends PlaySpec with MockitoSugar with AllFixtures with
         // verify
         status(result) mustBe 403
         contentAsString(result) mustBe ""
-        verify(f.mockActivationDao).validateToken(SessionToken(request.username, request.token))
+        verify(f.mockActivationDao).validateToken(SessionToken(request.username.toLowerCase, request.token.replaceAll(" ", "+")))
         verifyZeroInteractions(f.mockPersonDao)
       }
     }
     "fail for invalid users" in {
       forAll() { request: ResetPasswordContent =>
         val f = fixture
-        when(f.mockActivationDao.validateToken(SessionToken(request.username, request.token))).thenReturn(true)
-        when(f.mockPersonDao.findByEmail(request.username)).thenReturn(None)
+        when(f.mockActivationDao.validateToken(SessionToken(request.username.toLowerCase, request.token))).thenReturn(true)
+        when(f.mockPersonDao.findByEmail(request.username.toLowerCase)).thenReturn(None)
         val result: Future[Result] = f.controller.resetPassword().apply(FakeRequest().withBody(Json.toJson(request)))
 
         // verify
         status(result) mustBe 400
         contentAsString(result) mustBe ""
-        verify(f.mockActivationDao).validateToken(SessionToken(request.username, request.token))
-        verify(f.mockPersonDao).findByEmail(request.username)
+        verify(f.mockActivationDao).validateToken(SessionToken(request.username.toLowerCase, request.token.replaceAll(" ", "+")))
+        verify(f.mockPersonDao).findByEmail(request.username.toLowerCase)
         verifyZeroInteractions(f.mockSessionManager)
         verifyZeroInteractions(f.mockEmailer)
       }
@@ -90,8 +83,8 @@ class ResetPasswordSpec extends PlaySpec with MockitoSugar with AllFixtures with
 
         val errorMessage: String = "error message"
         val f = fixture
-        when(f.mockActivationDao.validateToken(SessionToken(request.username, request.token))).thenReturn(true)
-        when(f.mockPersonDao.findByEmail(request.username)).thenReturn(Some(person))
+        when(f.mockActivationDao.validateToken(SessionToken(request.username.toLowerCase, request.token.replaceAll(" ", "+")))).thenReturn(true)
+        when(f.mockPersonDao.findByEmail(request.username.toLowerCase)).thenReturn(Some(person))
         when(f.mockPersonDao.update(person)).thenReturn(Left(new Exception(errorMessage)))
         when(f.mockSessionManager.hash(request.password)).thenReturn(person.credentials.hash)
         val result: Future[Result] = f.controller.resetPassword().apply(FakeRequest().withBody(Json.toJson(request)))
@@ -99,8 +92,8 @@ class ResetPasswordSpec extends PlaySpec with MockitoSugar with AllFixtures with
         // verify
         status(result) mustBe 400
         contentAsJson(result) mustBe Json.obj("body" -> Json.obj("message" -> errorMessage))
-        verify(f.mockActivationDao).validateToken(SessionToken(request.username, request.token))
-        verify(f.mockPersonDao).findByEmail(request.username)
+        verify(f.mockActivationDao).validateToken(SessionToken(request.username.toLowerCase, request.token.replaceAll(" ", "+")))
+        verify(f.mockPersonDao).findByEmail(request.username.toLowerCase)
         verify(f.mockSessionManager).hash(request.password)
         verify(f.mockPersonDao).update(person)
         verifyZeroInteractions(f.mockEmailer)
@@ -109,8 +102,8 @@ class ResetPasswordSpec extends PlaySpec with MockitoSugar with AllFixtures with
     "reset the users password" in {
       forAll() { (request: ResetPasswordContent, person: Person) =>
         val f = fixture
-        when(f.mockActivationDao.validateToken(SessionToken(request.username, request.token))).thenReturn(true)
-        when(f.mockPersonDao.findByEmail(request.username)).thenReturn(Some(person))
+        when(f.mockActivationDao.validateToken(SessionToken(request.username.toLowerCase, request.token))).thenReturn(true)
+        when(f.mockPersonDao.findByEmail(request.username.toLowerCase)).thenReturn(Some(person))
         when(f.mockPersonDao.update(person)).thenReturn(Right(person))
         when(f.mockSessionManager.hash(request.password)).thenReturn(person.credentials.hash)
         val result: Future[Result] = f.controller.resetPassword().apply(FakeRequest().withBody(Json.toJson(request)))
@@ -118,10 +111,10 @@ class ResetPasswordSpec extends PlaySpec with MockitoSugar with AllFixtures with
         // verify
         status(result) mustBe 200
         contentAsString(result) mustBe ""
-        verify(f.mockActivationDao).validateToken(SessionToken(request.username, request.token))
-        verify(f.mockPersonDao).findByEmail(request.username)
+        verify(f.mockActivationDao).validateToken(SessionToken(request.username.toLowerCase, request.token))
+        verify(f.mockPersonDao).findByEmail(request.username.toLowerCase)
         verify(f.mockSessionManager).hash(request.password)
-        verify(f.mockPersonDao).update(any())
+        verify(f.mockPersonDao).update(person)
         verifyZeroInteractions(f.mockEmailer)
       }
     }
