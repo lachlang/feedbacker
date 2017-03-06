@@ -64,7 +64,7 @@ class ResetPasswordSpec extends PlaySpec with MockitoSugar with AllFixtures with
     "fail for invalid users" in {
       forAll() { request: ResetPasswordContent =>
         val f = fixture
-        when(f.mockActivationDao.validateToken(SessionToken(request.username.toLowerCase, request.token))).thenReturn(true)
+        when(f.mockActivationDao.validateToken(SessionToken(request.username.toLowerCase, request.token.replaceAll(" ", "+")))).thenReturn(true)
         when(f.mockPersonDao.findByEmail(request.username.toLowerCase)).thenReturn(None)
         val result: Future[Result] = f.controller.resetPassword().apply(FakeRequest().withBody(Json.toJson(request)))
 
@@ -102,7 +102,7 @@ class ResetPasswordSpec extends PlaySpec with MockitoSugar with AllFixtures with
     "reset the users password" in {
       forAll() { (request: ResetPasswordContent, person: Person) =>
         val f = fixture
-        when(f.mockActivationDao.validateToken(SessionToken(request.username.toLowerCase, request.token))).thenReturn(true)
+        when(f.mockActivationDao.validateToken(SessionToken(request.username.toLowerCase, request.token.replaceAll(" ", "+")))).thenReturn(true)
         when(f.mockPersonDao.findByEmail(request.username.toLowerCase)).thenReturn(Some(person))
         when(f.mockPersonDao.update(person)).thenReturn(Right(person))
         when(f.mockSessionManager.hash(request.password)).thenReturn(person.credentials.hash)
@@ -111,7 +111,7 @@ class ResetPasswordSpec extends PlaySpec with MockitoSugar with AllFixtures with
         // verify
         status(result) mustBe 200
         contentAsString(result) mustBe ""
-        verify(f.mockActivationDao).validateToken(SessionToken(request.username.toLowerCase, request.token))
+        verify(f.mockActivationDao).validateToken(SessionToken(request.username.toLowerCase, request.token.replaceAll(" ", "+")))
         verify(f.mockPersonDao).findByEmail(request.username.toLowerCase)
         verify(f.mockSessionManager).hash(request.password)
         verify(f.mockPersonDao).update(person)

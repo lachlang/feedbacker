@@ -1,16 +1,20 @@
 package au.com.feedbacker.controllers
 
 import au.com.feedbacker.AllFixtures
+import au.com.feedbacker.model.CredentialStatus.CredentialStatus
 import au.com.feedbacker.model.{CredentialStatus, Person}
 import org.scalatest.prop.PropertyChecks
 import org.scalatestplus.play.PlaySpec
 import play.api.mvc.Result
 import play.api.test.FakeRequest
+import org.scalacheck.Arbitrary.arbitrary
 
 /**
   * Created by lachlang on 25/02/2017.
   */
 class SessionManagerSpec extends PlaySpec with AllFixtures with PropertyChecks {
+
+  val arbInvalidStatus = arbitrary[CredentialStatus].suchThat(_ != CredentialStatus.Active)
 
   "SessionManager#hash" should {
     "never return the value it is given" in {
@@ -72,7 +76,8 @@ class SessionManagerSpec extends PlaySpec with AllFixtures with PropertyChecks {
   }
   "SessionManager#initialiseToken" should {
     "return None when the credentials are not active" in {
-      forAll(minSuccessful(3)) { (person:Person, password:String) =>
+      forAll(arbInvalidStatus, arbitrary[Person], arbitrary[String]) { (invalidStatus, example, password) =>
+        val person = example.copy(credentials = example.credentials.copy(status = invalidStatus))
         whenever(person.credentials.status != CredentialStatus.Active && password.length > 0) {
           val sessionManager = new SessionManager
           val result = sessionManager.initialiseToken(person.setNewHash(sessionManager.hash(password)), password)
@@ -81,21 +86,19 @@ class SessionManagerSpec extends PlaySpec with AllFixtures with PropertyChecks {
       }
     }
     "return None when the password is incorrect" in {
-      forAll(minSuccessful(10)) { (person:Person, password:String) =>
-        whenever(person.credentials.status == CredentialStatus.Active) {
-          val sessionManager = new SessionManager
-          val result = sessionManager.initialiseToken(person.setNewHash(sessionManager.hash(person.credentials.hash)),password)
-          result mustBe None
-        }
+      forAll() { (example:Person, password:String) =>
+        val person = example.copy(credentials = example.credentials.copy(status = CredentialStatus.Active))
+        val sessionManager = new SessionManager
+        val result = sessionManager.initialiseToken(person.setNewHash(sessionManager.hash(person.credentials.hash)),password)
+        result mustBe None
       }
     }
     "create a session token" in {
-      forAll(minSuccessful(10)) { person:Person =>
-        whenever (person.credentials.status == CredentialStatus.Active) {
-          val sessionManager = new SessionManager
-          val result = sessionManager.initialiseToken(person.setNewHash(sessionManager.hash(person.credentials.hash)),person.credentials.hash)
-          result must not be None
-        }
+      forAll() { example:Person =>
+        val person = example.copy(credentials = example.credentials.copy(status = CredentialStatus.Active))
+        val sessionManager = new SessionManager
+        val result = sessionManager.initialiseToken(person.setNewHash(sessionManager.hash(person.credentials.hash)),person.credentials.hash)
+        result must not be None
       }
     }
   }

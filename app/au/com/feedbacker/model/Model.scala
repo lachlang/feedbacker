@@ -20,7 +20,11 @@ object CredentialStatus extends Enumeration {
   implicit val writes: Writes[CredentialStatus] = new Writes[CredentialStatus] {
     def writes(v: CredentialStatus): JsValue = JsString(v.toString)
   }
+  implicit val reads: Reads[CredentialStatus] = new Reads[CredentialStatus] {
+    def reads(js: JsValue) = JsSuccess(CredentialStatus.withName(js.as[String]))
+  }
 }
+
 import CredentialStatus._
 
 object FeedbackStatus extends Enumeration {
@@ -31,52 +35,31 @@ object FeedbackStatus extends Enumeration {
   val Cancelled = Value("Cancelled")
   val Closed = Value("Closed")
 
-//  implicit def enumWrites[E <: Enumeration]: Writes[E#Value] = new Writes[E#Value] {
-//    def writes(v: E#Value): JsValue = JsString(v.toString)
-//  }
-//
-//  implicit def enumReads[E <: Enumeration](enum: E) : Reads[E#Value] = new Reads[E#Value] {
-//    def reads(json: JsValue): JsResult[E#Value] = json match {
-//      case JsString(s) => {
-//        try {
-//          JsSuccess(enum.withName(s))
-//        } catch {
-//          case _: NoSuchElementException => JsError(s"Enumeration expected of type: '${enum.getClass}', but it does not appear to contain the value: '$s'")
-//        }
-//      }
-//      case _ => JsError("String value expected")
-//    }
-//  }
-//
-//  implicit def enumFormat[E <: Enumeration](enum: E): Format[E#Value] = {
-//    Format(enumReads(enum), enumWrites)
-//  }
-
   implicit val writes: Writes[FeedbackStatus] = new Writes[FeedbackStatus] {
     def writes(v: FeedbackStatus): JsValue = JsString(v.toString)
   }
-//
-//  implicit val reads(statusRead: FeedbackStatus) : Reads[FeedbackStatus] = new Reads[FeedbackStatus] {
-//    def reads(json: JsValue): JsResult[FeedbackStatus] = json match {
-//      case JsString(s) => {
-//        try {
-//          JsSuccess(FeedbackStatus.withName(s))
-//        } catch {
-//          case _: NoSuchElementException => JsError(s"Enumeration expected of type: 'FeedbackStatus', but it does not appear to contain the value: '$s'")
-//        }
-//      }
-//      case _ => JsError("String value expected")
-//    }
-//  }
-//  implicit val format(statusFormat: FeedbackStatus): Format[FeedbackStatus] = {
-//    Format(reads(statusFormat), writes)
-//  }
+  implicit val reads: Reads[FeedbackStatus] = new Reads[FeedbackStatus] {
+    def reads(js: JsValue) = JsSuccess(FeedbackStatus.withName(js.as[String]))
+  }
 }
 import FeedbackStatus._
 
+object ResponseFormat extends Enumeration {
+  type ResponseFormat = Value
+  val Radio = Value("RADIO")
+  val Select = Value("SELECT")
+
+  implicit val writes: Writes[ResponseFormat] = new Writes[ResponseFormat] {
+    def writes(v: ResponseFormat): JsValue = JsString(v.toString)
+  }
+  implicit val reads: Reads[ResponseFormat] = new Reads[ResponseFormat] {
+    def reads(js: JsValue) = JsSuccess(ResponseFormat.withName(js.as[String]))
+  }
+}
+import ResponseFormat._
+
 case class Person(id: Option[Long], name: String, role: String, credentials: Credentials, managerEmail: String, isLeader: Boolean = false) {
   def setNewHash(hash: String)  = Person(id, name, role, Credentials(credentials.email, hash, credentials.status), managerEmail, isLeader)
-  def setCredentialStatus(credentialStatus: CredentialStatus)  = Person(id, name, role, Credentials(credentials.email, credentials.hash, credentialStatus), managerEmail, isLeader)
 }
 
 object Person {
@@ -347,7 +330,7 @@ class ActivationDao @Inject() (db: play.api.db.Database, sessionManager: Session
   }
 }
 
-case class QuestionResponse(id: Option[Long], text: String, format: String, responseOptions: Seq[String], response: Option[String], comments: Option[String])
+case class QuestionResponse(id: Option[Long], text: String, format: ResponseFormat, responseOptions: Seq[String], response: Option[String], comments: Option[String])
 
 object QuestionResponse {
 
@@ -358,14 +341,14 @@ object QuestionResponse {
       get[String]("question_response.response_options") ~
       get[Option[String]]("question_response.response") ~
       get[Option[String]]("question_response.comments") map {
-      case id ~ text ~ format ~ responseOptions ~ response ~ comments => QuestionResponse(id, text, format, responseOptions.split(","), response, comments)
+      case id ~ text ~ format ~ responseOptions ~ response ~ comments => QuestionResponse(id, text, ResponseFormat.withName(format), responseOptions.split(","), response, comments)
     }
   }
 
   implicit val format: Format[QuestionResponse] = (
     (JsPath \ "id").formatNullable[Long] and
       (JsPath \ "text").format[String] and
-      (JsPath \ "format").format[String] and
+      (JsPath \ "format").format[ResponseFormat] and
       (JsPath \ "responseOptions").format[Seq[String]] and
       (JsPath \ "response").formatNullable[String] and
       (JsPath \ "comments").formatNullable[String]
@@ -387,7 +370,7 @@ class QuestionResponseDao @Inject() (db: play.api.db.Database) {
   def initialiseResponses(nominationId :Long, questions: Seq[QuestionTemplate]): Boolean = db.withConnection { implicit connection =>
     questions.map { q =>
     SQL("""insert into question_response (nomination_id, text, render_format, response_options) values ({nominationId}, {text}, {format}, {responseOptions})""")
-      .on('nominationId -> nominationId, 'text -> q.text, 'format -> q.format, 'responseOptions -> q.responseOptions.mkString(",")).executeInsert() match {
+      .on('nominationId -> nominationId, 'text -> q.text, 'format -> q.format.toString, 'responseOptions -> q.responseOptions.mkString(",")).executeInsert() match {
         case Some(_) => true
         case None => false
       }
@@ -395,7 +378,7 @@ class QuestionResponseDao @Inject() (db: play.api.db.Database) {
   }
 }
 
-case class QuestionTemplate(id: Option[Long], text: String, format: String, responseOptions: Seq[String])
+case class QuestionTemplate(id: Option[Long], text: String, format: ResponseFormat, responseOptions: Seq[String])
 
 object QuestionTemplate {
 
@@ -404,7 +387,7 @@ object QuestionTemplate {
       get[String]("question_templates.text") ~
       get[String]("question_templates.render_format") ~
       get[String]("question_templates.response_options") map {
-      case id ~ text ~ format ~ responseOptions => QuestionTemplate(id, text, format, responseOptions.split(","))
+      case id ~ text ~ format ~ responseOptions => QuestionTemplate(id, text, ResponseFormat.withName(format), responseOptions.split(","))
     }
   }
 }

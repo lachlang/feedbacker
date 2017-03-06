@@ -56,12 +56,10 @@ class Account @Inject() (person: PersonDao, nomination: NominationDao, sessionMa
   }
 
   def updateUserDetails = AuthenticatedRequestAction { (user, json) =>
-    val errorMessage = "Could not update user details."
-
     json.validate[UpdateContent].asOpt.map(uc =>
       Person(user.id, uc.name, uc.role, user.credentials, uc.managerEmail.toLowerCase, user.isLeader)) match {
 
-      case None => BadRequest(s"""{ "body": { "message": "$errorMessage "}} """)
+      case None => BadRequest(s"""{ "body": { "message": "Could not update user details."}} """)
       case Some(personUpdates) => person.update(personUpdates) match {
        case Left(e) => BadRequest(Json.obj("body" -> Json.obj("message" -> e.getMessage)))
        case Right(updatedPerson) => Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(updatedPerson)))
