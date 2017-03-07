@@ -111,10 +111,10 @@ class PersonDao @Inject() (db: play.api.db.Database, activation: ActivationDao, 
           """).on(
             'name -> person.name,
             'role -> person.role,
-            'email -> person.credentials.email,
+            'email -> person.credentials.email.toLowerCase,
             'pass_hash -> person.credentials.hash,
             'user_status -> person.credentials.status.toString,
-            'manager_email -> person.managerEmail
+            'manager_email -> person.managerEmail.toLowerCase
           ).executeInsert() match {
           case None => Left(new Exception("Could not insert."))
           case Some(id) => findById(id) match {
@@ -143,7 +143,7 @@ class PersonDao @Inject() (db: play.api.db.Database, activation: ActivationDao, 
               {email},'Nominee',{email},{pass_hash},{user_status},'placeholder@test.com'
             )
           """).on(
-            'email -> username,
+            'email -> username.toLowerCase,
             'pass_hash -> sessionManager.generateToken,
             'user_status -> CredentialStatus.Nominated.toString
           ).executeInsert() match {
@@ -171,10 +171,10 @@ class PersonDao @Inject() (db: play.api.db.Database, activation: ActivationDao, 
           """).on(
             'name -> person.name,
             'role -> person.role,
-            'email -> person.credentials.email,
+            'email -> person.credentials.email.toLowerCase,
             'pass_hash -> person.credentials.hash,
             'user_status -> person.credentials.status.toString,
-            'manager_email -> person.managerEmail
+            'manager_email -> person.managerEmail.toLowerCase
           ).executeUpdate() match {
           case 1 => Right(person)
           case _ => Left(new Exception("Could not update."))
@@ -190,7 +190,7 @@ class PersonDao @Inject() (db: play.api.db.Database, activation: ActivationDao, 
       """
         select count(*) from person where email = {email} and pass_hash = {pass_hash}
       """).on(
-        'email -> email,
+        'email -> email.toLowerCase,
         'pass_hash -> hash
       ).as(scalar[Long].single) == 1
   }
@@ -212,7 +212,7 @@ class PersonDao @Inject() (db: play.api.db.Database, activation: ActivationDao, 
 
   def findDirectReports(username: String) : Seq[Person] = db.withConnection { implicit connection =>
     SQL("""select * from person where manager_email = {email} and user_status = {status}""")
-      .on('email -> username, 'status -> CredentialStatus.Active.toString)
+      .on('email -> username.toLowerCase, 'status -> CredentialStatus.Active.toString)
       .as(Person.simple *)
   }
 }
@@ -253,7 +253,7 @@ object Credentials {
   // make sure we don't ever write the hash to the client
   implicit val writes: Writes[Credentials] = new Writes[Credentials] {
     def writes(creds: Credentials) = Json.obj(
-      "email" -> creds.email,
+      "email" -> creds.email.toLowerCase,
       "status" -> creds.status
     )
   }
@@ -261,7 +261,7 @@ object Credentials {
 
 class CredentialsDao @Inject() (db: play.api.db.Database) {
   def findStatusByEmail(email:String): Option[(Long, CredentialStatus)] = db.withConnection { implicit connection =>
-    SQL("select id, user_status from person where email = {email}").on('email -> email).as(Credentials.status.singleOpt)
+    SQL("select id, user_status from person where email = {email}").on('email -> email.toLowerCase).as(Credentials.status.singleOpt)
   }
 }
 
@@ -293,7 +293,7 @@ class ActivationDao @Inject() (db: play.api.db.Database, sessionManager: Session
 
   def validateToken(st: SessionToken): Boolean = db.withConnection { implicit connection =>
     val result: Option[Activation] = SQL("select * from activations where token = {token} and email = {email} and used = false and expires > {time}")
-      .on('token -> st.token, 'email -> st.username, 'time -> DateTime.now).as(Activation.simple.singleOpt)
+      .on('token -> st.token, 'email -> st.username.toLowerCase, 'time -> DateTime.now).as(Activation.simple.singleOpt)
     result match {
       case Some(_) => true
       case None => false
@@ -309,7 +309,7 @@ class ActivationDao @Inject() (db: play.api.db.Database, sessionManager: Session
     if (!validateToken(st)) false else
       expireToken(st.token) &&
         SQL("update person SET user_status = {status} where email = {email}")
-          .on('status -> CredentialStatus.Active.toString, 'email -> st.username).executeUpdate == 1
+          .on('status -> CredentialStatus.Active.toString, 'email -> st.username.toLowerCase).executeUpdate == 1
   }
 
   /**
@@ -323,7 +323,7 @@ class ActivationDao @Inject() (db: play.api.db.Database, sessionManager: Session
       """insert into activations (token, email, created, expires, used) values
          ({token}, {email}, {created}, {expires}, false) """)
       .on('token -> token,
-        'email -> username,
+        'email -> username.toLowerCase,
         'created -> DateTime.now,
         'expires -> (DateTime.now.plus(tokenExpiryInSeconds* 1000))).executeUpdate == 1)
       Some(SessionToken(username, token)) else None

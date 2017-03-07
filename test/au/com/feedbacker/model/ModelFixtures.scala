@@ -1,6 +1,6 @@
 package au.com.feedbacker.model
 
-import au.com.feedbacker.controllers.{ResetPasswordContent, SessionToken, UpdateContent}
+import au.com.feedbacker.controllers.{RegistrationContent, ResetPasswordContent, SessionToken, UpdateContent}
 import au.com.feedbacker.model.CredentialStatus.CredentialStatus
 import au.com.feedbacker.model.FeedbackStatus.FeedbackStatus
 import au.com.feedbacker.model.ResponseFormat.ResponseFormat
@@ -85,6 +85,16 @@ trait ModelFixtures {
       response        <- Gen.option(Gen.oneOf(responseOptions))
       comments        <- arbitrary[Option[String]]
     } yield QuestionResponse(id = id, text = text, format = format, responseOptions = responseOptions, response = response, comments = comments)
+  )
+
+  implicit val arbRegistrationContent: Arbitrary[RegistrationContent] = Arbitrary(
+    for {
+      name          <- arbitrary[String].suchThat( _.length > 0)
+      role          <- arbitrary[String].suchThat( _.length > 0)
+      email         <-  validEmailAddresses()
+      password      <- arbitrary[String].suchThat( _.length > 0)
+      managerEmail  <- validEmailAddresses()
+    } yield RegistrationContent(name = name, role = role, email = email, password = password, managerEmail = managerEmail)
   )
 
   implicit val arbResetPasswordContent: Arbitrary[ResetPasswordContent] = Arbitrary(

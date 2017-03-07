@@ -91,20 +91,24 @@ class AccountSpec extends PlaySpec with MockitoSugar with AllFixtures with Prope
         contentAsJson(result) mustEqual Json.obj("body" -> Json.arr())
       }
     }
-
     "render a report when found" in {
       forAll(arbitrary[Person], arbitrary[SessionToken], upToTenPeople) { (person: Person, st: SessionToken, reports: List[Person]) =>
         // mock
-        val feedbackGroup: FeedbackGroup = FeedbackGroup(FeedbackCycle.orphan, Seq(Nomination(Some(1), Some(person), Some(person), FeedbackStatus.Pending, None, Seq(), false, 1)))
         val f = fixture
         when(f.mockSessionManager.extractToken(any())).thenReturn(Some(st))
         when(f.mockPersonDao.findByEmail(st.username)).thenReturn(Some(person))
         when(f.mockPersonDao.findDirectReports(person.credentials.email)).thenReturn(reports)
-        reports.foreach { report =>
-          when(f.mockNominationDao.getHistoryReportForUser(report.credentials.email)).thenReturn(Seq(feedbackGroup))
 
+        def genReport(p: Person, fgs: Seq[FeedbackGroup]): Report = {
+         when(f.mockNominationDao.getHistoryReportForUser(p.credentials.email)).thenReturn(fgs)
+          Report(person = p, reviewCycle = fgs)
         }
-//        when(f.mockNominationDao.getHistoryReportForUser(person.credentials.email)).thenReturn(Seq(feedbackGroup))
+        val response: List[Report] = reports.map { report =>
+          arbitrary[Seq[FeedbackGroup]].sample match {
+            case None => genReport(report, Seq())
+            case Some(fgs) => genReport(report, fgs)
+          }
+        }
 
         // call
         val result: Future[Result] = f.controller.getReports().apply(FakeRequest().withCookies(SessionManager.createSessionCookie(st.token)))
@@ -113,10 +117,11 @@ class AccountSpec extends PlaySpec with MockitoSugar with AllFixtures with Prope
         verify(f.mockSessionManager).extractToken(any())
         verify(f.mockPersonDao).findByEmail(st.username)
         verify(f.mockPersonDao).findDirectReports(person.credentials.email)
-//        verify(f.mockNominationDao).getHistoryReportForUser(person.credentials.email)
+        reports.foreach { report =>
+          verify(f.mockNominationDao).getHistoryReportForUser(report.credentials.email)
+        }
         status(result) mustBe 200
-//        contentAsJson(result) mustEqual Json.obj("body" -> Json.arr(Json.toJson(Report(person, Seq(feedbackGroup)))))
-//        fail
+        contentAsJson(result) mustEqual Json.obj("body" -> Json.toJson(response))
       }
     }
     "be forbidden for invalid user" in {

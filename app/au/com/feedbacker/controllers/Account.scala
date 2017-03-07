@@ -31,7 +31,7 @@ class Registration @Inject() (emailer: Emailer,
   def register: Action[JsValue] = LoggingAction(parse.json(maxLength = 2000)) { request =>
 
     request.body.validate[RegistrationContent].asOpt
-      .map(rc => RegistrationContent(rc.name,rc.role,rc.email.toLowerCase,rc.password,rc.managerEmail.toLowerCase)) match {
+      .map(rc => RegistrationContent(rc.name,rc.role,rc.email.toLowerCase.toLowerCase,rc.password,rc.managerEmail.toLowerCase)) match {
       case None => BadRequest("{ \"body\": { \"message\": \"Could not parse request.\"}} ")
       case Some(body) => credentials.findStatusByEmail(body.email.toLowerCase) match {
         case Some((id, CredentialStatus.Nominated)) => translateResultAndActivate(person.update(Person(Some(id), body.name, body.role, Credentials(body.email, sessionManager.hash(body.password), CredentialStatus.Inactive), body.managerEmail)))
