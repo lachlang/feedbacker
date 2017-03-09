@@ -35,6 +35,20 @@ fbServices.service('Model', ['$log', '$q', 'Account', 'Feedback', 'Nomination', 
 
 	var model = {
 
+        flush: function() {
+            self = undefined;
+            pendingActions = [];
+            currentFeedbackList = [];
+            feedbackHistoryList = [];
+            feedbackDetail = {};
+            feedbackCycle = {};
+            currentNominations = [];
+            nomineeCandidates = [];
+            feedbackCycles = [];
+            reports = [];
+            errorResult = undefined;
+        },
+
 		getCurrentUser: function(flushCache) {
 			return cacheServiceCall(function(result) { self = result.data.body },
 									function() { return ( self == undefined || flushCache)},

@@ -32,6 +32,7 @@ describe('service [Model]', function() {
     });
     
     it('has defined functions', function() {
+        expect(angular.isFunction(model.flush)).toBe(true);
         expect(angular.isFunction(model.getCurrentUser)).toBe(true);
         expect(angular.isFunction(model.getReports)).toBe(true);
         expect(angular.isFunction(model.getPendingFeedbackActions)).toBe(true);
@@ -178,4 +179,71 @@ describe('service [Model]', function() {
 
     });
 
+    describe('flushes the entire cache', function() {
+
+        var flushTest = function(modelFunction, cachedService) {
+            var httpResponse = "dummy response", result;
+            modelFunction().then(function(data) {
+                result = data;
+            });
+            expect(cachedService).toHaveBeenCalled();
+            expect(cachedService.calls.count()).toEqual(1);
+
+            deferred.resolve({data: {body: httpResponse}});
+            scope.$digest();
+            expect(result).toEqual(httpResponse);
+
+            result = undefined;
+            modelFunction().then(function(data) {
+                result = data;
+            });
+            expect(cachedService.calls.count()).toEqual(1);
+            scope.$digest();
+            expect(result).toEqual(httpResponse);
+
+            model.flush();
+
+            result = undefined;
+            modelFunction().then(function(data) {
+                result = data;
+            });
+            expect(cachedService.calls.count()).toEqual(2);
+            scope.$digest();
+            expect(result).toEqual(httpResponse);
+        }
+
+        it('should call the account.getCurrentUser service only once', function() {
+            flushTest(model.getCurrentUser, account.getCurrentUser);
+        });
+
+        it('should call the account.getReports service only once', function() {
+            flushTest(model.getReports, account.getReports);
+        });
+
+        it('should call the feedback.getPendingFeedbackActions service only once', function() {
+            flushTest(model.getPendingFeedbackActions, feedback.getPendingFeedbackActions);
+        });
+
+        it('should call the feedback.getCurrentFeedbackItemsForSelf service only once', function() {
+            flushTest(model.getCurrentFeedback, feedback.getCurrentFeedbackItemsForSelf);
+        });
+
+        it('should call the feedback.getFeedbackHistoryForSelf service only once', function() {
+            flushTest(model.getFeedbackHistory, feedback.getFeedbackHistoryForSelf);
+        });
+
+        it('should call the feedback.getFeedbackItem service only once', function() {
+            flushTest(model.getFeedbackDetail, feedback.getFeedbackItem);
+        });
+
+        it('should call the feedback.getActiveFeedbackCycles service only once', function() {
+            flushTest(model.getActiveFeedbackCycles, feedback.getActiveFeedbackCycles);
+        });
+
+        it('should call the feedback.getFeedbackCycle service only once', function() {
+            flushTest(model.getFeedbackCycle, feedback.getFeedbackCycle);
+        });
+
+
+    });
 });

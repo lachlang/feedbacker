@@ -1,7 +1,7 @@
 /*
  * Controller search for connection, uploading bulk connections and for sending connection/invitation requests
  */
-fbControllers.controller('MenuCtrl', ['$rootScope', '$log', '$location', 'Session', function($rootScope, $log, $location, Session) {
+fbControllers.controller('MenuCtrl', ['$rootScope', '$log', '$location', 'Session', 'Model', function($rootScope, $log, $location, Session, Model) {
 
 	var ctrl = this;
 
@@ -29,6 +29,7 @@ fbControllers.controller('MenuCtrl', ['$rootScope', '$log', '$location', 'Sessio
 
 	ctrl.logout = function() {
 		ctrl.resetError();
+		Model.flush();
 		Session.logout();
 		$location.path("/landing");
 	};
