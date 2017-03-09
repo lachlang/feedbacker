@@ -1,4 +1,4 @@
-<div class="container-fluid" data-ng-controller="ReportsCtrl as report">
+<div class="container-fluid" data-ng-controller="ReportsCtrl as reportCtrl">
     <div class="row">
         <div class="col-md-12">
             <h2>Reports</h2>
@@ -9,41 +9,74 @@
         <div class="col-sm-12">
             <div class="table-responsive">
                 <table class="table table-hover">
-                    <tbody data-ng-repeat="person in report.reports">
+                    <tbody data-ng-repeat="report in reportCtrl.reports">
                     <tr>
-                        <td class="lead">Feedback for <strong>{{person.person.name}}</strong></td>
+                        <td class="lead">Feedback for <strong>{{report.person.name}}</strong></td>
                     </tr>
-                    <tr data-ng-hide="person.nominations.length > 0">
+                    <tr data-ng-hide="report.reviewCycle.length > 0">
                         <td>No feedback nominations</td>
                     </tr>
-                    <tr data-ng-show="person.nominations.length > 0">
+                    <tr data-ng-repeat="cycle in report.reviewCycle">
                         <td>
                             <table class="table table-hover">
+                                <caption>Review Cycle: <strong>{{cycle.cycle.label}}</strong> <em>{{cycle.cycle.start_date | date: 'mediumDate'}} to {{cycle.cycle.end_date | date: 'mediumDate'}}</em></caption>
                                 <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Colleague</th>
-                                    <th>Role</th>
-                                    <th>Status</th>
-                                    <th>Last Updated</th>
-                                    <th>Action</th>
-                                </tr>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Colleague</th>
+                                        <th>Role</th>
+                                        <th>Status</th>
+                                        <th>Last Updated</th>
+                                        <th>Action</th>
+                                    </tr>
                                 </thead>
                                 <tbody>
-                                <tr data-ng-repeat="nominee in person.nominations | orderBy: 'lastUpdated'">
-                                    <td>{{$index + 1}}</td>
-                                    <td>{{nominee.to.name}}</td>
-                                    <td>{{nominee.to.role}}</td>
-                                    <td>{{nominee.status}}</td>
-                                    <td>
-                                        <span data-ng-show="nominee.lastUpdated">{{nominee.lastUpdated | date : 'medium'}}</span>
-                                        <span data-ng-hide="nominee.lastUpdated">--</span>
-                                    </td>
-                                    <td>
-                                        <a data-ng-show="nominee.status=='Submitted' && nominee.id" href="#/detailView?id={{nominee.id}}">View</a>
-                                    </td>
-                                </tr>
+                                    <tr data-ng-repeat="nominee in cycle.feedback | orderBy: 'lastUpdated'">
+                                        <td>{{$index + 1}}</td>
+                                        <td>{{nominee.to.name}}</td>
+                                        <td>{{nominee.to.role}}</td>
+                                        <td>{{nominee.status}}</td>
+                                        <td>
+                                            <span data-ng-show="nominee.lastUpdated">{{nominee.lastUpdated | date : 'medium'}}</span>
+                                            <span data-ng-hide="nominee.lastUpdated">--</span>
+                                        </td>
+                                        <td>
+                                            <a data-ng-show="nominee.status=='Submitted' && nominee.id" href="#/detailView?id={{nominee.id}}">View</a>
+                                        </td>
+                                    </tr>
                                 </tbody>
+
+                    <!--<tr data-ng-hide="report.nominations.length > 0">-->
+                        <!--<td>No feedback nominations</td>-->
+                    <!--</tr>-->
+                    <!--<tr data-ng-show="person.nominations.length > 0">-->
+                        <!--<td>-->
+                            <!--<table class="table table-hover">-->
+                                <!--<thead>-->
+                                <!--<tr>-->
+                                    <!--<th>#</th>-->
+                                    <!--<th>Colleague</th>-->
+                                    <!--<th>Role</th>-->
+                                    <!--<th>Status</th>-->
+                                    <!--<th>Last Updated</th>-->
+                                    <!--<th>Action</th>-->
+                                <!--</tr>-->
+                                <!--</thead>-->
+                                <!--<tbody>-->
+                                <!--<tr data-ng-repeat="nominee in person.nominations | orderBy: 'lastUpdated'">-->
+                                    <!--<td>{{$index + 1}}</td>-->
+                                    <!--<td>{{nominee.to.name}}</td>-->
+                                    <!--<td>{{nominee.to.role}}</td>-->
+                                    <!--<td>{{nominee.status}}</td>-->
+                                    <!--<td>-->
+                                        <!--<span data-ng-show="nominee.lastUpdated">{{nominee.lastUpdated | date : 'medium'}}</span>-->
+                                        <!--<span data-ng-hide="nominee.lastUpdated">&#45;&#45;</span>-->
+                                    <!--</td>-->
+                                    <!--<td>-->
+                                        <!--<a data-ng-show="nominee.status=='Submitted' && nominee.id" href="#/detailView?id={{nominee.id}}">View</a>-->
+                                    <!--</td>-->
+                                <!--</tr>-->
+                                <!--</tbody>-->
 
                             </table>
                         </td>
@@ -53,5 +86,4 @@
             </div>
         </div>
     </div>
-
 </div>

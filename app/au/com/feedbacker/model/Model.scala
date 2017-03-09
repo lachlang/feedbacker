@@ -211,8 +211,8 @@ class PersonDao @Inject() (db: play.api.db.Database, activation: ActivationDao, 
   }
 
   def findDirectReports(username: String) : Seq[Person] = db.withConnection { implicit connection =>
-    SQL("""select * from person where manager_email = {email} and user_status = {status}""")
-      .on('email -> username.toLowerCase, 'status -> CredentialStatus.Active.toString)
+    SQL("""select * from person where manager_email = {email} and user_status != {status}""")
+      .on('email -> username.toLowerCase, 'status -> CredentialStatus.Nominated.toString)
       .as(Person.simple *)
   }
 }
@@ -470,7 +470,7 @@ class NominationDao @Inject() (db: play.api.db.Database,
       case Some(_) => SQL( """select * from nominations where from_email = {email} and initiated_by = {email} and status != {statusCancelled} ORDER BY cycle_id DESC, last_updated DESC""")
         .on('email -> username, 'statusCancelled -> FeedbackStatus.Cancelled.toString, 'statusClosed -> FeedbackStatus.Closed.toString)
         .as(Nomination.simple *).map { case (a, b, c, d, e, f, g) => enrich(a, b, c, d, e, f, g) }.groupBy(_.cycleId).toList
-        .map{ case (id, xs) => FeedbackGroup(feedbackCycle.findById(id).getOrElse(FeedbackCycle.orphan), xs)}
+        .map{ case (id, xs) => println(s"id $id and noms $xs");FeedbackGroup(feedbackCycle.findById(id).getOrElse(FeedbackCycle.orphan), xs)}
       case _ => Seq()
     }
   }
@@ -487,7 +487,7 @@ class NominationDao @Inject() (db: play.api.db.Database,
       .map { case (a,b,c,d,e,f,g) => enrich(a,b,c,d,e,f,g)}
   }
 
-  def findNominationByToFromCycle(fromEmail: String, toEmail: String, initiatedEmail: String, cycleId: Long): Option[(Long, FeedbackStatus)] = db.withConnection { implicit connection =>
+  private def findNominationByToFromCycle(fromEmail: String, toEmail: String, initiatedEmail: String, cycleId: Long): Option[(Long, FeedbackStatus)] = db.withConnection { implicit connection =>
     SQL("""select * from nominations where from_email = {fromEmail} and to_email = {toEmail} and initiated_by = {initiated} and cycle_id = {cycleId}""")
       .on('fromEmail -> fromEmail, 'toEmail -> toEmail, 'initiated -> initiatedEmail, 'cycleId -> cycleId)
       .as(Nomination.simple.singleOpt)

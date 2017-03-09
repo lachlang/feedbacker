@@ -6,7 +6,7 @@ import java.util.concurrent.{ConcurrentMap, ConcurrentHashMap}
 import java.util.Base64
 import javax.inject.Inject
 import org.mindrot.jbcrypt.BCrypt
-import play.Logger
+import play.api.Logger
 import play.api.libs.json._
 import play.api.mvc._
 
