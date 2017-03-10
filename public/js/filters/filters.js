@@ -16,9 +16,11 @@ fbFilters.filter('reportDisplay', function() {
     return function(input, filterToggle) {
         if (!Array.isArray(input)) {
             return [];
-        } else if (filterToggle && filterToggle.toLowerCase() == 'current'){ // return current reports
+        } else if (filterToggle &&
+                    (typeof filterToggle === 'string' || filterToggle instanceof String) &&
+                    filterToggle.toLowerCase() == 'current'){ // return current reports
             return input.filter(function(item) {
-                return item.cycle.active;
+                return item.cycle && item.cycle.active;
             });
         } else {
             return input; // return 'all'
