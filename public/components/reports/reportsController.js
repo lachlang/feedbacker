@@ -7,6 +7,7 @@ fbControllers.controller('ReportsCtrl', ['$log', 'Model', 'Nomination', function
 
     ctrl.error = undefined;
     ctrl.reports = [];
+    ctrl.displayFilter = 'current';
 
     Model.getReports().then(function(response) {
         ctrl.reports = response;
@@ -14,4 +15,7 @@ fbControllers.controller('ReportsCtrl', ['$log', 'Model', 'Nomination', function
         ctrl.error = response;
     });
 
+    ctrl.export = function() {
+        alert("This exciting new function is coming soon :)");
+    };
 }]);

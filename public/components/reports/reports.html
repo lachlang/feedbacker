@@ -1,7 +1,22 @@
 <div class="container-fluid" data-ng-controller="ReportsCtrl as reportCtrl">
-    <div class="row">
-        <div class="col-md-12">
+    <div class="row top-buffer">
+        <div class="col-md-8">
             <h2>Reports</h2>
+        </div>
+        <div class="col-md-2">
+            <div class="btn-group" role="group" aria-label="Display filter options">
+                <button class="btn btn-default"
+                        for="current"
+                        data-ng-model="reportCtrl.displayFilter"
+                        uib-btn-radio="'current'">Show Current</button>
+                <button class="btn btn-default"
+                        for="all"
+                        data-ng-model="reportCtrl.displayFilter"
+                        uib-btn-radio="'all'">Show All</button>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <button class="btn btn-info" data-ng-click="reportCtrl.export()">Export Results (to CSV)</button>
         </div>
     </div>
 
@@ -16,7 +31,7 @@
                     <tr data-ng-hide="report.reviewCycle.length > 0">
                         <td>No feedback nominations</td>
                     </tr>
-                    <tr data-ng-repeat="cycle in report.reviewCycle">
+                    <tr data-ng-repeat="cycle in report.reviewCycle | reportDisplay: reportCtrl.displayFilter">
                         <td>
                             <table class="table table-hover">
                                 <caption>Review Cycle: <strong>{{cycle.cycle.label}}</strong> <em>{{cycle.cycle.start_date | date: 'mediumDate'}} to {{cycle.cycle.end_date | date: 'mediumDate'}}</em></caption>
