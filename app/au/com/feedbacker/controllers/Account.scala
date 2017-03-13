@@ -6,8 +6,8 @@ import au.com.feedbacker.util.Emailer
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import play.api.mvc._
-
 import au.com.feedbacker.model._
+import org.joda.time.DateTime
 
 /**
  * Created by lachlang on 09/05/2016.
@@ -45,12 +45,12 @@ class Registration @Inject() (emailer: Emailer,
 class Account @Inject() (person: PersonDao, nomination: NominationDao, sessionManager: SessionManager) extends AuthenticatedController(person, sessionManager) {
 
   def getUser = AuthenticatedAction { user =>
-     Ok(Json.obj("body" -> Json.toJson(user)))
+    Ok(Json.obj("body" -> Json.toJson(user)))
   }
 
   def getReports = AuthenticatedAction { user =>
-    val reports = person.findDirectReports(user.credentials.email).map{ report =>
-      Report(report,nomination.getHistoryReportForUser(report.credentials.email))
+    val reports = person.findDirectReports(user.credentials.email).map { report =>
+      Report(report, nomination.getAllFeedbackHistoryForUser(report.credentials.email))
     }
     Ok(Json.obj("body" -> Json.toJson(reports)))
   }
@@ -61,11 +61,53 @@ class Account @Inject() (person: PersonDao, nomination: NominationDao, sessionMa
 
       case None => BadRequest(s"""{ "body": { "message": "Could not update user details."}} """)
       case Some(personUpdates) => person.update(personUpdates) match {
-       case Left(e) => BadRequest(Json.obj("body" -> Json.obj("message" -> e.getMessage)))
-       case Right(updatedPerson) => Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(updatedPerson)))
+        case Left(e) => BadRequest(Json.obj("body" -> Json.obj("message" -> e.getMessage)))
+        case Right(updatedPerson) => Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(updatedPerson)))
       }
     }
   }
+}
+
+class ReportFile @Inject() (person: PersonDao, nomination: NominationDao, cycle: FeedbackCycleDao, sessionManager: SessionManager) extends AuthenticatedController(person, sessionManager) {
+
+  private val mime: String = "application/vnd.ms-excel"
+//  private val mime: String = "text/csv"
+  private def attachmentHeader(filename: String): (String, String) = ("Content-Disposition", s"""attachment; filename="$filename"""")
+
+  def generateReportForCycle(cycleId: Long) = AuthenticatedAction { user =>
+    cycle.findById(cycleId) match {
+      case None => BadRequest
+      case Some(c) => {
+        val nominations =
+          nomination.findNominationForPeopleInCycle(person.findDirectReports(user.credentials.email), cycleId)
+        Ok(nominations.toString).as(mime).withHeaders(attachmentHeader(s"Review_Summary_for_${c.label}_at_${DateTime.now()}"))
+      }
+    }
+  }
+
+  def generateHistoryReportForUser(personId: Long) = AuthenticatedAction { user =>
+    val pOpt = person.findById(personId)
+    pOpt match {
+      case None => BadRequest
+      case Some(p) => if (!isInReportingLine(user.credentials.email, Some(p))) {
+        Forbidden
+      } else {
+        Ok(Report(p, nomination.getAllFeedbackHistoryForUser(p.credentials.email)).toString)
+          .as(mime).withHeaders(attachmentHeader(s"Review_History_for_${user.name}_at_${DateTime.now()}"))
+      }
+    }
+  }
+
+  private def isInReportingLine(managerCreds: String, report: Option[Person]): Boolean =
+    report match {
+      case None => false
+      case Some(p) =>
+        if (managerCreds == p.managerEmail) {
+          true
+        } else {
+          isInReportingLine(managerCreds, person.findByEmail(p.managerEmail))
+        }
+    }
 }
 
 case class Report(person: Person, reviewCycle: Seq[FeedbackGroup])

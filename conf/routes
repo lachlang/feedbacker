@@ -12,6 +12,9 @@ GET    	/api/user                   au.com.feedbacker.controllers.Account.getUse
 GET    	/api/user/reports           au.com.feedbacker.controllers.Account.getReports
 PUT    	/api/user                   au.com.feedbacker.controllers.Account.updateUserDetails
 
+GET     /api/report/cycle/:id       au.com.feedbacker.controllers.ReportFile.generateReportForCycle(id: Long)
+GET     /api/report/user/:id        au.com.feedbacker.controllers.ReportFile.generateHistoryReportForUser(id: Long)
+
 POST    /api/register               au.com.feedbacker.controllers.Registration.register
 GET     /api/activate               au.com.feedbacker.controllers.ActivationCtrl.activate
 POST    /api/activate/email         au.com.feedbacker.controllers.ActivationCtrl.sendActivationEmail

@@ -100,7 +100,7 @@ class AccountSpec extends PlaySpec with MockitoSugar with AllFixtures with Prope
         when(f.mockPersonDao.findDirectReports(person.credentials.email)).thenReturn(reports)
 
         def genReport(p: Person, fgs: Seq[FeedbackGroup]): Report = {
-         when(f.mockNominationDao.getHistoryReportForUser(p.credentials.email)).thenReturn(fgs)
+         when(f.mockNominationDao.getAllFeedbackHistoryForUser(p.credentials.email)).thenReturn(fgs)
           Report(person = p, reviewCycle = fgs)
         }
         val response: List[Report] = reports.map { report =>
@@ -118,7 +118,7 @@ class AccountSpec extends PlaySpec with MockitoSugar with AllFixtures with Prope
         verify(f.mockPersonDao).findByEmail(st.username)
         verify(f.mockPersonDao).findDirectReports(person.credentials.email)
         reports.foreach { report =>
-          verify(f.mockNominationDao).getHistoryReportForUser(report.credentials.email)
+          verify(f.mockNominationDao).getAllFeedbackHistoryForUser(report.credentials.email)
         }
         status(result) mustBe 200
         contentAsJson(result) mustEqual Json.obj("body" -> Json.toJson(response))

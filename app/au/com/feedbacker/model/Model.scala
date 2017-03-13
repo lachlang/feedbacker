@@ -465,17 +465,23 @@ class NominationDao @Inject() (db: play.api.db.Database,
     }
   }
 
-  def getHistoryReportForUser(username: String): Seq[FeedbackGroup] = db.withConnection { implicit connection =>
+  def getAllCurrentFeedbackForUserAsReport(username: String): Seq[FeedbackGroup] = db.withConnection { implicit connection =>
+    getCurrentNominationsFromUser(username).groupBy(_.cycleId).toList
+      .map{ case (id, xs) => FeedbackGroup(feedbackCycle.findById(id).getOrElse(FeedbackCycle.orphan), xs)}
+  }
+
+  def getAllFeedbackHistoryForUser(username: String): Seq[FeedbackGroup] = db.withConnection { implicit connection =>
     person.findByEmail(username) match {
-      case Some(_) => SQL( """select * from nominations where from_email = {email} and initiated_by = {email} and status != {statusCancelled} ORDER BY cycle_id DESC, last_updated DESC""")
+      case Some(_) =>
+        SQL( """select * from nominations where from_email = {email} and initiated_by = {email} and status != {statusCancelled} ORDER BY cycle_id DESC, last_updated DESC""")
         .on('email -> username, 'statusCancelled -> FeedbackStatus.Cancelled.toString, 'statusClosed -> FeedbackStatus.Closed.toString)
         .as(Nomination.simple *).map { case (a, b, c, d, e, f, g) => enrich(a, b, c, d, e, f, g) }.groupBy(_.cycleId).toList
-        .map{ case (id, xs) => println(s"id $id and noms $xs");FeedbackGroup(feedbackCycle.findById(id).getOrElse(FeedbackCycle.orphan), xs)}
+        .map{ case (id, xs) => FeedbackGroup(feedbackCycle.findById(id).getOrElse(FeedbackCycle.orphan), xs)}
       case _ => Seq()
     }
   }
 
-  def getCurrentFeedbackForUser(username: String): Seq[Nomination] = db.withConnection { implicit connection =>
+  def getPendingFeedbackItemsForUser(username: String): Seq[Nomination] = db.withConnection { implicit connection =>
     SQL("""select * from nominations where to_email = {email} and cycle_id in (select id from cycle where active = TRUE)""")
       .on('email -> username).as(Nomination.simple *)
       .map { case (a,b,c,d,e,f,g) => enrich(a,b,c,d,e,f,g)}
@@ -492,6 +498,13 @@ class NominationDao @Inject() (db: play.api.db.Database,
       .on('fromEmail -> fromEmail, 'toEmail -> toEmail, 'initiated -> initiatedEmail, 'cycleId -> cycleId)
       .as(Nomination.simple.singleOpt)
       .map{ case (a,b,c,d,e,f,g) => (a, d)}
+  }
+
+  def findNominationForPeopleInCycle(people: Seq[Person], cycleId: Long): Seq[Nomination] = db.withConnection { implicit connection =>
+    SQL("""select * from nominations where from_id in  {people} cycle_id = {cycleId}""")
+      .on('people -> people.map(_.credentials.email), 'cycleId -> cycleId)
+      .as(Nomination.simple *)
+      .map { case (a,b,c,d,e,f,g) => enrich(a,b,c,d,e,f,g)}
   }
 
   private def mapWinToNomination(win: Boolean, nominationId: Long, errorMsg: String): Either[Throwable, Nomination] =

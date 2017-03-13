@@ -50,7 +50,7 @@ class Feedback @Inject() (person: PersonDao, nomination: NominationDao, feedback
   }
 
   def getCurrentFeedbackItemsForSelf = AuthenticatedAction { user =>
-    Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(nomination.getCurrentFeedbackForUser(user.credentials.email))))
+    Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(nomination.getPendingFeedbackItemsForUser(user.credentials.email))))
   }
 
   def getFeedbackHistoryForSelf = AuthenticatedAction { user  =>
