@@ -68,20 +68,17 @@ class Account @Inject() (person: PersonDao, nomination: NominationDao, sessionMa
   }
 }
 
-class ReportFile @Inject() (person: PersonDao, nomination: NominationDao, cycle: FeedbackCycleDao, sessionManager: SessionManager) extends AuthenticatedController(person, sessionManager) {
+class ReportFile @Inject() (person: PersonDao, nomination: NominationDao, cycle: FeedbackCycleDao, sessionManager: SessionManager, csvReport: CsvReport) extends AuthenticatedController(person, sessionManager) {
 
-  private val mime: String = "application/vnd.ms-excel"
-//  private val mime: String = "text/csv"
+  private val mime: String = "text/csv"
   private def attachmentHeader(filename: String): (String, String) = ("Content-Disposition", s"""attachment; filename="$filename"""")
 
   def generateReportForCycle(cycleId: Long) = AuthenticatedAction { user =>
     cycle.findById(cycleId) match {
       case None => BadRequest
       case Some(c) => {
-        val nominations =
-          nomination.findNominationForPeopleInCycle(person.findDirectReports(user.credentials.email), cycleId)
-        Ok(nominations.toString).as(mime).withHeaders(attachmentHeader(s"Review_Summary_for_${c.label}_at_${DateTime.now()}.csv"))
-//        Ok(CsvReport.createReport(nominations)).as(mime).withHeaders(attachmentHeader(s"Review_Summary_for_${c.label}_at_${DateTime.now()}.csv"))
+        val nominations = nomination.findNominationForPeopleInCycleWithDetail(user.credentials.email, cycleId)
+        Ok(csvReport.createReportForCycle(c, nominations)).as(mime).withHeaders(attachmentHeader(s"Review_Summary_for_${c.label}_at_${DateTime.now()}.csv"))
       }
     }
   }
@@ -94,7 +91,7 @@ class ReportFile @Inject() (person: PersonDao, nomination: NominationDao, cycle:
         Forbidden
       } else {
         val report: Report = Report(p, nomination.getAllFeedbackHistoryForUserWithDetail(p.credentials.email))
-        Ok(CsvReport.createReport(report)).as(mime).withHeaders(attachmentHeader(s"Review_Summary_for_${user.name}_at_${DateTime.now()}.csv"))
+        Ok(csvReport.createReportForPerson(report)).as(mime).withHeaders(attachmentHeader(s"Review_Summary_for_${user.name}_at_${DateTime.now()}.csv"))
       }
     }
   }

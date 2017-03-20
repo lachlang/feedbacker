@@ -519,14 +519,15 @@ class NominationDao @Inject() (db: play.api.db.Database,
       .map{ case (a,b,c,d,e,f,g) => (a, d)}
   }
 
-  def findNominationForPeopleInCycle(people: Seq[Person], cycleId: Long): Seq[Nomination] = db.withConnection { implicit connection =>
-    SQL("""select * from nominations where from_id in  {people} cycle_id = {cycleId}""")
-      .on('people -> people.map(_.credentials.email), 'cycleId -> cycleId)
+  def findNominationForPeopleInCycleWithDetail(manager: String, cycleId: Long): Seq[Nomination] = db.withConnection { implicit connection =>
+    SQL("""select * from nominations where from_email in (select email from person where manager_email = {manager}) and cycle_id = {cycleId}""")
+      .on('manager -> manager, 'cycleId -> cycleId)
       .as(Nomination.simple *)
       .map { case (a,b,c,d,e,f,g) => enrich(a,b,c,d,e,f,g)}
+      .map{ n => if (n.status == FeedbackStatus.Submitted || n.status == FeedbackStatus.Closed) addDetail(n) else n }
   }
 
-  private def mapWinToNomination(win: Boolean, nominationId: Long, errorMsg: String): Either[Throwable, Nomination] =
+  private def mapUpdateStatusToNomination(win: Boolean, nominationId: Long, errorMsg: String): Either[Throwable, Nomination] =
     if (!win) Left(new Exception(errorMsg))
     else getSummary(nominationId) match {
       case None => Left(new Exception(errorMsg))
@@ -534,7 +535,7 @@ class NominationDao @Inject() (db: play.api.db.Database,
     }
 
   def reenableNomination(nominationId: Long): Either[Throwable, Nomination] = db.withConnection { implicit connection =>
-    mapWinToNomination(SQL("""update nominations SET status = {status} where id = {id}""")
+    mapUpdateStatusToNomination(SQL("""update nominations SET status = {status} where id = {id}""")
       .on('status -> FeedbackStatus.New.toString, 'id -> nominationId).executeUpdate == 1,
       nominationId, "Could not re-enable existing nomination.")
   }
@@ -557,7 +558,7 @@ class NominationDao @Inject() (db: play.api.db.Database,
             'cycle_id -> cycleId).executeInsert() match {
           case None => Left(new Exception("Could not create nomination."))
           case Some(newNominationId) =>
-            mapWinToNomination(questionResponse.initialiseResponses(newNominationId, questionTemplate.findQuestionsForCycle(cycleId)),
+            mapUpdateStatusToNomination(questionResponse.initialiseResponses(newNominationId, questionTemplate.findQuestionsForCycle(cycleId)),
               newNominationId, "Could not initialise question")
         }
     }
