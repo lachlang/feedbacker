@@ -447,7 +447,13 @@ class NominationDao @Inject() (db: play.api.db.Database,
   }
 
   def getDetail(id: Long): Option[Nomination] = db.withConnection { implicit connection =>
-    getSummary(id).map{ case n => Nomination(n.id, n.from, n.to, n.status, n.lastUpdated, questionResponse.findForNomination(id), n.shared, n.cycleId)}
+    getSummary(id).map{ n => addDetail(n) }
+  }
+
+  private def addDetail(n: Nomination): Nomination = db.withConnection { implicit connection =>
+    n.id match {
+      case None     => n
+      case Some(id) => Nomination(n.id, n.from, n.to, n.status, n.lastUpdated, questionResponse.findForNomination(id), n.shared, n.cycleId)}
   }
 
   def getPendingNominationsForUser(username: String): Seq[Nomination] = db.withConnection { implicit connection =>
@@ -474,9 +480,22 @@ class NominationDao @Inject() (db: play.api.db.Database,
     person.findByEmail(username) match {
       case Some(_) =>
         SQL( """select * from nominations where from_email = {email} and initiated_by = {email} and status != {statusCancelled} ORDER BY cycle_id DESC, last_updated DESC""")
-        .on('email -> username, 'statusCancelled -> FeedbackStatus.Cancelled.toString, 'statusClosed -> FeedbackStatus.Closed.toString)
-        .as(Nomination.simple *).map { case (a, b, c, d, e, f, g) => enrich(a, b, c, d, e, f, g) }.groupBy(_.cycleId).toList
-        .map{ case (id, xs) => FeedbackGroup(feedbackCycle.findById(id).getOrElse(FeedbackCycle.orphan), xs)}
+          .on('email -> username, 'statusCancelled -> FeedbackStatus.Cancelled.toString, 'statusClosed -> FeedbackStatus.Closed.toString)
+          .as(Nomination.simple *).map { case (a, b, c, d, e, f, g) => enrich(a, b, c, d, e, f, g) }.groupBy(_.cycleId).toList
+          .map{ case (id, xs) => FeedbackGroup(feedbackCycle.findById(id).getOrElse(FeedbackCycle.orphan), xs)}
+      case _ => Seq()
+    }
+  }
+
+  def getAllFeedbackHistoryForUserWithDetail(username: String): Seq[FeedbackGroup] = db.withConnection { implicit connection =>
+    person.findByEmail(username) match {
+      case Some(_) =>
+        SQL( """select * from nominations where from_email = {email} and initiated_by = {email} and status != {statusCancelled} ORDER BY cycle_id DESC, last_updated DESC""")
+          .on('email -> username, 'statusCancelled -> FeedbackStatus.Cancelled.toString, 'statusClosed -> FeedbackStatus.Closed.toString)
+          .as(Nomination.simple *).map { case (a, b, c, d, e, f, g) => enrich(a, b, c, d, e, f, g) }
+          .map{ n => if (n.status == FeedbackStatus.Submitted || n.status == FeedbackStatus.Closed) addDetail(n) else n }
+          .groupBy(_.cycleId).toList
+          .map{ case (id, xs) => FeedbackGroup(feedbackCycle.findById(id).getOrElse(FeedbackCycle.orphan), xs)}
       case _ => Seq()
     }
   }

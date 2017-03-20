@@ -76,12 +76,12 @@
             <tbody>
               <tr data-ng-repeat="history in actions.feedbackHistoryList">
                 <td>{{$index + 1}}</td>
-                <td>{{history.name}}</td>
-                <td>{{history.role}}</td>
+                <td>{{history.from.name}}</td>
+                <td>{{history.from.role}}</td>
                 <td>{{history.status}}</td>
                 <td>{{history.lastUpdated | date: 'medium'}}</td>
                 <td>
-                  <a data-ng-if="history.shared" href="#/detailView?id={{history.id}}">View</a>
+                  <a data-ng-if="history.shared && (history.status == 'Submitted' || history.status == 'Closed')" href="#/detailView?id={{history.id}}">View</a>
                 </td>
               </tr>
             </tbody>

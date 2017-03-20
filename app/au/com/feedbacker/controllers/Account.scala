@@ -2,7 +2,7 @@ package au.com.feedbacker.controllers
 
 import javax.inject.Inject
 
-import au.com.feedbacker.util.Emailer
+import au.com.feedbacker.util.{Emailer, CsvReport}
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import play.api.mvc._
@@ -80,7 +80,8 @@ class ReportFile @Inject() (person: PersonDao, nomination: NominationDao, cycle:
       case Some(c) => {
         val nominations =
           nomination.findNominationForPeopleInCycle(person.findDirectReports(user.credentials.email), cycleId)
-        Ok(nominations.toString).as(mime).withHeaders(attachmentHeader(s"Review_Summary_for_${c.label}_at_${DateTime.now()}"))
+        Ok(nominations.toString).as(mime).withHeaders(attachmentHeader(s"Review_Summary_for_${c.label}_at_${DateTime.now()}.csv"))
+//        Ok(CsvReport.createReport(nominations)).as(mime).withHeaders(attachmentHeader(s"Review_Summary_for_${c.label}_at_${DateTime.now()}.csv"))
       }
     }
   }
@@ -92,8 +93,8 @@ class ReportFile @Inject() (person: PersonDao, nomination: NominationDao, cycle:
       case Some(p) => if (!isInReportingLine(user.credentials.email, Some(p))) {
         Forbidden
       } else {
-        Ok(Report(p, nomination.getAllFeedbackHistoryForUser(p.credentials.email)).toString)
-          .as(mime).withHeaders(attachmentHeader(s"Review_History_for_${user.name}_at_${DateTime.now()}"))
+        val report: Report = Report(p, nomination.getAllFeedbackHistoryForUserWithDetail(p.credentials.email))
+        Ok(CsvReport.createReport(report)).as(mime).withHeaders(attachmentHeader(s"Review_Summary_for_${user.name}_at_${DateTime.now()}.csv"))
       }
     }
   }
