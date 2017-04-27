@@ -1,11 +1,7 @@
 <div class="container-fluid" data-ng-controller="ReportsCtrl as reportCtrl">
     <div class="row top-buffer">
-        <div class="col-md-6">
+        <div class="col-md-10">
             <h2>Reports</h2>
-        </div>
-        <div class="col-md-2">
-            <a href="/api/report/user/24">Person test 5</a>
-            <a href="/api/report/cycle/1">Cycle 1</a>
         </div>
         <div class="col-md-2">
             <div class="btn-group" role="group" aria-label="Display filter options">
@@ -19,9 +15,6 @@
                         uib-btn-radio="'all'">Show All</button>
             </div>
         </div>
-        <div class="col-md-2">
-            <button class="btn btn-info" data-ng-click="reportCtrl.export()">Export Results (to CSV)</button>
-        </div>
     </div>
 
     <div class="row top-buffer">
@@ -30,15 +23,21 @@
                 <table class="table table-hover">
                     <tbody data-ng-repeat="report in reportCtrl.reports">
                     <tr>
-                        <td class="lead">Feedback for <strong>{{report.person.name}}</strong></td>
+                        <td class="lead">
+                            <div class="text-left">Feedback for <strong>{{report.person.name}}</strong></div>
+                            <div class="text-right"><a href="/api/report/user/{{report.person.id}}" class="btn btn-default">Export <em>{{report.person.name}}</em> history (to CSV)</a></div>
+                        </td>
                     </tr>
                     <tr data-ng-hide="report.reviewCycle.length > 0">
-                        <td>No feedback nominations</td>
+                        <td class="col-xs-12">No feedback nominations</td>
                     </tr>
                     <tr data-ng-repeat="cycle in report.reviewCycle | reportDisplay: reportCtrl.displayFilter">
-                        <td>
+                        <td class="col-xs-12">
                             <table class="table table-hover">
-                                <caption>Review Cycle: <strong>{{cycle.cycle.label}}</strong> <em>{{cycle.cycle.start_date | date: 'mediumDate'}} to {{cycle.cycle.end_date | date: 'mediumDate'}}</em></caption>
+                                <caption>
+                                    Review Cycle: <strong>{{cycle.cycle.label}}</strong> <em>{{cycle.cycle.start_date | date: 'mediumDate'}} to {{cycle.cycle.end_date | date: 'mediumDate'}}</em>
+                                    <div class="text-right"><a class="btn btn-default" href="/api/report/cycle/{{cycle.cycle.id}}">Export <em>{{cycle.cycle.label}}</em> history (to CSV)</a><div>
+                                </caption>
                                 <thead>
                                     <tr>
                                         <th>#</th>
