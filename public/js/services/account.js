@@ -40,7 +40,7 @@ fbServices.service('Account', ['$log', '$http', '$q', function($log, $http, $q) 
 					body: {
 						name: name,
 						role: role,
-						managerEmail, managerEmail
+						managerEmail: managerEmail
 					}
 				}
 			});

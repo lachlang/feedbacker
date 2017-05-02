@@ -50,7 +50,7 @@ describe('service [Account]', function() {
             expect(result).toEqual(dummyResult);
     	});
 
-    	it('to register a user', function() {
+    	it('to update the current user', function() {
     		var result, promise = account.updateCurrentUser("string1", "string2", "string3");
 
             $httpBackend.expectPUT('/api/user', '{"apiVersion":"1.0","body":{"name":"string1","role":"string2","managerEmail":"string3"}}').respond(200, dummyResult);
@@ -66,7 +66,7 @@ describe('service [Account]', function() {
             expect(result).toEqual(dummyResult);
     	});
 
-        it('to retrieve the current useruser', function() {
+        it('to retrieve the current user', function() {
             var result, promise = account.getCurrentUser();
 
             $httpBackend.expectGET('/api/user').respond(200, dummyResult);
