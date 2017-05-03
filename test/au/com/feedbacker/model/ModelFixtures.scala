@@ -61,7 +61,8 @@ trait ModelFixtures {
       questions   <- Gen.listOfN(n, arbitrary[QuestionResponse])
       shared      <- arbitrary[Boolean]
       cycleId     <- arbitrary[Long]
-    } yield Nomination(id = id, from = fromPerson, to = toPerson, status = status, lastUpdated = updated, questions = questions, shared = shared, cycleId = cycleId)
+      message     <- arbitrary[Option[String]]
+    } yield Nomination(id = id, from = fromPerson, to = toPerson, status = status, lastUpdated = updated, questions = questions, shared = shared, cycleId = cycleId, message = message)
   )
 
   implicit val arbPerson: Arbitrary[Person] = Arbitrary(

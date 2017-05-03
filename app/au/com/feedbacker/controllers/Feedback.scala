@@ -19,7 +19,7 @@ class Feedback @Inject() (person: PersonDao, nomination: NominationDao, feedback
 
   def getPendingFeedbackActions = AuthenticatedAction { user =>
     Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(nomination.getPendingNominationsForUser(user.credentials.email) .map {
-      case Nomination(id, Some(from), _, status, lastUpdated, _, shared, _) =>
+      case Nomination(id, Some(from), _, status, lastUpdated, _, shared, _, _) =>
         val managerName: String = person.findByEmail(from.managerEmail) match {
           case Some(p) => p.name
           case None => from.managerEmail
@@ -107,17 +107,18 @@ case class DetailItem(id: Long,
                       toName: String,
                       bossName: Option[String],
                       bossEmail: String,
+                      message: Option[String],
                       questions: Seq[QuestionResponse],
                       shareFeedback: Boolean,
                       cycleLabel: Option[String],
                       cycleEndDate: Option[DateTime])
 
 object DetailItem {
-  implicit val writes: Writes[DetailItem] = Json.writes[DetailItem]
+  implicit val format: Format[DetailItem] = Json.format[DetailItem]
 
   def detailFromNomination(nomination: Nomination, cycle: Option[FeedbackCycle]): Option[DetailItem] = nomination match {
-    case Nomination(Some(id), Some(fromPerson), Some(toPerson), status, _, questions, shared, _) =>
-      Some(DetailItem(id, status, fromPerson.name, toPerson.name, None, fromPerson.managerEmail, questions, shared, cycle.map(_.label), cycle.map(_.end_date)))
+    case Nomination(Some(id), Some(fromPerson), Some(toPerson), status, _, questions, shared, _, message) =>
+      Some(DetailItem(id, status, fromPerson.name, toPerson.name, None, fromPerson.managerEmail, message, questions, shared, cycle.map(_.label), cycle.map(_.end_date)))
     case _ => None
   }
 }
@@ -140,8 +141,9 @@ class Nominations @Inject() (emailer: Emailer,
   def createNomination = AuthenticatedRequestAction { (fromUser, json) =>
     val toUsernameJson: JsResult[String] = json.validate[String]((JsPath \ "body" \ "username").read[String](Reads.email)).map(_.toLowerCase)
     val cycleIdJson: JsResult[Long] = json.validate[Long]((JsPath \ "body" \ "cycleId").read[Long])
-    (toUsernameJson, cycleIdJson) match {
-      case (JsSuccess(toUsername, _), JsSuccess(cycleId, _)) => {
+    val messageJson: JsResult[String] = json.validate[String]((JsPath \ "body" \ "message").read[String])
+    (toUsernameJson, cycleIdJson, messageJson) match {
+      case (JsSuccess(toUsername, _), JsSuccess(cycleId, _), JsSuccess(message, _)) => {
         if (!feedbackCycle.validateCycle(cycleId))
           BadRequest(Json.obj("message" -> "Invalid feedback cycle selected."))
         else {
@@ -150,8 +152,8 @@ class Nominations @Inject() (emailer: Emailer,
               if (toUser.credentials.email == fromUser.credentials.email)
                 BadRequest(Json.obj("message" -> "Cannot nominate yourself"))
               else
-                wrapEither(nomination.createNomination(fromUser.credentials.email, toUser.credentials.email, cycleId),emailer.sendNominationNotificationEmail)
-            case None => wrapEither(createNominatedUser(toUsername).right.flatMap(id => nomination.createNomination(fromUser.credentials.email, toUsername, cycleId)), emailer.sendNominationNotificationEmail)
+                wrapEither(nomination.createNomination(fromUser.credentials.email, toUser.credentials.email, cycleId, message),emailer.sendNominationNotificationEmail)
+            case None => wrapEither(createNominatedUser(toUsername).right.flatMap(id => nomination.createNomination(fromUser.credentials.email, toUsername, cycleId, message)), emailer.sendNominationNotificationEmail)
           }
         }
       }
@@ -171,9 +173,9 @@ class Nominations @Inject() (emailer: Emailer,
     val genericFail: JsValue = Json.obj("message" -> "Could not cancel nomination.")
 
     nomination.getSummary(id) match {
-      case Some(Nomination(_, Some(p), _, FeedbackStatus.New, _, _, _, _))
+      case Some(Nomination(_, Some(p), _, FeedbackStatus.New, _, _, _, _, _))
         if p.credentials.email == person.credentials.email => if (nomination.cancelNomination(id)) Ok else BadRequest(genericFail)
-      case Some(Nomination(_, _, _,status, _, _, _, _)) if status != FeedbackStatus.New =>
+      case Some(Nomination(_, _, _,status, _, _, _, _, _)) if status != FeedbackStatus.New =>
         BadRequest(Json.obj("message" -> "Can only cancel nominations with a 'New' status."))
       case None => BadRequest(genericFail)
     }

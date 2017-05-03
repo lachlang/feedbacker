@@ -399,7 +399,7 @@ class QuestionTemplateDao @Inject() (db: play.api.db.Database) {
   }
 }
 
-case class Nomination (id: Option[Long], from: Option[Person], to: Option[Person], status: FeedbackStatus, lastUpdated: Option[DateTime], questions: Seq[QuestionResponse], shared: Boolean, cycleId: Long)
+case class Nomination (id: Option[Long], from: Option[Person], to: Option[Person], status: FeedbackStatus, lastUpdated: Option[DateTime], questions: Seq[QuestionResponse], shared: Boolean, cycleId: Long, message: Option[String])
 
 object Nomination {
 
@@ -410,8 +410,9 @@ object Nomination {
     get[String]("nominations.status") ~
     get[Option[DateTime]]("nominations.last_updated") ~
     get[Boolean]("nominations.shared") ~
-    get[Long]("nominations.cycle_id") map {
-      case id~fromId~toEmail~status~lastUpdated~shared~cycleId => (id, fromId, toEmail, FeedbackStatus.withName(status), lastUpdated, shared, cycleId)
+    get[Long]("nominations.cycle_id") ~
+    get[Option[String]]("nominations.nomination_message") map {
+      case id~fromId~toEmail~status~lastUpdated~shared~cycleId~message => (id, fromId, toEmail, FeedbackStatus.withName(status), lastUpdated, shared, cycleId, message)
     }
   }
 
@@ -423,7 +424,8 @@ object Nomination {
       (JsPath \ "lastUpdated").writeNullable[DateTime] and
       (JsPath \ "questions").write[Seq[QuestionResponse]] and
       (JsPath \ "shared").write[Boolean] and
-      (JsPath \ "cycleId").write[Long]
+      (JsPath \ "cycleId").write[Long] and
+      (JsPath \ "nominationMessage").writeNullable[String]
     )(unlift(Nomination.unapply))
 }
 
@@ -433,15 +435,15 @@ class NominationDao @Inject() (db: play.api.db.Database,
                                questionResponse: QuestionResponseDao,
                                feedbackCycle: FeedbackCycleDao) {
 
-  def enrich: (Long, String, String, FeedbackStatus, Option[DateTime], Boolean, Long) => Nomination = {
-    (id: Long, fromEmail: String, toEmail: String, status: FeedbackStatus, lastUpdated: Option[DateTime], shared: Boolean, cycleId: Long) =>
-      Nomination(Some(id), person.findByEmail(fromEmail), person.findByEmail(toEmail), status, lastUpdated, Seq(), shared, cycleId)
+  def enrich: (Long, String, String, FeedbackStatus, Option[DateTime], Boolean, Long, Option[String]) => Nomination = {
+    (id: Long, fromEmail: String, toEmail: String, status: FeedbackStatus, lastUpdated: Option[DateTime], shared: Boolean, cycleId: Long, message: Option[String]) =>
+      Nomination(Some(id), person.findByEmail(fromEmail), person.findByEmail(toEmail), status, lastUpdated, Seq(), shared, cycleId, message)
   }
 
   def getSummary(id: Long): Option[Nomination] = db.withConnection { implicit connection =>
     SQL("""select * from nominations left join person on nominations.from_email = person.email where nominations.id = {id} and status != {status}""")
       .on('id -> id, 'status -> FeedbackStatus.Cancelled.toString).as(Nomination.simple.singleOpt) match {
-      case Some((a,b,c,d,e,f,g)) => Some(enrich(a,b,c,d,e,f,g))
+      case Some((a,b,c,d,e,f,g,h)) => Some(enrich(a,b,c,d,e,f,g,h))
       case _ => None
     }
   }
@@ -453,20 +455,20 @@ class NominationDao @Inject() (db: play.api.db.Database,
   private def addDetail(n: Nomination): Nomination = db.withConnection { implicit connection =>
     n.id match {
       case None     => n
-      case Some(id) => Nomination(n.id, n.from, n.to, n.status, n.lastUpdated, questionResponse.findForNomination(id), n.shared, n.cycleId)}
+      case Some(id) => Nomination(n.id, n.from, n.to, n.status, n.lastUpdated, questionResponse.findForNomination(id), n.shared, n.cycleId, n.message)}
   }
 
   def getPendingNominationsForUser(username: String): Seq[Nomination] = db.withConnection { implicit connection =>
     SQL("""select * from nominations where to_email = {email} and initiated_by != {email} and status NOT IN ({statusCancelled}, {statusCancelled}) and cycle_id in (select id from cycle where active = TRUE)""")
       .on('email -> username, 'statusCancelled -> FeedbackStatus.Cancelled.toString, 'statusClosed -> FeedbackStatus.Closed.toString)
-      .as(Nomination.simple *).map{case (a,b,c,d,e,f,g) => enrich(a,b,c,d,e,f,g)}
+      .as(Nomination.simple *).map{case (a,b,c,d,e,f,g,h) => enrich(a,b,c,d,e,f,g,h)}
   }
 
   def getCurrentNominationsFromUser(username: String): Seq[Nomination] = db.withConnection { implicit connection =>
     person.findByEmail(username) match {
       case Some(_) => SQL( """select * from nominations where from_email = {email} and initiated_by = {email} and status NOT IN ({statusCancelled}, {statusClosed}) and cycle_id in (select id from cycle where active = TRUE)""")
         .on('email -> username, 'statusCancelled -> FeedbackStatus.Cancelled.toString, 'statusClosed -> FeedbackStatus.Closed.toString)
-        .as(Nomination.simple *).map { case (a, b, c, d, e, f, g) => enrich(a, b, c, d, e, f, g) }
+        .as(Nomination.simple *).map { case (a, b, c, d, e, f, g, h) => enrich(a, b, c, d, e, f, g, h) }
       case _ => Seq()
     }
   }
@@ -481,7 +483,7 @@ class NominationDao @Inject() (db: play.api.db.Database,
       case Some(_) =>
         SQL( """select * from nominations where from_email = {email} and initiated_by = {email} and status != {statusCancelled} ORDER BY cycle_id DESC, last_updated DESC""")
           .on('email -> username, 'statusCancelled -> FeedbackStatus.Cancelled.toString, 'statusClosed -> FeedbackStatus.Closed.toString)
-          .as(Nomination.simple *).map { case (a, b, c, d, e, f, g) => enrich(a, b, c, d, e, f, g) }.groupBy(_.cycleId).toList
+          .as(Nomination.simple *).map { case (a, b, c, d, e, f, g, h) => enrich(a, b, c, d, e, f, g, h) }.groupBy(_.cycleId).toList
           .map{ case (id, xs) => FeedbackGroup(feedbackCycle.findById(id).getOrElse(FeedbackCycle.orphan), xs)}
       case _ => Seq()
     }
@@ -492,7 +494,7 @@ class NominationDao @Inject() (db: play.api.db.Database,
       case Some(_) =>
         SQL( """select * from nominations where from_email = {email} and initiated_by = {email} and status != {statusCancelled} ORDER BY cycle_id DESC, last_updated DESC""")
           .on('email -> username, 'statusCancelled -> FeedbackStatus.Cancelled.toString, 'statusClosed -> FeedbackStatus.Closed.toString)
-          .as(Nomination.simple *).map { case (a, b, c, d, e, f, g) => enrich(a, b, c, d, e, f, g) }
+          .as(Nomination.simple *).map { case (a, b, c, d, e, f, g, h) => enrich(a, b, c, d, e, f, g, h) }
           .map{ n => if (n.status == FeedbackStatus.Submitted || n.status == FeedbackStatus.Closed) addDetail(n) else n }
           .groupBy(_.cycleId).toList
           .map{ case (id, xs) => FeedbackGroup(feedbackCycle.findById(id).getOrElse(FeedbackCycle.orphan), xs)}
@@ -503,27 +505,27 @@ class NominationDao @Inject() (db: play.api.db.Database,
   def getPendingFeedbackItemsForUser(username: String): Seq[Nomination] = db.withConnection { implicit connection =>
     SQL("""select * from nominations where to_email = {email} and cycle_id in (select id from cycle where active = TRUE)""")
       .on('email -> username).as(Nomination.simple *)
-      .map { case (a,b,c,d,e,f,g) => enrich(a,b,c,d,e,f,g)}
+      .map { case (a,b,c,d,e,f,g,h) => enrich(a,b,c,d,e,f,g,h)}
   }
 
   def getHistoryFeedbackForUser(username: String): Seq[Nomination] = db.withConnection { implicit connection =>
     SQL("""select * from nominations where to_email = {email} and cycle_id not in (select id from cycle where active = TRUE) ORDER BY last_updated DESC NULLS LAST""")
       .on('email -> username).as(Nomination.simple *)
-      .map { case (a,b,c,d,e,f,g) => enrich(a,b,c,d,e,f,g)}
+      .map { case (a,b,c,d,e,f,g,h) => enrich(a,b,c,d,e,f,g,h)}
   }
 
   private def findNominationByToFromCycle(fromEmail: String, toEmail: String, initiatedEmail: String, cycleId: Long): Option[(Long, FeedbackStatus)] = db.withConnection { implicit connection =>
     SQL("""select * from nominations where from_email = {fromEmail} and to_email = {toEmail} and initiated_by = {initiated} and cycle_id = {cycleId}""")
       .on('fromEmail -> fromEmail, 'toEmail -> toEmail, 'initiated -> initiatedEmail, 'cycleId -> cycleId)
       .as(Nomination.simple.singleOpt)
-      .map{ case (a,b,c,d,e,f,g) => (a, d)}
+      .map{ case (a,b,c,d,e,f,g,h) => (a, d)}
   }
 
   def findNominationForPeopleInCycleWithDetail(manager: String, cycleId: Long): Seq[Nomination] = db.withConnection { implicit connection =>
     SQL("""select * from nominations where from_email in (select email from person where manager_email = {manager}) and cycle_id = {cycleId}""")
       .on('manager -> manager, 'cycleId -> cycleId)
       .as(Nomination.simple *)
-      .map { case (a,b,c,d,e,f,g) => enrich(a,b,c,d,e,f,g)}
+      .map { case (a,b,c,d,e,f,g,h) => enrich(a,b,c,d,e,f,g,h)}
       .map{ n => if (n.status == FeedbackStatus.Submitted || n.status == FeedbackStatus.Closed) addDetail(n) else n }
   }
 
@@ -540,7 +542,7 @@ class NominationDao @Inject() (db: play.api.db.Database,
       nominationId, "Could not re-enable existing nomination.")
   }
 
-  def createNomination(fromEmail: String, toEmail: String, cycleId: Long): Either[Throwable, Nomination] = db.withConnection { implicit connection =>
+  def createNomination(fromEmail: String, toEmail: String, cycleId: Long, message: String): Either[Throwable, Nomination] = db.withConnection { implicit connection =>
 
     findNominationByToFromCycle(fromEmail, toEmail, fromEmail, cycleId) match {
       case Some((nominationId, FeedbackStatus.Cancelled)) => reenableNomination(nominationId)
@@ -549,13 +551,14 @@ class NominationDao @Inject() (db: play.api.db.Database,
         // status is new until email notification sent
         SQL(
           """insert into nominations
-            (from_email, to_email, initiated_by, status, cycle_id)
-            values ({fromEmail},{toEmail},{initiated},{status}, {cycle_id})""")
+            (from_email, to_email, initiated_by, status, cycle_id, nomination_message)
+            values ({fromEmail},{toEmail},{initiated},{status}, {cycle_id}, {message})""")
           .on('fromEmail -> fromEmail,
             'toEmail -> toEmail,
             'initiated -> fromEmail,
             'status -> FeedbackStatus.New.toString,
-            'cycle_id -> cycleId).executeInsert() match {
+            'cycle_id -> cycleId,
+            'message -> message).executeInsert() match {
           case None => Left(new Exception("Could not create nomination."))
           case Some(newNominationId) =>
             mapUpdateStatusToNomination(questionResponse.initialiseResponses(newNominationId, questionTemplate.findQuestionsForCycle(cycleId)),
