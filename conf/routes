@@ -39,6 +39,7 @@ GET     /api/cycle/:id              au.com.feedbacker.controllers.Feedback.getCy
 # Map static resources from the /public folder to the /assets URL path
 GET     /components/*file           controllers.Assets.at(path="/public/components", file)
 GET     /css/*file                  controllers.Assets.at(path="/public/css", file)
+GET     /fonts/*file                controllers.Assets.at(path="/public/fonts", file)
 GET     /images/*file               controllers.Assets.at(path="/public/images", file)
 GET     /fragments/*file            controllers.Assets.at(path="/public/fragments", file)
 GET     /js/*file                   controllers.Assets.at(path="/public/js", file)
