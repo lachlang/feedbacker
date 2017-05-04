@@ -1,7 +1,7 @@
 /*
  * Controller search for connection, uploading bulk connections and for sending connection/invitation requests
  */
-fbControllers.controller('MenuCtrl', ['$rootScope', '$log', '$location', 'Session', 'Model', function($rootScope, $log, $location, Session, Model) {
+fbControllers.controller('MenuCtrl', ['$rootScope', '$scope', '$log', '$location', 'Session', 'Model', function($rootScope, $scope, $log, $location, Session, Model) {
 
 	var ctrl = this;
 
@@ -43,11 +43,33 @@ fbControllers.controller('MenuCtrl', ['$rootScope', '$log', '$location', 'Sessio
 	}
 
 	ctrl.isLoggedInLeader = function() {
-		return Session.validSession() && Session.isLeader();
+		return Session.validSession() && Session.isLeader.value;
+	}
+
+	ctrl.isLoggedInAdmin = function() {
+		return Session.validSession() && Session.isAdmin.value;
 	}
 
 	ctrl.isActive = function (viewLocation) {
 		return viewLocation === $location.path();
 	};
+//
+//	/**
+//	 * called when session becomes valid to seed the menu with useful and interesting stuff
+//	 */
+//	$scope.$watch(function() {
+//			return Session.isLeader.value;
+//		}, function(newValue, oldValue) {
+//			$log.debug("[MenuCtrl.$watch.isValid] Session.isValid.value has changed to: " + newValue + " from: " + oldValue);
+//			if (newValue != $scope.validSession || newValue != oldValue) {
+//				$scope.validSession = Session.isLeader.value;
+//				$log.debug("[MenuCtrl.$watch.isValid] validSession has changed to: " + $scope.validSession);
+//				if ($scope.validSession) {
+//					$scope.initialiseAuthenticatedContent();
+//				} else {
+//					$scope.resetAuthenticatedContent();
+//				}
+//			}
+//		}, true);
 
 }]);

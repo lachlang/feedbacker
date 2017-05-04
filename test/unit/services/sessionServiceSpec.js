@@ -25,6 +25,8 @@ describe('service [Session]', function() {
         expect(angular.isFunction(session.login)).toBe(true);
         expect(angular.isFunction(session.logout)).toBe(true);
         expect(angular.isFunction(session.validSession)).toBe(true);
+        expect(angular.isFunction(session.isLeader)).toBe(true);
+        expect(angular.isFunction(session.isAdmin)).toBe(true);
     });
 
     describe("calls the appropriate server api", function() {
