@@ -9,6 +9,15 @@
 	  <p class="lead">Feedback for <strong>{{edit.feedback.fromName}}</strong> from <strong>{{edit.feedback.toName}}</strong>.  Feedback is be visible by <em>{{edit.feedback.bossEmail}}</em> <data-ng-show if="edit.feedback.shareFeedback">and <em>{{edit.feedback.fromName}}</em> </data-ng-show></p>
 	</div>
   </div>
+	<div class="row top-buffer" data-ng-show="edit.feedback.message">
+		<div class="col-md-12">
+			<blockquote>
+				<p>
+					{{edit.feedback.message}}
+				</p>
+			</blockquote>
+		</div>
+	</div>
 	<div class="row top-buffer" data-ng-show="edit.feedback.cycleLabel">
 		<div class="col-md-12">
 			<p>Feedback will be editable by <em>{{edit.feedback.toName}}</em> until the conclusion of <strong>{{edit.feedback.cycleLabel}}</strong> on <strong>{{edit.feedback.cycleEndDate | date: 'medium' }}</strong>.</p>
