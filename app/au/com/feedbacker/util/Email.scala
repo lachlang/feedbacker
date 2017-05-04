@@ -57,7 +57,7 @@ class Emailer @Inject() (mailerClient: MailerClient, configuration: play.api.Con
 //          Some(Emailer.nominationBody(toUser.name, fromUser.name, getServerPath)),
 //          None
           None,
-          Some(Emailer.nominationBodyHtml(toUser.name, fromUser.name, getServerPath))
+          Some(Emailer.nominationBodyHtml(toUser.name, fromUser.name, getServerPath, nomination.message))
         )
         sendEmail(email)
       }
@@ -113,12 +113,13 @@ object Emailer {
        (Feedback is always welcome)
      """.stripMargin
 
-  private def nominationBodyHtml(toName: String, fromName: String, serverPath: String): String =
+  private def nominationBodyHtml(toName: String, fromName: String, serverPath: String, message: Option[String]): String =
     s"""
       <p>Hi $toName,</p>
       <p/>
       <p>$fromName has nominated you to provide feedback on their performance using Feedbacker.</p>
       <p/>
+      ${message.map{m => s"<blockquote><p>${m}</p></blockquote>"}.getOrElse("")}
       <p>Feedbacker is a simple web application which simplifies the submission and collations of feedback.</p>
       <p/>
       <p>To sign up to Feedbacker and submit your response, please navigate to: <a href="http://$serverPath/#/landing">Feedbacker address</a></p>

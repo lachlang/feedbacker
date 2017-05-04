@@ -85,7 +85,8 @@ trait ModelFixtures {
       responseOptions <- Gen.listOfN(n, arbitrary[String])
       response        <- Gen.option(Gen.oneOf(responseOptions))
       comments        <- arbitrary[Option[String]]
-    } yield QuestionResponse(id = id, text = text, format = format, responseOptions = responseOptions, response = response, comments = comments)
+      helpText        <- arbitrary[Option[String]]
+    } yield QuestionResponse(id = id, text = text, format = format, responseOptions = responseOptions, response = response, comments = comments, helpText = helpText)
   )
 
   implicit val arbRegistrationContent: Arbitrary[RegistrationContent] = Arbitrary(

@@ -64,9 +64,9 @@ describe('service [Nomination]', function() {
         });
 
         it('to add a nomination', function() {
-            var result, promise = nomination.addNomination({some:"stuff"}, 12);
+            var result, promise = nomination.addNomination({some:"stuff"}, 12, "this is a personal message");
 
-            $httpBackend.expectPOST('/api/nominations','{"apiVersion":"1.0","body":{"username":{"some":"stuff"},"cycleId":12}}').respond(200, dummyResult);
+            $httpBackend.expectPOST('/api/nominations','{"apiVersion":"1.0","body":{"username":{"some":"stuff"},"cycleId":12,"message":"this is a personal message"}}').respond(200, dummyResult);
             
             // set the response value
             promise.then(function(data) {

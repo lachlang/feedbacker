@@ -1,12 +1,9 @@
 package au.com.feedbacker.controllers
 
-//import play.api.http.Writeable
-
 import javax.inject.Inject
 
 import au.com.feedbacker.model.FeedbackStatus.FeedbackStatus
 import au.com.feedbacker.util.Emailer
-import play.api.http.Writeable
 import play.api.libs.json._
 import au.com.feedbacker.model._
 import org.joda.time.DateTime
@@ -141,9 +138,9 @@ class Nominations @Inject() (emailer: Emailer,
   def createNomination = AuthenticatedRequestAction { (fromUser, json) =>
     val toUsernameJson: JsResult[String] = json.validate[String]((JsPath \ "body" \ "username").read[String](Reads.email)).map(_.toLowerCase)
     val cycleIdJson: JsResult[Long] = json.validate[Long]((JsPath \ "body" \ "cycleId").read[Long])
-    val messageJson: JsResult[String] = json.validate[String]((JsPath \ "body" \ "message").read[String])
-    (toUsernameJson, cycleIdJson, messageJson) match {
-      case (JsSuccess(toUsername, _), JsSuccess(cycleId, _), JsSuccess(message, _)) => {
+    val message: Option[String] = (json \ "body" \ "message").asOpt[String]
+    (toUsernameJson, cycleIdJson) match {
+      case (JsSuccess(toUsername, _), JsSuccess(cycleId, _)) => {
         if (!feedbackCycle.validateCycle(cycleId))
           BadRequest(Json.obj("message" -> "Invalid feedback cycle selected."))
         else {
@@ -157,7 +154,7 @@ class Nominations @Inject() (emailer: Emailer,
           }
         }
       }
-      case _ => BadRequest
+      case _ => BadRequest(Json.obj("message" -> "Invalid request parameters."))
     }
   }
 

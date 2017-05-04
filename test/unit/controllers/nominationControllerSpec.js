@@ -38,6 +38,9 @@ describe('nomination controller [NominationCtrl]', function() {
             expect(nominationController.nominations).toEqual([]);
             expect(nominationController.nomineeCandidates).toEqual([]);
             expect(nominationController.nominee).toBeUndefined();
+            expect(nominationController.message).toBeUndefined();
+            expect(nominationController.cycles).toEqual([]);
+            expect(nominationController.selectedCycle).toBeUndefined();
     	});
 
     	it('and calls the necessary services to pre-populate the model', function(){
@@ -51,8 +54,8 @@ describe('nomination controller [NominationCtrl]', function() {
 	describe('when creating a nomination', function() {
 
 		it('should call nomination.addNomination', function() {
-			nominationController.addNomination("a@b.co", 1);
-			expect(nomination.addNomination).toHaveBeenCalled();
+			nominationController.addNomination("a@b.co", 1, "personal message");
+			expect(nomination.addNomination).toHaveBeenCalledWith("a@b.co", 1, "personal message");
 		});
 
 		it('should call clear error messages', function() {

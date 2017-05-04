@@ -10,6 +10,7 @@ fbControllers.controller('NominationCtrl',  ['$scope', '$log', 'Model', 'Nominat
 	ctrl.cycles = [];
 	ctrl.selectedCycle = undefined;
 	ctrl.nominee = undefined;
+	ctrl.message = undefined;
 	ctrl.error = undefined;
 
 	// get the pending actions
@@ -34,7 +35,7 @@ fbControllers.controller('NominationCtrl',  ['$scope', '$log', 'Model', 'Nominat
 		return re.test(word);
 	}
 
-	ctrl.addNomination = function(emailAddress, cycleId) {
+	ctrl.addNomination = function(emailAddress, cycleId, personalMessage) {
 		ctrl.error = undefined;
 
 		// validate email
@@ -46,7 +47,7 @@ fbControllers.controller('NominationCtrl',  ['$scope', '$log', 'Model', 'Nominat
 			return;
 		}
 		// update model
-		Nomination.addNomination(emailAddress, cycleId).then(function() {
+		Nomination.addNomination(emailAddress, cycleId, personalMessage).then(function() {
 			Model.getCurrentNominations(true).then(function(response) {
 				ctrl.nominations = response;
 			});

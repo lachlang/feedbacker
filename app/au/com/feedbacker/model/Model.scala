@@ -10,6 +10,9 @@ import anorm.SqlParser._
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
+import java.util.Base64
+import java.nio.charset.StandardCharsets
+
 object CredentialStatus extends Enumeration {
 	type CredentialStatus = Value
   val Active = Value("Active")
@@ -330,7 +333,7 @@ class ActivationDao @Inject() (db: play.api.db.Database, sessionManager: Session
   }
 }
 
-case class QuestionResponse(id: Option[Long], text: String, format: ResponseFormat, responseOptions: Seq[String], response: Option[String], comments: Option[String])
+case class QuestionResponse(id: Option[Long], text: String, format: ResponseFormat, responseOptions: Seq[String], response: Option[String], comments: Option[String], helpText: Option[String])
 
 object QuestionResponse {
 
@@ -340,8 +343,9 @@ object QuestionResponse {
       get[String]("question_response.render_format") ~
       get[String]("question_response.response_options") ~
       get[Option[String]]("question_response.response") ~
-      get[Option[String]]("question_response.comments") map {
-      case id ~ text ~ format ~ responseOptions ~ response ~ comments => QuestionResponse(id, text, ResponseFormat.withName(format), responseOptions.split(","), response, comments)
+      get[Option[String]]("question_response.comments") ~
+      get[Option[String]]("question_response.help_text") map {
+      case id ~ text ~ format ~ responseOptions ~ response ~ comments ~ helpText => QuestionResponse(id, text, ResponseFormat.withName(format), responseOptions.split(","), response, comments, helpText)
     }
   }
 
@@ -351,7 +355,8 @@ object QuestionResponse {
       (JsPath \ "format").format[ResponseFormat] and
       (JsPath \ "responseOptions").format[Seq[String]] and
       (JsPath \ "response").formatNullable[String] and
-      (JsPath \ "comments").formatNullable[String]
+      (JsPath \ "comments").formatNullable[String] and
+      (JsPath \ "helpText").formatNullable[String]
     )(QuestionResponse.apply, unlift(QuestionResponse.unapply))
 }
 
@@ -369,8 +374,8 @@ class QuestionResponseDao @Inject() (db: play.api.db.Database) {
 
   def initialiseResponses(nominationId :Long, questions: Seq[QuestionTemplate]): Boolean = db.withConnection { implicit connection =>
     questions.map { q =>
-    SQL("""insert into question_response (nomination_id, text, render_format, response_options) values ({nominationId}, {text}, {format}, {responseOptions})""")
-      .on('nominationId -> nominationId, 'text -> q.text, 'format -> q.format.toString, 'responseOptions -> q.responseOptions.mkString(",")).executeInsert() match {
+    SQL("""insert into question_response (nomination_id, text, render_format, response_options, help_text) values ({nominationId}, {text}, {format}, {responseOptions}, {helpText)""")
+      .on('nominationId -> nominationId, 'text -> q.text, 'format -> q.format.toString, 'responseOptions -> q.responseOptions.mkString(","), 'helpText -> q.helpText).executeInsert() match {
         case Some(_) => true
         case None => false
       }
@@ -378,7 +383,7 @@ class QuestionResponseDao @Inject() (db: play.api.db.Database) {
   }
 }
 
-case class QuestionTemplate(id: Option[Long], text: String, format: ResponseFormat, responseOptions: Seq[String])
+case class QuestionTemplate(id: Option[Long], text: String, format: ResponseFormat, responseOptions: Seq[String], helpText: Option[String])
 
 object QuestionTemplate {
 
@@ -386,8 +391,9 @@ object QuestionTemplate {
     get[Option[Long]]("question_templates.id") ~
       get[String]("question_templates.text") ~
       get[String]("question_templates.render_format") ~
-      get[String]("question_templates.response_options") map {
-      case id ~ text ~ format ~ responseOptions => QuestionTemplate(id, text, ResponseFormat.withName(format), responseOptions.split(","))
+      get[String]("question_templates.response_options") ~
+      get[Option[String]]("question_templates.help_text") map {
+      case id ~ text ~ format ~ responseOptions ~ helpText => QuestionTemplate(id, text, ResponseFormat.withName(format), responseOptions.split(","), helpText)
     }
   }
 }
@@ -412,7 +418,8 @@ object Nomination {
     get[Boolean]("nominations.shared") ~
     get[Long]("nominations.cycle_id") ~
     get[Option[String]]("nominations.nomination_message") map {
-      case id~fromId~toEmail~status~lastUpdated~shared~cycleId~message => (id, fromId, toEmail, FeedbackStatus.withName(status), lastUpdated, shared, cycleId, message)
+      case id~fromId~toEmail~status~lastUpdated~shared~cycleId~message => (id, fromId, toEmail, FeedbackStatus.withName(status), lastUpdated, shared, cycleId,
+        message.map{m => new String(Base64.getDecoder.decode(m))})
     }
   }
 
@@ -542,7 +549,7 @@ class NominationDao @Inject() (db: play.api.db.Database,
       nominationId, "Could not re-enable existing nomination.")
   }
 
-  def createNomination(fromEmail: String, toEmail: String, cycleId: Long, message: String): Either[Throwable, Nomination] = db.withConnection { implicit connection =>
+  def createNomination(fromEmail: String, toEmail: String, cycleId: Long, message: Option[String]): Either[Throwable, Nomination] = db.withConnection { implicit connection =>
 
     findNominationByToFromCycle(fromEmail, toEmail, fromEmail, cycleId) match {
       case Some((nominationId, FeedbackStatus.Cancelled)) => reenableNomination(nominationId)
@@ -558,7 +565,9 @@ class NominationDao @Inject() (db: play.api.db.Database,
             'initiated -> fromEmail,
             'status -> FeedbackStatus.New.toString,
             'cycle_id -> cycleId,
-            'message -> message).executeInsert() match {
+            'message ->
+              message.map{m => Base64.getEncoder.encodeToString(m.getBytes(StandardCharsets.UTF_8))}
+          ).executeInsert() match {
           case None => Left(new Exception("Could not create nomination."))
           case Some(newNominationId) =>
             mapUpdateStatusToNomination(questionResponse.initialiseResponses(newNominationId, questionTemplate.findQuestionsForCycle(cycleId)),

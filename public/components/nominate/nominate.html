@@ -14,10 +14,10 @@
 		<div class="col-sm-2">
 			<span class="lead">Search for colleagues:</span>
 		</div>
-		<div class="col-sm-3">
+		<div class="col-sm-4">
 			<input class="form-control" data-ng-model="nominate.nominee" uib-typeahead="nominee.email as nominee.display for nominee in nominate.nomineeCandidates | filter:$viewValue | limitTo:8" placeholder="Name or Email">
 		</div>
-		<div class="col-sm-7">
+		<div class="col-sm-6">
 		</div>
 	</div>
 	<div class="row top-buffer" data-ng-hide="nominate.cycles.length==1">
@@ -33,13 +33,20 @@
 		<div class="col-sm-6"></div>
 	</div>
 	<div class="row top-buffer">
-		<div class="col-sm-4">
+		<div class="col-md-2">
+		</div>
+		<div class="col-md-4">
+			<textarea class="form-control" placeholder="Optional personal message. This will be added to the email notification sent to your nominee and visible when they submit their feedback" rows="3" data-ng-model="nominate.message" ></textarea>
+		</div>
+	</div>
+	<div class="row top-buffer">
+		<div class="col-md-4">
 			<p class="lead">Nominate <strong data-ng-show="nominate.nominee" class="strong">{{nominate.nominee}}</strong><strong data-ng-hide="nominate.nominee">nobody</strong> to provide feedback for yourself as part of {{nominate.selectedCycle.label}}?</p>
 		</div>
-		<div class="col-sm-2">
-			<a class="btn btn-primary" data-ng-click="nominate.addNomination(nominate.nominee, nominate.selectedCycle.id)">Create Nomination</a>
+		<div class="col-md-2">
+			<a class="btn btn-primary" data-ng-click="nominate.addNomination(nominate.nominee, nominate.selectedCycle.id, nominate.message)">Create Nomination</a>
 		</div>
-		<div class="col-sm-2">
+		<div class="col-sm-6">
 
 		</div>
 	</div>
