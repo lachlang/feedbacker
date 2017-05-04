@@ -374,7 +374,7 @@ class QuestionResponseDao @Inject() (db: play.api.db.Database) {
 
   def initialiseResponses(nominationId :Long, questions: Seq[QuestionTemplate]): Boolean = db.withConnection { implicit connection =>
     questions.map { q =>
-    SQL("""insert into question_response (nomination_id, text, render_format, response_options, help_text) values ({nominationId}, {text}, {format}, {responseOptions}, {helpText)""")
+    SQL("""insert into question_response (nomination_id, text, render_format, response_options, help_text) values ({nominationId}, {text}, {format}, {responseOptions}, {helpText})""")
       .on('nominationId -> nominationId, 'text -> q.text, 'format -> q.format.toString, 'responseOptions -> q.responseOptions.mkString(","), 'helpText -> q.helpText).executeInsert() match {
         case Some(_) => true
         case None => false
@@ -536,23 +536,27 @@ class NominationDao @Inject() (db: play.api.db.Database,
       .map{ n => if (n.status == FeedbackStatus.Submitted || n.status == FeedbackStatus.Closed) addDetail(n) else n }
   }
 
-  private def mapUpdateStatusToNomination(win: Boolean, nominationId: Long, errorMsg: String): Either[Throwable, Nomination] =
-    if (!win) Left(new Exception(errorMsg))
+  private def mapUpdateStatusToNomination(initialisedQuestions: Boolean, nominationId: Long, errorMsg: String): Either[Throwable, Nomination] =
+    if (!initialisedQuestions) Left(new Exception(errorMsg))
     else getSummary(nominationId) match {
       case None => Left(new Exception(errorMsg))
       case Some(n) => Right(n)
     }
 
-  def reenableNomination(nominationId: Long): Either[Throwable, Nomination] = db.withConnection { implicit connection =>
-    mapUpdateStatusToNomination(SQL("""update nominations SET status = {status} where id = {id}""")
-      .on('status -> FeedbackStatus.New.toString, 'id -> nominationId).executeUpdate == 1,
+  def reenableNomination(nominationId: Long, message: Option[String]): Either[Throwable, Nomination] = db.withConnection { implicit connection =>
+    mapUpdateStatusToNomination(SQL("""update nominations SET status = {status}, nomination_message = {message} where id = {id}""")
+      .on(
+        'status -> FeedbackStatus.New.toString,
+        'id -> nominationId,
+        'message -> message.map{m => Base64.getEncoder.encodeToString(m.getBytes(StandardCharsets.UTF_8))}
+      ).executeUpdate == 1,
       nominationId, "Could not re-enable existing nomination.")
   }
 
   def createNomination(fromEmail: String, toEmail: String, cycleId: Long, message: Option[String]): Either[Throwable, Nomination] = db.withConnection { implicit connection =>
 
     findNominationByToFromCycle(fromEmail, toEmail, fromEmail, cycleId) match {
-      case Some((nominationId, FeedbackStatus.Cancelled)) => reenableNomination(nominationId)
+      case Some((nominationId, FeedbackStatus.Cancelled)) => reenableNomination(nominationId, message)
       case Some(_) => Left(new Exception("Nomination already exists."))
       case None =>
         // status is new until email notification sent
@@ -566,7 +570,7 @@ class NominationDao @Inject() (db: play.api.db.Database,
             'status -> FeedbackStatus.New.toString,
             'cycle_id -> cycleId,
             'message ->
-              message.map{m => Base64.getEncoder.encodeToString(m.getBytes(StandardCharsets.UTF_8))}
+              message.map{m => Base64.getEncoder.encodeToString(m.getBytes)}
           ).executeInsert() match {
           case None => Left(new Exception("Could not create nomination."))
           case Some(newNominationId) =>

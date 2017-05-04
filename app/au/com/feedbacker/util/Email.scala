@@ -119,7 +119,7 @@ object Emailer {
       <p/>
       <p>$fromName has nominated you to provide feedback on their performance using Feedbacker.</p>
       <p/>
-      ${message.map{m => s"<blockquote><p>${m}</p></blockquote>"}.getOrElse("")}
+      ${message.map{m => s"<blockquote><p>${m}</p></blockquote><p/>"}.getOrElse("")}
       <p>Feedbacker is a simple web application which simplifies the submission and collations of feedback.</p>
       <p/>
       <p>To sign up to Feedbacker and submit your response, please navigate to: <a href="http://$serverPath/#/landing">Feedbacker address</a></p>
