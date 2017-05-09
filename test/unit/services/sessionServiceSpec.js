@@ -25,8 +25,6 @@ describe('service [Session]', function() {
         expect(angular.isFunction(session.login)).toBe(true);
         expect(angular.isFunction(session.logout)).toBe(true);
         expect(angular.isFunction(session.validSession)).toBe(true);
-        expect(angular.isFunction(session.isLeader)).toBe(true);
-        expect(angular.isFunction(session.isAdmin)).toBe(true);
     });
 
     describe("calls the appropriate server api", function() {
@@ -66,7 +64,7 @@ describe('service [Session]', function() {
 
     });
 
-    describe("has the correct in state when", function() {
+    describe("has the correct state when", function() {
 
         var doLogin = function() {
             expect(session.validSession()).toBe(false);
@@ -78,7 +76,7 @@ describe('service [Session]', function() {
                 ).respond(200, "dummyResult");
             $httpBackend.flush();
 
-//            expect(session.validSession()).toBe(true);
+            expect(session.validSession()).toBe(true);
         };
 
         it('is initiated', function() {
