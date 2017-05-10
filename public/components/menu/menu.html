@@ -9,11 +9,13 @@
       </button>
       <ul class="nav navbar-nav">
         <li data-ng-class="{ active: menu.isActive('/landing')}"><a class="navbar-brand" href="#/">Feedbacker</a></li>
-        <li data-ng-class="{ active: menu.isActive('/list')}"><a class="navbar-brand" data-ng-if="menu.isLoggedIn()" href="#/list">Feedback Summary</a></li>
-        <li data-ng-class="{ active: menu.isActive('/nominate')}"><a data-ng-if="menu.isLoggedIn()" class="navbar-brand" href="#/nominate">Nominations</a></li>
-        <li data-ng-class="{ active: menu.isActive('/profile')}"><a data-ng-if="menu.isLoggedIn()" class="navbar-brand" href="#/profile">Profile</a></li>
-        <li data-ng-class="{ active: menu.isActive('/reports')}"><a data-ng-if="menu.isLoggedInLeader()" class="navbar-brand" href="#/reports">Reports</a></li>
-        <li data-ng-class="{ active: menu.isActive('/admin')}"><a data-ng-if="menu.isLoggedInAdmin()" class="navbar-brand" href="#/reports">Admin</a></li>
+        <li data-ng-class="{ active: menu.isActive('/worklist')}"><a class="navbar-brand" data-ng-if="menu.isLoggedIn()" href="#/worklist">Work List</a></li>
+        <li data-ng-class="{ active: menu.isActive('/summary')}"><a class="navbar-brand" data-ng-if="menu.isLoggedIn()" href="#/summary">Your Feedback</a></li>
+        <li data-ng-class="{ active: menu.isActive('/nominate')}"><a data-ng-if="menu.isLoggedIn()" class="navbar-brand" href="#/nominate">Request Feedback</a></li>
+        <li data-ng-class="{ active: menu.isActive('/provide')}"><a data-ng-if="menu.isLoggedIn()" class="navbar-brand" href="#/provide">Provide Feedback</a></li>
+        <li data-ng-class="{ active: menu.isActive('/profile')}"><a data-ng-if="menu.isLoggedIn()" class="navbar-brand" href="#/profile">Your Details</a></li>
+        <li data-ng-class="{ active: menu.isActive('/reports')}"><a data-ng-if="menu.isLoggedInLeader()" class="navbar-brand" href="#/reports">Management Reports</a></li>
+        <li data-ng-class="{ active: menu.isActive('/admin')}"><a data-ng-if="menu.isLoggedInAdmin()" class="navbar-brand" href="#/admin">Admin</a></li>
       </ul>
 
 

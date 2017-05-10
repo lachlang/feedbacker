@@ -61,7 +61,7 @@ object ResponseFormat extends Enumeration {
 }
 import ResponseFormat._
 
-case class Person(id: Option[Long], name: String, role: String, credentials: Credentials, managerEmail: String, isLeader: Boolean = false) {
+case class Person(id: Option[Long], name: String, role: String, credentials: Credentials, managerEmail: String, isLeader: Boolean = false, isAdmin: Boolean = false) {
   def setNewHash(hash: String)  = Person(id, name, role, Credentials(credentials.email, hash, credentials.status), managerEmail, isLeader)
 }
 
@@ -82,8 +82,9 @@ object Person {
       get[String]("person.pass_hash") ~
       get[String]("person.user_status") ~
       get[String]("person.manager_email") ~
-      get[Boolean]("person.is_manager") map {
-      case id~name~role~email~pass_hash~user_status~manager_email~isLeader => Person(id, name, role, Credentials(email, pass_hash, CredentialStatus.withName(user_status)), manager_email, isLeader)
+      get[Boolean]("person.is_manager") ~
+      get[Boolean]("person.is_admin") map {
+      case id~name~role~email~pass_hash~user_status~manager_email~isLeader~isAdmin => Person(id, name, role, Credentials(email, pass_hash, CredentialStatus.withName(user_status)), manager_email, isLeader, isAdmin)
     }
   }
 

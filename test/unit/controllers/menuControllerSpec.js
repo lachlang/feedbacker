@@ -77,7 +77,7 @@ describe('menu controller [MenuCtrl]', function() {
             scope.$digest();
 
 			expect(menuController.initialiseAuthenticatedContent).toHaveBeenCalled();
-			expect($location.path).toHaveBeenCalledWith("/list");
+			expect($location.path).toHaveBeenCalledWith("/worklist");
 		});
 
 		it('should call reset error messages', function() {

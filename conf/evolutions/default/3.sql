@@ -1,4 +1,4 @@
-# --- Extend schema to support addtional functionality
+# --- Extend schema to support additional functionality
 
 # --- !Ups
 

@@ -4,6 +4,10 @@ feedbackerApp.config(['$routeProvider',
 			templateUrl: 'fragments/about.html',
 			requireLogin: false
 		});
+		$routeProvider.when('/admin', {
+			templateUrl: 'components/admin/admin.html',
+			requireLogin: true
+		});
 		$routeProvider.when('/activationEmail', {
 			templateUrl: 'components/activate/activate.html',
 			requireLogin: false
@@ -20,16 +24,16 @@ feedbackerApp.config(['$routeProvider',
 			templateUrl: 'components/landing/landing.html',
 			requireLogin: false
 		});
-		$routeProvider.when('/list', {
-			templateUrl: 'components/list/list.html',
-			requireLogin: true
-		});
 		$routeProvider.when('/nominate', {
 			templateUrl: 'components/nominate/nominate.html',
 			requireLogin: false
 		});
 		$routeProvider.when('/profile', {
 			templateUrl: 'components/profile/profile.html',
+			requireLogin: false
+		});
+		$routeProvider.when('/provide', {
+			templateUrl: 'components/provide/provide.html',
 			requireLogin: false
 		});
 		$routeProvider.when('/resetPassword', {
@@ -48,12 +52,20 @@ feedbackerApp.config(['$routeProvider',
 			templateUrl: 'components/landing/landing.html',
 			requireLogin: false
 		});
+		$routeProvider.when('/summary', {
+			templateUrl: 'components/summary/summary.html',
+			requireLogin: true
+		});
 		$routeProvider.when('/terms', {
 			templateUrl: 'fragments/termsAndConditions.html',
 			requireLogin: false
 		});
 		$routeProvider.otherwise({
 			redirectTo: '/landing'
+		});
+		$routeProvider.when('/worklist', {
+			templateUrl: 'components/list/list.html',
+			requireLogin: true
 		});
 	}
 ]);

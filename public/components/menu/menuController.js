@@ -16,7 +16,7 @@ fbControllers.controller('MenuCtrl', ['$rootScope', '$log', '$location', 'Sessio
 		Session.login(username, password).then(function(result) {
 			$log.debug("Logged in...");
 			ctrl.initialiseAuthenticatedContent();
-			$location.path("/list");
+			$location.path("/worklist");
 		}, function(response) {
 			$log.error("Login FAILED!");
 			if (response.status == 401) {
