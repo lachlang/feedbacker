@@ -30,7 +30,7 @@ GET 	/api/feedback/history/self 	au.com.feedbacker.controllers.Feedback.getFeedb
 GET 	/api/feedback/history/:id 	au.com.feedbacker.controllers.Feedback.getFeedbackHistoryForUser(id: Long)
 
 GET     /api/nominations            au.com.feedbacker.controllers.Nominations.getCurrentNominations
-GET     /api/nominations/candidates au.com.feedbacker.controllers.Nominations.getNomineeCandidates
+GET     /api/nominations/candidates au.com.feedbacker.controllers.Nominations.getRegisteredUsers
 POST    /api/nominations            au.com.feedbacker.controllers.Nominations.createNomination
 GET     /api/nominations/cancel/:id au.com.feedbacker.controllers.Nominations.cancelNomination(id: Long)
 GET     /api/cycle/active           au.com.feedbacker.controllers.Nominations.getActiveFeedbackCycles

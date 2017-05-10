@@ -1,5 +1,5 @@
 /*
- * Controller for feedback action
+ * Controller for managing the worklist
  */
 fbControllers.controller('WorklistCtrl',  ['$scope', '$log', 'Model', function($scope, $log, Model) {
 

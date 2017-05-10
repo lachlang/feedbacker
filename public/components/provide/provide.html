@@ -7,7 +7,75 @@
   <div data-ng-controller="ProvideCtrl as provide">
     <div class="row">
       <div class="col-md-12">
-        <p class="lead">Stay tuned folks.  This exciting section is coming soon :)</p>
+        <p class="lead">Provide ad-hoc feedback for a colleague</p>
+      </div>
+    </div> <!-- end row -->
+    <div data-ng-if="provide.error" class="row top-buffer">
+      <div class="col-md-12">
+        <div class="alert alert-danger" role="alert">{{provide.error}}</div>
+      </div>
+    </div>
+    <div class="row top-buffer">
+      <div class="col-sm-2">
+        <span>Search for colleagues:</span>
+      </div>
+      <div class="col-sm-4">
+        <input class="form-control"
+               data-ng-model="provide.feedbackCandidate"
+               uib-typeahead="candidate as candidate.display for candidate in provide.candidateList | filter:$viewValue | limitTo:8"
+               placeholder="Name or email of colleague">
+      </div>
+      <div class="col-sm-6">
+      </div>
+    </div> <!-- end row -->
+    <div class="row top-buffer">
+      <div class="col-sm-2">
+        <span>Publish to candidate:</span>
+      </div>
+      <div class="col-sm-4">
+        <div class="btn-group" role="group" aria-label="Publish feedback to candidate">
+          <button class="btn btn-primary"
+                  for="true"
+                  data-ng-model="provide.publishToCandidate"
+                  uib-btn-radio="true">Yes</button>
+          <button class="btn btn-primary"
+                  for="false"
+                  data-ng-model="provide.publishToCandidate"
+                  uib-btn-radio="false">No</button>
+        </div>
+      </div>
+      <div class="col-sm-6">
+      </div>
+    </div> <!-- end row -->
+    <div class="row top-buffer">
+      <div class="col-md-2">
+      </div>
+      <div class="col-md-4">
+        <textarea class="form-control" placeholder="Enter feedback here.  Please be both clear and constructive." rows="3" data-ng-model="nominate.message" ></textarea>
+      </div>
+    </div>
+    <div class="row top-buffer">
+      <div class="col-md-4">
+        <p class="lead">
+          Provide feedback for
+          <strong data-ng-show="provide.feedbackCandidate" class="strong">{{provide.feedbackCandidate.display}}</strong>
+          <strong data-ng-hide="provide.feedbackCandidate">nobody</strong>
+          .  Feedback will be published to
+          <span data-ng-show="provide.feedbackCandidate">{{provide.feedbackCandidate.managerEmail}}</span>
+          <span data-ng-hide="provide.feedbackCandidate">nobody</span>
+          and
+          <strong data-ng-show="provide.publishToCandidate">will</strong>
+          <span data-ng-hide="provide.publishToCandidate">will <strong>not</strong></span>
+          be sent to
+          <span data-ng-show="provide.feedbackCandidate" class="strong">{{provide.feedbackCandidate.display}}</span>
+          <span data-ng-hide="provide.feedbackCandidate">anybody</span>.
+        </p>
+      </div>
+      <div class="col-md-2">
+        <a class="btn btn-primary" data-ng-click="provide.submitAdHocFeedback(provide.nominee, provide.message)">Submit Feedback</a>
+      </div>
+      <div class="col-sm-6">
+
       </div>
     </div> <!-- end row -->
   </div> <!-- end controller -->

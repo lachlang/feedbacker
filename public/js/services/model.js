@@ -117,7 +117,7 @@ fbServices.service('Model', ['$log', '$q', 'Account', 'Feedback', 'Nomination', 
 
 		getNomineeCandidates: function(flushCache) {
 			return cacheServiceCall(function(result) { nomineeCandidates = result.data.body.map(function(item){
-											item.display = item.name + ", " + item.email;
+											item.display = item.name + " (" + item.email + ")";
 											return item;
 										});
 									},

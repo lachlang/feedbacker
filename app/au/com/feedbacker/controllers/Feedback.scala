@@ -124,15 +124,15 @@ class Nominations @Inject() (emailer: Emailer,
                              person: PersonDao,
                              nomination: NominationDao,
                              feedbackCycle: FeedbackCycleDao,
-                             nominee: NomineeDao,
+                             users: RegisteredUserDao,
                              sessionManager: SessionManager) extends AuthenticatedController(person, sessionManager) {
 
   def getCurrentNominations = AuthenticatedAction { person =>
     Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(nomination.getCurrentNominationsFromUser(person.credentials.email))))
   }
 
-  def getNomineeCandidates = AuthenticatedAction { person =>
-    Ok(Json.obj("body" -> Json.toJson(nominee.findNomineeCandidates)))
+  def getRegisteredUsers = AuthenticatedAction { person =>
+    Ok(Json.obj("body" -> Json.toJson(users.findRegisteredUsers)))
   }
 
   def createNomination = AuthenticatedRequestAction { (fromUser, json) =>

@@ -221,25 +221,26 @@ class PersonDao @Inject() (db: play.api.db.Database, activation: ActivationDao, 
   }
 }
 
-case class Nominee(name: Person.Name, email: Person.Username, role: String)
+case class RegisteredUser(name: Person.Name, email: Person.Username, role: String, managerEmail: String)
 
-object Nominee {
+object RegisteredUser {
 
-  implicit val writes: Writes[Nominee] = Json.writes[Nominee]
+  implicit val writes: Writes[RegisteredUser] = Json.writes[RegisteredUser]
 
   val simple = {
     get[String]("name") ~
       get[String]("email") ~
-      get[String]("role") map {
-      case name ~ email ~ role => Nominee(name, email, role)
+      get[String]("role") ~
+      get[String]("manager_email") map {
+      case name ~ email ~ role ~ managerEmail => RegisteredUser(name, email, role, managerEmail)
     }
   }
 }
 
-class NomineeDao @Inject() (db: play.api.db.Database) {
-  def findNomineeCandidates: Seq[Nominee] = db.withConnection { implicit connection =>
-    SQL("select name, email, role from person where user_status in ({activeStatus}, {inactiveStatus})")
-      .on('activeStatus -> CredentialStatus.Active.toString, 'inactiveStatus -> CredentialStatus.Inactive.toString).as(Nominee.simple *)
+class RegisteredUserDao @Inject()(db: play.api.db.Database) {
+  def findRegisteredUsers: Seq[RegisteredUser] = db.withConnection { implicit connection =>
+    SQL("select name, email, role, manager_email from person where user_status in ({activeStatus}, {inactiveStatus})")
+      .on('activeStatus -> CredentialStatus.Active.toString, 'inactiveStatus -> CredentialStatus.Inactive.toString).as(RegisteredUser.simple *)
   }
 }
 
