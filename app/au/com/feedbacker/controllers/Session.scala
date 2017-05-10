@@ -35,7 +35,7 @@ class AuthenticatedController(person: PersonDao, sessionManager: SessionManager)
   }
 
   private def getUser(request: RequestHeader): Option[Person] =
-    sessionManager.extractToken(request).flatMap(st => person.findByEmail(st.username))
+    sessionManager.extractToken(request).flatMap{st => person.findByEmail(st.username)}
 
 }
 

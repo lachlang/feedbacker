@@ -73,6 +73,7 @@ class Feedback @Inject() (person: PersonDao,
     }
   }
 
+  // TODO: suspect this is duplicate code with Account#ReportFile#isInReportingLine
   private val nominationWriteFilter: (Nomination, String) => Boolean = (n, email) => n.to.map(_.credentials.email == email).getOrElse(false)
 
   private val nominationReadFilter: (Option[Person], String) => Boolean = (user, email) => user match {

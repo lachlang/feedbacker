@@ -14,6 +14,22 @@ import org.scalacheck.Arbitrary.arbitrary
   */
 trait ModelFixtures {
 
+  implicit val arbAdHocFeedback: Arbitrary[AdHocFeedback] = Arbitrary(
+    for {
+      id        <- arbitrary[Option[Long]]
+      fromEmail <- validEmailAddresses()
+      fromName  <- arbitrary[String]
+      fromRole  <- arbitrary[String]
+      toEmail   <- validEmailAddresses()
+      toName    <- arbitrary[String]
+      toRole    <- arbitrary[String]
+//      created   <- arbitrary[Option[DateTime]]
+      message   <- arbitrary[String]
+      publish   <- arbitrary[Boolean]
+    } yield AdHocFeedback(id = id, fromEmail = fromEmail, fromName = fromName, fromRole = fromRole, toEmail = toEmail,
+      toName = toName, toRole = toRole, created = DateTime.now, message = message, publish = publish)
+  )
+
   implicit val arbCredential: Arbitrary[Credentials] = Arbitrary(
     for {
       email  <- validEmailAddresses()
@@ -93,7 +109,7 @@ trait ModelFixtures {
     for {
       name          <- arbitrary[String].suchThat( _.length > 0)
       role          <- arbitrary[String].suchThat( _.length > 0)
-      email         <-  validEmailAddresses()
+      email         <- validEmailAddresses()
       password      <- arbitrary[String].suchThat( _.length > 0)
       managerEmail  <- validEmailAddresses()
     } yield RegistrationContent(name = name, role = role, email = email, password = password, managerEmail = managerEmail)
