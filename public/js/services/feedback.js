@@ -45,6 +45,29 @@ fbServices.service('Feedback', ['$log','$http', function($log, $http) {
 
 		getFeedbackCycle: function(cycleId) {
 			return $http.get("/api/cycle/" + cycleId);
+		},
+
+		createAdHocFeedback: function(recipient, message, publishToRecipient) {
+		  return $http({
+		    method: 'POST',
+		    url: "/api/feedback/adhoc",
+		    data: {
+					apiVersion: "1.0",
+					body: {
+						recipientEmail: recipient,
+						message: message,
+						publishToRecipient: publishToRecipient
+					}
+		    }
+      });
+		},
+
+		getAdHocFeedbackFor: function(username) {
+		  return $http.get("/api/feedback/adhoc/for/" + username)
+		},
+
+		getAdHocFeedbackFrom: function() {
+		  return $http.get("/api/feedback/adhoc/from")
 		}
 	}
 }]);

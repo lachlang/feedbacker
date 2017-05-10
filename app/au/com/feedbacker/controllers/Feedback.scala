@@ -4,6 +4,7 @@ import javax.inject.Inject
 
 import au.com.feedbacker.model.FeedbackStatus.FeedbackStatus
 import au.com.feedbacker.util.Emailer
+import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import au.com.feedbacker.model._
 import org.joda.time.DateTime
@@ -91,7 +92,7 @@ class Feedback @Inject() (person: PersonDao,
 
   def createAdHocFeedback = AuthenticatedRequestAction { (user , json) =>
     json.validate[AdHocFeedbackRequest].asOpt.flatMap(request => person.findByEmail(request.toEmail).map(to =>
-      AdHocFeedback(None, user.credentials.email, user.name, user.role, request.toEmail, to.name, to.role, DateTime.now, request.message, request.publishToCandidate))) match {
+      AdHocFeedback(None, user.credentials.email, user.name, user.role, request.toEmail, to.name, to.role, DateTime.now, request.message, request.publishToRecipient))) match {
       case None => BadRequest
       case Some(feedback) => adHocFeedback.createAdHocFeedback(feedback) match {
         case None => InternalServerError(Json.obj("message" -> "Could not create ad-hoc feedback."))
@@ -148,9 +149,15 @@ object DetailItem {
   }
 }
 
-case class AdHocFeedbackRequest(toEmail: String, message: String, publishToCandidate: Boolean)
+case class AdHocFeedbackRequest(toEmail: String, message: String, publishToRecipient: Boolean)
 object AdHocFeedbackRequest {
-  implicit val format: Format[AdHocFeedbackRequest] = Json.format[AdHocFeedbackRequest]
+
+  implicit val format: Format[AdHocFeedbackRequest] = (
+    (JsPath \ "body" \ "recipientEmail").format[String](Reads.email) and
+      (JsPath \ "body" \ "message").format[String] and
+      (JsPath \ "body" \ "publishToRecipient").format[Boolean]
+    )(AdHocFeedbackRequest.apply, unlift(AdHocFeedbackRequest.unapply))
+
 }
 
 class Nominations @Inject() (emailer: Emailer,

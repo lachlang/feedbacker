@@ -658,7 +658,7 @@ object AdHocFeedback{
       get[String]("ad_hoc_feedback.to_role") ~
       get[String]("ad_hoc_feedback.message") ~
       get[DateTime]("ad_hoc_feedback.created") ~
-      get[Boolean]("ad_hoc_feedback.candidate_visible") map {
+      get[Boolean]("ad_hoc_feedback.recipient_visible") map {
       case id~fromEmail~fromName~fromRole~toEmail~toName~toRole~message~created~candidateVisible =>
         AdHocFeedback(id = id, fromEmail = fromEmail, fromName = fromName, fromRole = fromRole, toEmail = toEmail, toName = toName, toRole = toRole, created = created, message = message, publish = candidateVisible)
     }
@@ -670,7 +670,7 @@ class AdHocFeedbackDao @Inject() (db: play.api.db.Database) {
   def createAdHocFeedback(f: AdHocFeedback): Option[AdHocFeedback] = db.withConnection { implicit connection =>
     SQL(
       """insert into ad_hoc_feedback
-            (from_email, from_name, from_role, to_email, to_name, to_role, message, created, candidate_visible)
+            (from_email, from_name, from_role, to_email, to_name, to_role, message, created, recipient_visible)
             values ({fromEmail},{fromName},{fromRole},{toEmail},{toName},{toRole},{message}, {created}, {visible})""")
       .on('fromEmail -> f.fromEmail,
         'fromName -> f.fromName,

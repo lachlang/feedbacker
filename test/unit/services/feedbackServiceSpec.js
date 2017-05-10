@@ -178,6 +178,55 @@ describe('service [Feedback]', function() {
             expect(result).toBeDefined();
             expect(result).toEqual(dummyResult);
         });
+
+        it('to create a piece of ad-hoc feedback', function() {
+            var result, promise = feedback.createAdHocFeedback("toUsername", "feedback message", true);
+
+            $httpBackend.expectPOST('/api/feedback/adhoc', '{"apiVersion":"1.0","body":{"recipientEmail":"toUsername","message":"feedback message","publishToRecipient":true}}').respond(200, dummyResult);
+
+            // set the response value
+            promise.then(function(data) {
+                result = data.data;
+            });
+            expect(result).toBeUndefined();
+            $httpBackend.flush();
+
+            expect(result).toBeDefined();
+            expect(result).toEqual(dummyResult);
+        });
+
+        it('to retrieve ad-hoc feedback for a user', function() {
+            var result, promise = feedback.getAdHocFeedbackFor("username");
+
+            $httpBackend.expectGET('/api/feedback/adhoc/for/username').respond(200, dummyResult);
+
+            // set the response value
+            promise.then(function(data) {
+                result = data.data;
+            });
+            expect(result).toBeUndefined();
+            $httpBackend.flush();
+
+            expect(result).toBeDefined();
+            expect(result).toEqual(dummyResult);
+        });
+
+        it('to retrieve ad-hoc feedback from a user', function() {
+            var result, promise = feedback.getAdHocFeedbackFrom();
+
+            $httpBackend.expectGET('/api/feedback/adhoc/from').respond(200, dummyResult);
+
+            // set the response value
+            promise.then(function(data) {
+                result = data.data;
+            });
+            expect(result).toBeUndefined();
+            $httpBackend.flush();
+
+            expect(result).toBeDefined();
+            expect(result).toEqual(dummyResult);
+        });
+
     });
 
 });

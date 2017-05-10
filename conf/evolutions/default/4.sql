@@ -14,7 +14,7 @@ create table ad_hoc_feedback (
   to_role 			      varchar(255) not null,
   message             varchar(8192) not null,
   created             timestamp not null,
-  candidate_visible   boolean not null default FALSE,
+  recipient_visible   boolean not null default FALSE,
   constraint pk_ad_hoc_feedback primary key (id)
 );
 
