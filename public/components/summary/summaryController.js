@@ -1,22 +1,17 @@
 /*
  * Controller for feedback action
  */
-fbControllers.controller('FeedbackActionCtrl',  ['$scope', '$log', 'Model', function($scope, $log, Model) {
+fbControllers.controller('SummaryCtrl',  ['$scope', '$log', 'Model', function($scope, $log, Model) {
 
 	var ctrl = this;
 
 	ctrl.user = {};
-	ctrl.pendingActions = [];
 	ctrl.currentFeedbackList = [];
 	ctrl.feedbackHistoryList = [];
 
 	// get the pending actions
 	Model.getCurrentUser().then(function(response) {
 		ctrl.user = response;
-	});
-
-	Model.getPendingFeedbackActions().then(function(response) {
-		ctrl.pendingActions = response;
 	});
 
 	Model.getCurrentFeedback().then(function(response) {

@@ -1,8 +1,8 @@
 <div class="container-fluid" data-ng-controller="NominationCtrl as nominate">
 	<div class="row">
 		<div class="col-sm-12">
-			<h2>Nominations</h2>
-			<h3>Nominate Colleagues to Provide you Feedback</h3>
+			<h2>Request Feedback</h2>
+			<span class="lead">Nominate colleagues to provide you feedback as part of a review cycle</span>
 		</div>
 	</div>
 	<div data-ng-if="nominate.error" class="row top-buffer">
@@ -12,7 +12,7 @@
 	</div>
 	<div class="row top-buffer">
 		<div class="col-sm-2">
-			<span class="lead">Search for colleagues:</span>
+			<span">Search for colleagues:</span>
 		</div>
 		<div class="col-sm-4">
 			<input class="form-control" data-ng-model="nominate.nominee" uib-typeahead="nominee.email as nominee.display for nominee in nominate.nomineeCandidates | filter:$viewValue | limitTo:8" placeholder="Name or Email">
@@ -22,7 +22,7 @@
 	</div>
 	<div class="row top-buffer" data-ng-hide="nominate.cycles.length==1">
 		<div class="col-sm-2">
-			<span class="lead">Select feedback cycle:</span>
+			<span>Select feedback cycle:</span>
 		</div>
 		<div class="col-sm-4">
             <select class="form-control"
@@ -44,7 +44,7 @@
 			<p class="lead">Nominate <strong data-ng-show="nominate.nominee" class="strong">{{nominate.nominee}}</strong><strong data-ng-hide="nominate.nominee">nobody</strong> to provide feedback for yourself as part of {{nominate.selectedCycle.label}}?</p>
 		</div>
 		<div class="col-md-2">
-			<a class="btn btn-primary" data-ng-click="nominate.addNomination(nominate.nominee, nominate.selectedCycle.id, nominate.message)">Create Nomination</a>
+			<a class="btn btn-primary" data-ng-click="nominate.addNomination(nominate.nominee, nominate.selectedCycle.id, nominate.message)">Send Feedback Request</a>
 		</div>
 		<div class="col-sm-6">
 
@@ -56,11 +56,9 @@
 				<p class="lead">No colleagues currently nominated to provide feedback.</p>
 			</div>
             <div data-ng-repeat="cycle in nominate.cycles" data-ng-show="nominate.nominations.length > 0">
-                <div>
-                    <span class="lead">Nominations for review cycle <strong>{{cycle.label}}</strong></span>
-                </div>
                 <div class="table-responsive">
                     <table class="table table-hover">
+                        <caption>Nominations for review cycle <strong>{{cycle.label}}</strong></caption>
                         <thead>
                             <tr>
                                 <th>#</th>

@@ -1,0 +1,45 @@
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-12">
+      <h2>Feedback Summary</h2>
+    </div>
+  </div>
+  <div data-ng-controller="SummaryCtrl as summary">
+    <div class="row" data-ng-if="summary.feedbackHistoryList && summary.feedbackHistoryList.length > 0">
+      <div class="col-md-12">
+        <h3>Your Feedback History</h3>
+      </div>
+    </div>
+    <div class="row" data-ng-if="summary.feedbackHistoryList && summary.feedbackHistoryList.length > 0">
+      <div class="col-md-12">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <caption>Feedback you have previously received</caption>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Colleague</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Submitted</th>
+                <th>View</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr data-ng-repeat="history in summary.feedbackHistoryList">
+                <td>{{$index + 1}}</td>
+                <td>{{history.from.name}}</td>
+                <td>{{history.from.role}}</td>
+                <td>{{history.status}}</td>
+                <td>{{history.lastUpdated | date: 'medium'}}</td>
+                <td>
+                  <a data-ng-if="history.shared && (history.status == 'Submitted' || history.status == 'Closed')" href="#/detailView?id={{history.id}}">View</a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div> <!-- end row -->
+  </div> <!-- end controller -->
+</div>

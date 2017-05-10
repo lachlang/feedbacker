@@ -1,8 +1,8 @@
 'use strict';
 
-describe('feedback action controller [FeedbackActionCtrl]', function() {
+describe('worklist controller [WorklistCtrl]', function() {
 
-	var scope, feedbackActionController, model;
+	var scope, worklistController, model;
 	var deferred;
 
 	beforeEach(module('feedbacker'));
@@ -16,10 +16,8 @@ describe('feedback action controller [FeedbackActionCtrl]', function() {
     	model = _Model_;
         spyOn(model, 'getCurrentUser').and.returnValue(deferred.promise);
         spyOn(model, 'getPendingFeedbackActions').and.returnValue(deferred.promise);
-        spyOn(model, 'getCurrentFeedback').and.returnValue(deferred.promise);
-        spyOn(model, 'getFeedbackHistory').and.returnValue(deferred.promise);
 
-		feedbackActionController = $controller('FeedbackActionCtrl',{$scope: scope });
+		worklistController = $controller('WorklistCtrl',{$scope: scope });
 	}));
 
     describe('has valid initialisation values', function() {
@@ -29,15 +27,13 @@ describe('feedback action controller [FeedbackActionCtrl]', function() {
     	});
 
     	it('for global controller variables', function() {
-            expect(feedbackActionController).toBeDefined();
-            expect(feedbackActionController.pendingActions).toBeDefined();
+            expect(worklistController).toBeDefined();
+            expect(worklistController.pendingActions).toBeDefined();
     	});
 
     	it('and calls the necessary services to pre-populate the model', function(){
             expect(model.getCurrentUser).toHaveBeenCalled();
             expect(model.getPendingFeedbackActions).toHaveBeenCalled();
-            expect(model.getCurrentFeedback).toHaveBeenCalled();
-            expect(model.getFeedbackHistory).toHaveBeenCalled();
     	});
 
 	});
