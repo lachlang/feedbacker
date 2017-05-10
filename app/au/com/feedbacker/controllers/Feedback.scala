@@ -12,7 +12,11 @@ import play.api.mvc.Result
 /**
  * Created by lachlang on 09/05/2016.
  */
-class Feedback @Inject() (person: PersonDao, nomination: NominationDao, feedbackCycle: FeedbackCycleDao, sessionManager: SessionManager) extends AuthenticatedController(person, sessionManager) {
+class Feedback @Inject() (person: PersonDao,
+                          nomination: NominationDao,
+                          feedbackCycle: FeedbackCycleDao,
+                          adHocFeedback: AdHocFeedbackDao,
+                          sessionManager: SessionManager) extends AuthenticatedController(person, sessionManager) {
 
   def getPendingFeedbackActions = AuthenticatedAction { user =>
     Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(nomination.getPendingNominationsForUser(user.credentials.email) .map {
@@ -84,6 +88,29 @@ class Feedback @Inject() (person: PersonDao, nomination: NominationDao, feedback
     nomination.getDetail(nominationId).filter( n =>
       nominationReadFilter(n.from, fromPerson.credentials.email) || nominationWriteFilter(n, fromPerson.credentials.email))
 
+  def createAdHocFeedback = AuthenticatedRequestAction { (user , json) =>
+    json.validate[AdHocFeedbackRequest].asOpt.flatMap(request => person.findByEmail(request.toEmail).map(to =>
+      AdHocFeedback(None, user.credentials.email, user.name, user.role, request.toEmail, to.name, to.role, DateTime.now, request.message, request.publishToCandidate))) match {
+      case None => BadRequest
+      case Some(feedback) => adHocFeedback.createAdHocFeedback(feedback) match {
+        case None => InternalServerError(Json.obj("message" -> "Could not create ad-hoc feedback."))
+        case Some(savedFeedback) => Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(savedFeedback)))
+      }
+    }
+  }
+
+  def getAdHocFeedbackFor(username: String) = AuthenticatedAction { user =>
+    if (username == user.credentials.email ||
+        username == user.managerEmail) {
+      Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(adHocFeedback.getAdHocFeedbackFor(username))))
+    } else {
+      Forbidden
+    }
+  }
+
+  def getAdHocFeedbackFrom = AuthenticatedAction { user =>
+    Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(adHocFeedback.getAdHocFeedbackFrom(user.credentials.email))))
+  }
 }
 
 object Feedback {
@@ -118,6 +145,11 @@ object DetailItem {
       Some(DetailItem(id, status, fromPerson.name, toPerson.name, None, fromPerson.managerEmail, message, questions, shared, cycle.map(_.label), cycle.map(_.end_date)))
     case _ => None
   }
+}
+
+case class AdHocFeedbackRequest(toEmail: String, message: String, publishToCandidate: Boolean)
+object AdHocFeedbackRequest {
+  implicit val format: Format[AdHocFeedbackRequest] = Json.format[AdHocFeedbackRequest]
 }
 
 class Nominations @Inject() (emailer: Emailer,

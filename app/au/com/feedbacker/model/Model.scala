@@ -641,3 +641,54 @@ class FeedbackCycleDao @Inject() (db: play.api.db.Database) {
     }
   }
 }
+
+case class AdHocFeedback(id: Option[Long], fromEmail: String, fromName: String, fromRole: String, toEmail: String, toName: String, toRole: String, created: DateTime, message: String, publish: Boolean)
+
+object AdHocFeedback{
+
+  implicit val format: Format[AdHocFeedback] = Json.format[AdHocFeedback]
+
+  val simple = {
+    get[Option[Long]]("ad_hoc_feedback.id") ~
+      get[String]("ad_hoc_feedback.from_email") ~
+      get[String]("ad_hoc_feedback.from_name") ~
+      get[String]("ad_hoc_feedback.from_role") ~
+      get[String]("ad_hoc_feedback.to_email") ~
+      get[String]("ad_hoc_feedback.to_name") ~
+      get[String]("ad_hoc_feedback.to_role") ~
+      get[String]("ad_hoc_feedback.message") ~
+      get[DateTime]("ad_hoc_feedback.created") ~
+      get[Boolean]("ad_hoc_feedback.candidate_visible") map {
+      case id~fromEmail~fromName~fromRole~toEmail~toName~toRole~message~created~candidateVisible =>
+        AdHocFeedback(id = id, fromEmail = fromEmail, fromName = fromName, fromRole = fromRole, toEmail = toEmail, toName = toName, toRole = toRole, created = created, message = message, publish = candidateVisible)
+    }
+  }
+}
+
+class AdHocFeedbackDao @Inject() (db: play.api.db.Database) {
+
+  def createAdHocFeedback(f: AdHocFeedback): Option[AdHocFeedback] = db.withConnection { implicit connection =>
+    SQL(
+      """insert into ad_hoc_feedback
+            (from_email, from_name, from_role, to_email, to_name, to_role, message, created, candidate_visible)
+            values ({fromEmail},{fromName},{fromRole},{toEmail},{toName},{toRole},{message}, {created}, {visible})""")
+      .on('fromEmail -> f.fromEmail,
+        'fromName -> f.fromName,
+        'fromRole -> f.fromRole,
+        'toEmail -> f.toEmail,
+        'toName -> f.toName,
+        'toRole -> f.toRole,
+        'message -> Base64.getEncoder.encodeToString(f.message.getBytes),
+        'created -> f.created,
+        'visible -> f.publish
+      ).executeInsert().map{ newId => f.copy(id = Some(newId)) }
+  }
+
+  def getAdHocFeedbackFor(email: String): Seq[AdHocFeedback] = db.withConnection { implicit connection =>
+    SQL("""select * from ad_hoc_feedback where to_email = {email}""").on('email -> email).as(AdHocFeedback.simple *)
+  }
+
+  def getAdHocFeedbackFrom(email: String): Seq[AdHocFeedback] = db.withConnection { implicit connection =>
+    SQL("""select * from ad_hoc_feedback where from_email = {email}""").on('email -> email).as(AdHocFeedback.simple *)
+  }
+}

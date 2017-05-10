@@ -7,9 +7,13 @@ alter table person add column is_admin boolean default false;
 create table ad_hoc_feedback (
   id 						      bigserial,
   from_email		      varchar(255) not null,
+  from_name           varchar(255) not null,
+  from_role           varchar(255) not null,
   to_email			      varchar(255) not null,
+  to_name 			      varchar(255) not null,
+  to_role 			      varchar(255) not null,
   message             varchar(8192) not null,
-  submitted           timestamp not null,
+  created             timestamp not null,
   candidate_visible   boolean not null default FALSE,
   constraint pk_ad_hoc_feedback primary key (id)
 );
