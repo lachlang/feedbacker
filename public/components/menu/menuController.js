@@ -9,11 +9,11 @@ fbControllers.controller('MenuCtrl', ['$rootScope', '$log', '$location', 'Sessio
 	ctrl.isLeader = false;
 	ctrl.isAdmin = false;
 
-	ctrl.login = function() {
+	ctrl.login = function(username, password) {
 		ctrl.resetError();
 
 		// LG: 2016-04-26 use standard form validation only at this point
-		Session.login(ctrl.username, ctrl.password).then(function(result) {
+		Session.login(username, password).then(function(result) {
 			$log.debug("Logged in...");
 			ctrl.initialiseAuthenticatedContent();
 			$location.path("/list");
@@ -31,8 +31,9 @@ fbControllers.controller('MenuCtrl', ['$rootScope', '$log', '$location', 'Sessio
 
 	ctrl.logout = function() {
 		ctrl.resetError();
+		ctrl.password = undefined;
 		ctrl.isLeader = false;
-		ctrl.isAdmin = true;
+		ctrl.isAdmin = false;
 		Model.flush();
 		Session.logout();
 		$location.path("/landing");
@@ -57,11 +58,11 @@ fbControllers.controller('MenuCtrl', ['$rootScope', '$log', '$location', 'Sessio
 	}
 
 	ctrl.isLoggedInLeader = function() {
-		return Session.validSession() && ctrl.isLeader;
+		return ctrl.isLoggedIn() && ctrl.isLeader;
 	}
 
 	ctrl.isLoggedInAdmin = function() {
-		return Session.validSession() && ctrl.isAdmin;
+		return ctrl.isLoggedIn() && ctrl.isAdmin;
 	}
 
 	ctrl.isActive = function (viewLocation) {
