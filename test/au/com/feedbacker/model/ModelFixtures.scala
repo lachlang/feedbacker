@@ -14,20 +14,26 @@ import org.scalacheck.Arbitrary.arbitrary
   */
 trait ModelFixtures {
 
+  implicit val arbDateTime: Arbitrary[DateTime] = Arbitrary(
+    for {
+      millis <- Gen.posNum[Long]
+    } yield new DateTime(millis)
+  )
+
   implicit val arbAdHocFeedback: Arbitrary[AdHocFeedback] = Arbitrary(
     for {
       id        <- arbitrary[Option[Long]]
       fromEmail <- validEmailAddresses()
-      fromName  <- arbitrary[String]
-      fromRole  <- arbitrary[String]
+      fromName  <- arbitrary[String].suchThat(_.length > 0)
+      fromRole  <- arbitrary[String].suchThat(_.length > 0)
       toEmail   <- validEmailAddresses()
-      toName    <- arbitrary[String]
-      toRole    <- arbitrary[String]
-//      created   <- arbitrary[Option[DateTime]]
-      message   <- arbitrary[String]
+      toName    <- arbitrary[String].suchThat(_.length > 0)
+      toRole    <- arbitrary[String].suchThat(_.length > 0)
+      created   <- arbitrary[DateTime]
+      message   <- arbitrary[String].suchThat(_.length > 0)
       publish   <- arbitrary[Boolean]
     } yield AdHocFeedback(id = id, fromEmail = fromEmail, fromName = fromName, fromRole = fromRole, toEmail = toEmail,
-      toName = toName, toRole = toRole, created = DateTime.now, message = message, publish = publish)
+      toName = toName, toRole = toRole, created = created, message = message, publish = publish)
   )
 
   implicit val arbCredential: Arbitrary[Credentials] = Arbitrary(
@@ -39,12 +45,6 @@ trait ModelFixtures {
   )
 
   implicit val arbCredentialStatus: Arbitrary[CredentialStatus] = Arbitrary(oneOf(CredentialStatus.values.toSeq))
-
-  implicit val arbDateTime: Arbitrary[DateTime] = Arbitrary(
-    for {
-      millis <- arbitrary[Long].suchThat(_ > 0)
-    } yield new DateTime(millis)
-  )
 
   implicit val arbFeedbackCycle: Arbitrary[FeedbackCycle] = Arbitrary(
     for {
@@ -59,7 +59,7 @@ trait ModelFixtures {
   implicit val arbFeedbackGroup: Arbitrary[FeedbackGroup] = Arbitrary(
     for {
       cycle       <- arbitrary[FeedbackCycle]
-      n           <- arbitrary[Int].suchThat(_ < 10)
+      n           <- Gen.choose(1,10)
       nominations <- Gen.listOfN(n, arbitrary[Nomination])
     } yield FeedbackGroup(cycle = cycle, feedback = nominations)
   )
@@ -73,7 +73,7 @@ trait ModelFixtures {
       toPerson    <- arbitrary[Option[Person]]
       status      <- arbitrary[FeedbackStatus]
       updated     <- arbitrary[Option[DateTime]]
-      n           <- arbitrary[Int].suchThat(_ < 10)
+      n           <- Gen.choose(1,10)
       questions   <- Gen.listOfN(n, arbitrary[QuestionResponse])
       shared      <- arbitrary[Boolean]
       cycleId     <- arbitrary[Long]
@@ -97,7 +97,7 @@ trait ModelFixtures {
       id              <- arbitrary[Option[Long]]
       text            <- arbitrary[String]
       format          <- arbitrary[ResponseFormat]
-      n               <- arbitrary[Int].suchThat(_ < 10)
+      n               <- Gen.choose(1, 10)
       responseOptions <- Gen.listOfN(n, arbitrary[String])
       response        <- Gen.option(Gen.oneOf(responseOptions))
       comments        <- arbitrary[Option[String]]
