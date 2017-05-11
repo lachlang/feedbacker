@@ -10,6 +10,8 @@ fbServices.service('Model', ['$log', '$q', 'Account', 'Feedback', 'Nomination', 
 	var nomineeCandidates = [];
 	var feedbackCycles = [];
 	var reports = [];
+  var adHocFeedbackFor = {};
+  var adHocFeedbackFrom = [];
 	var errorResult = undefined;
 
 	var cacheServiceCall = function(mutateCache, updateRequired, getCache, serviceFunction, serviceCallName, mapKey) {
@@ -46,6 +48,8 @@ fbServices.service('Model', ['$log', '$q', 'Account', 'Feedback', 'Nomination', 
             nomineeCandidates = [];
             feedbackCycles = [];
             reports = [];
+            adHocFeedbackFor = {};
+            adHocFeedbackFrom = [];
             errorResult = undefined;
         },
 
@@ -108,7 +112,7 @@ fbServices.service('Model', ['$log', '$q', 'Account', 'Feedback', 'Nomination', 
 
 		getFeedbackDetail: function(feedbackId, flushCache) {
 			return cacheServiceCall(function(result, feedbackId) { feedbackDetail[feedbackId] = result.data.body },
-									function(feedbackId) {return ( feedbackDetail[feedbackId] == undefined || flushCache ) },
+									function(feedbackId) { return ( feedbackDetail[feedbackId] == undefined || flushCache ) },
 									function(feedbackId) { return feedbackDetail[feedbackId] },
 									Feedback.getFeedbackItem,
 									"Feedback.getFeedbackItem",
@@ -121,7 +125,7 @@ fbServices.service('Model', ['$log', '$q', 'Account', 'Feedback', 'Nomination', 
 											return item;
 										});
 									},
-									function() {return ( !nomineeCandidates || nomineeCandidates.length == 0 || flushCache ) },
+									function() { return ( !nomineeCandidates || nomineeCandidates.length == 0 || flushCache ) },
 									function() { return nomineeCandidates },
 									Nomination.getNomineeCandidates,
 									"Nomination.getNomineeCandidates");
@@ -129,7 +133,7 @@ fbServices.service('Model', ['$log', '$q', 'Account', 'Feedback', 'Nomination', 
 
 		getCurrentNominations: function(flushCache) {
 			return cacheServiceCall(function(result) { currentNominations = result.data.body },
-									function() {return ( !currentNominations || currentNominations.length == 0 || flushCache ) },
+									function() { return ( !currentNominations || currentNominations.length == 0 || flushCache ) },
 									function() { return currentNominations },
 									Nomination.getCurrentNominations,
 									"Nomination.getCurrentNominations");
@@ -137,7 +141,7 @@ fbServices.service('Model', ['$log', '$q', 'Account', 'Feedback', 'Nomination', 
 
 		getActiveFeedbackCycles: function(flushCache) {
 			return cacheServiceCall(function(result) { feedbackCycles = result.data.body },
-									function() {return ( !feedbackCycles || feedbackCycles.length == 0 || flushCache ) },
+									function() { return ( !feedbackCycles || feedbackCycles.length == 0 || flushCache ) },
 									function() { return feedbackCycles },
 									Feedback.getActiveFeedbackCycles,
 									"Feedback.getActiveFeedbackCycles");
@@ -145,12 +149,46 @@ fbServices.service('Model', ['$log', '$q', 'Account', 'Feedback', 'Nomination', 
 
 		getFeedbackCycle: function(cycleId, flushCache) {
 			return cacheServiceCall(function(result) { feedbackCycle[cycleId] = result.data.body },
-									function() {return ( feedbackCycle[cycleId] == undefined || flushCache ) },
+									function() { return ( feedbackCycle[cycleId] == undefined || flushCache ) },
 									function() { return feedbackCycle[cycleId] },
 									Feedback.getFeedbackCycle,
 									"Feedback.getFeedbackCycle",
 									cycleId);
-		}
+		},
+
+		createAdHocFeedback: function(recipientEmail, message, publishToRecipient) {
+			var deferred = $q.defer();
+
+			$log.debug("[Feedback.createAdHocFeedback] Updating to server...");
+			Feedback.createAdHocFeedback(recipientEmail, message, publishToRecipient).then(function(result){
+				$log.debug("[Feedback.createAdHocFeedback] Response from server...");
+				$log.debug(result)
+				adHocFeedbackFrom.push(result.data.body);
+				deferred.resolve(adHocFeedbackFrom);
+			}, function(result){
+				$log.error("[Feedback.createAdHocFeedback] Error from server:  [" + result + "]");
+				errorResult = result.data;
+				deferred.reject(errorResult);
+			});
+			return deferred.promise;
+		},
+
+		getAdHocFeedbackFor: function(recipientEmail, flushCache) {
+			return cacheServiceCall(function(result) { adHocFeedbackFor[recipientEmail] = result.data.body },
+									function(recipientEmail) { return (!adHocFeedbackFor[recipientEmail] || flushCache)},
+									function(recipientEmail) { return adHocFeedbackFor[recipientEmail] },
+									Feedback.getAdHocFeedbackFor,
+									"Feedback.getAdHocFeedbackFor",
+									recipientEmail);
+		},
+
+		getAdHocFeedbackFrom: function(flushCache) {
+			return cacheServiceCall(function(result) { adHocFeedbackFrom = result.data.body },
+									function() { return (!adHocFeedbackFrom || adHocFeedbackFrom.length == 0 || flushCache)},
+									function() { return adHocFeedbackFrom },
+									Feedback.getAdHocFeedbackFrom,
+									"Feedback.getAdHocFeedbackFrom");
+		},
 
 	}
 	return model;

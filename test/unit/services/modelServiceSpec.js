@@ -24,6 +24,9 @@ describe('service [Model]', function() {
         spyOn(feedback, 'getFeedbackItem').and.returnValue(deferred.promise);
         spyOn(feedback, 'getActiveFeedbackCycles').and.returnValue(deferred.promise);
         spyOn(feedback, 'getFeedbackCycle').and.returnValue(deferred.promise);
+        spyOn(feedback, 'createAdHocFeedback').and.returnValue(deferred.promise);
+        spyOn(feedback, 'getAdHocFeedbackFor').and.returnValue(deferred.promise);
+        spyOn(feedback, 'getAdHocFeedbackFrom').and.returnValue(deferred.promise);
 
 	}));
 
@@ -44,6 +47,9 @@ describe('service [Model]', function() {
         expect(angular.isFunction(model.getCurrentNominations)).toBe(true);
         expect(angular.isFunction(model.getActiveFeedbackCycles)).toBe(true);
         expect(angular.isFunction(model.getFeedbackCycle)).toBe(true);
+        expect(angular.isFunction(model.createAdHocFeedback)).toBe(true);
+        expect(angular.isFunction(model.getAdHocFeedbackFor)).toBe(true);
+        expect(angular.isFunction(model.getAdHocFeedbackFrom)).toBe(true);
     });
 
     describe('caches data after the first call to server', function() {
@@ -99,6 +105,14 @@ describe('service [Model]', function() {
 
         it('should call the feedback.getFeedbackCycle service only once', function() {
             cacheTest(model.getFeedbackCycle, feedback.getFeedbackCycle);
+        });
+
+        it('should call the feedback.getAdHocFeedbackFor service only once', function() {
+            cacheTest(model.getAdHocFeedbackFor, feedback.getAdHocFeedbackFor);
+        });
+
+        it('should call the feedback.getAdHocFeedbackFrom service only once', function() {
+            cacheTest(model.getAdHocFeedbackFrom, feedback.getAdHocFeedbackFrom);
         });
 
     });
@@ -157,6 +171,14 @@ describe('service [Model]', function() {
         it('should call the feedback.getFeedbackCycle service when flushed', function(){
             flushTest(model.getFeedbackCycle, feedback.getFeedbackCycle);
         });
+
+        it('should call the feedback.getAdHocFeedbackFor service when flushed', function(){
+            flushTest(model.getAdHocFeedbackFor, feedback.getAdHocFeedbackFor);
+        });
+
+        it('should call the feedback.getAdHocFeedbackFrom service when flushed', function(){
+            flushTest(model.getAdHocFeedbackFrom, feedback.getAdHocFeedbackFrom);
+        });
     });
 
     describe('write through tests', function() {
@@ -177,6 +199,30 @@ describe('service [Model]', function() {
             expect(account.getCurrentUser).not.toHaveBeenCalled();
         });
 
+        it('should call the feedback.createAdHocFeedback service', function() {
+          model.createAdHocFeedback("username", "message", true);
+
+          expect(feedback.createAdHocFeedback).toHaveBeenCalledWith("username", "message", true)
+        });
+
+        it('should update the cache when feedback.createAdHocFeedback service is called', function() {
+          var result;
+          model.createAdHocFeedback("username", "message", true).then(function(response){
+            result = response;
+          });
+
+          deferred.resolve({ "data": {"body": "value" } });
+          scope.$digest();
+
+          expect(result).toEqual(["value"]);
+
+          model.getAdHocFeedbackFrom().then(function(response) {
+            result = response;
+          });
+          scope.$digest();
+
+          expect(result).toEqual(["value"]);
+        });
     });
 
     describe('flushes the entire cache', function() {
