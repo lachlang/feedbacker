@@ -23,7 +23,10 @@ fbControllers.controller('ProvideCtrl',  ['$scope', '$log', 'Model', function($s
 	});
 
   ctrl.submitAdHocFeedback = function(recipientEmail, message, publishToRecipient) {
-    Model.submitAdHocFeedback(recipientEmail, message, publishToCandidate).then(function(response) {
+		console.log(recipientEmail)
+		console.log(message)
+		console.log(publishToRecipient)
+    Model.createAdHocFeedback(recipientEmail, message, publishToRecipient).then(function(response) {
       ctrl.submittedAdHocFeedback = response;
     });
   };

@@ -21,7 +21,7 @@
       </div>
       <div class="col-sm-4">
         <input class="form-control"
-               data-ng-model="provide.feedbackCandidate"
+               data-ng-model="provide.feedbackRecipient"
                uib-typeahead="candidate as candidate.display for candidate in provide.candidateList | filter:$viewValue | limitTo:8"
                placeholder="Name or email of colleague">
       </div>
@@ -36,11 +36,11 @@
         <div class="btn-group" role="group" aria-label="Publish feedback to candidate">
           <button class="btn btn-primary"
                   for="true"
-                  data-ng-model="provide.publishToCandidate"
+                  data-ng-model="provide.publishToRecipient"
                   uib-btn-radio="true">Yes</button>
           <button class="btn btn-primary"
                   for="false"
-                  data-ng-model="provide.publishToCandidate"
+                  data-ng-model="provide.publishToRecipient"
                   uib-btn-radio="false">No</button>
         </div>
       </div>
@@ -51,7 +51,7 @@
       <div class="col-md-2">
       </div>
       <div class="col-md-4">
-        <textarea class="form-control" placeholder="Enter feedback here.  Please be both clear and constructive." rows="3" data-ng-model="nominate.message" ></textarea>
+        <textarea class="form-control" placeholder="Enter feedback here.  Please be both clear and constructive." rows="3" data-ng-model="provide.message" ></textarea>
       </div>
     </div>
     <div class="row top-buffer">
@@ -72,10 +72,40 @@
         </p>
       </div>
       <div class="col-md-2">
-        <a class="btn btn-primary" data-ng-click="provide.submitAdHocFeedback(provide.nominee, provide.message)">Submit Feedback</a>
+        <a class="btn btn-primary" data-ng-click="provide.submitAdHocFeedback(provide.feedbackRecipient.email, provide.message, provide.publishToRecipient)">Submit Feedback</a>
       </div>
       <div class="col-sm-6">
-
+      </div>
+    </div> <!-- end row -->
+    <div class="row" data-ng-if="provide.submittedAdHocFeeedback && provide.submittedAdHocFeeedback.length > 0">
+      <div class="col-md-12">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <caption>Feedback you have previously received</caption>
+            <thead>
+            <tr>
+              <th>#</th>
+              <th>Colleague</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Submitted</th>
+              <th>View</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr data-ng-repeat="history in summary.feedbackHistoryList">
+              <td>{{$index + 1}}</td>
+              <td>{{history.from.name}}</td>
+              <td>{{history.from.role}}</td>
+              <td>{{history.status}}</td>
+              <td>{{history.lastUpdated | date: 'medium'}}</td>
+              <td>
+                <a data-ng-if="history.shared && (history.status == 'Submitted' || history.status == 'Closed')" href="#/detailView?id={{history.id}}">View</a>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div> <!-- end row -->
   </div> <!-- end controller -->

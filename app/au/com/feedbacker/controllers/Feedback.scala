@@ -93,7 +93,7 @@ class Feedback @Inject() (person: PersonDao,
   def createAdHocFeedback = AuthenticatedRequestAction { (user , json) =>
     json.validate[AdHocFeedbackRequest].asOpt.flatMap{request => println("processing request");person.findByEmail(request.toEmail).map{to =>
       println("mapping");AdHocFeedback(None, user.credentials.email, user.name, user.role, request.toEmail, to.name, to.role, DateTime.now, request.message, request.publishToRecipient)}} match {
-      case None => BadRequest
+      case None => BadRequest(Json.obj("message" -> "Invalid request."))
       case Some(feedback) =>         println(s"testing with: $feedback")
         if (feedback.toEmail == feedback.fromEmail) {
           BadRequest(Json.obj("message" -> "Can't send feedback to yourself."))
