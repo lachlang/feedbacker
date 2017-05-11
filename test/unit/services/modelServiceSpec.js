@@ -49,7 +49,7 @@ describe('service [Model]', function() {
         expect(angular.isFunction(model.getFeedbackCycle)).toBe(true);
         expect(angular.isFunction(model.createAdHocFeedback)).toBe(true);
         expect(angular.isFunction(model.getAdHocFeedbackFor)).toBe(true);
-        expect(angular.isFunction(model.getAdHocFeedbackFrom)).toBe(true);
+        expect(angular.isFunction(model.getSubmittedAdHocFeedback)).toBe(true);
     });
 
     describe('caches data after the first call to server', function() {
@@ -112,7 +112,7 @@ describe('service [Model]', function() {
         });
 
         it('should call the feedback.getAdHocFeedbackFrom service only once', function() {
-            cacheTest(model.getAdHocFeedbackFrom, feedback.getAdHocFeedbackFrom);
+            cacheTest(model.getSubmittedAdHocFeedback, feedback.getAdHocFeedbackFrom);
         });
 
     });
@@ -177,7 +177,7 @@ describe('service [Model]', function() {
         });
 
         it('should call the feedback.getAdHocFeedbackFrom service when flushed', function(){
-            flushTest(model.getAdHocFeedbackFrom, feedback.getAdHocFeedbackFrom);
+            flushTest(model.getSubmittedAdHocFeedback, feedback.getAdHocFeedbackFrom);
         });
     });
 
@@ -216,7 +216,7 @@ describe('service [Model]', function() {
 
           expect(result).toEqual(["value"]);
 
-          model.getAdHocFeedbackFrom().then(function(response) {
+          model.getSubmittedAdHocFeedback().then(function(response) {
             result = response;
           });
           scope.$digest();

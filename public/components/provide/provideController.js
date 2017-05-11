@@ -18,12 +18,14 @@ fbControllers.controller('ProvideCtrl',  ['$scope', '$log', 'Model', function($s
 	});
 
 	// get the users ad-hoc feedback history
-//	Model.getSubmittedAdHocFeedback().then(function(response) {
-//		ctrl.submittedAdHocFeedback = response;
-//	});
+	Model.getSubmittedAdHocFeedback().then(function(response) {
+		ctrl.submittedAdHocFeedback = response;
+	});
 
-    ctrl.submitAdHocFeedback = function() {
-
-    };
+  ctrl.submitAdHocFeedback = function(recipientEmail, message, publishToRecipient) {
+    Model.submitAdHocFeedback(recipientEmail, message, publishToCandidate).then(function(response) {
+      ctrl.submittedAdHocFeedback = response;
+    });
+  };
 
 }]);

@@ -182,7 +182,7 @@ fbServices.service('Model', ['$log', '$q', 'Account', 'Feedback', 'Nomination', 
 									recipientEmail);
 		},
 
-		getAdHocFeedbackFrom: function(flushCache) {
+		getSubmittedAdHocFeedback: function(flushCache) {
 			return cacheServiceCall(function(result) { adHocFeedbackFrom = result.data.body },
 									function() { return (!adHocFeedbackFrom || adHocFeedbackFrom.length == 0 || flushCache)},
 									function() { return adHocFeedbackFrom },
