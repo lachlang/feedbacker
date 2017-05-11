@@ -91,13 +91,19 @@ class Feedback @Inject() (person: PersonDao,
       nominationReadFilter(n.from, fromPerson.credentials.email) || nominationWriteFilter(n, fromPerson.credentials.email))
 
   def createAdHocFeedback = AuthenticatedRequestAction { (user , json) =>
-    json.validate[AdHocFeedbackRequest].asOpt.flatMap(request => person.findByEmail(request.toEmail).map(to =>
-      AdHocFeedback(None, user.credentials.email, user.name, user.role, request.toEmail, to.name, to.role, DateTime.now, request.message, request.publishToRecipient))) match {
+    json.validate[AdHocFeedbackRequest].asOpt.flatMap{request => println("processing request");person.findByEmail(request.toEmail).map{to =>
+      println("mapping");AdHocFeedback(None, user.credentials.email, user.name, user.role, request.toEmail, to.name, to.role, DateTime.now, request.message, request.publishToRecipient)}} match {
       case None => BadRequest
-      case Some(feedback) => adHocFeedback.createAdHocFeedback(feedback) match {
-        case None => InternalServerError(Json.obj("message" -> "Could not create ad-hoc feedback."))
-        case Some(savedFeedback) => Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(savedFeedback)))
-      }
+      case Some(feedback) =>         println(s"testing with: $feedback")
+        if (feedback.toEmail == feedback.fromEmail) {
+          BadRequest(Json.obj("message" -> "Can't send feedback to yourself."))
+        } else {
+          println("now here...")
+          adHocFeedback.createAdHocFeedback(feedback) match {
+            case None => InternalServerError(Json.obj("message" -> "Could not create ad-hoc feedback."))
+            case Some(savedFeedback) => Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(savedFeedback)))
+          }
+        }
     }
   }
 

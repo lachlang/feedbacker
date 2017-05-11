@@ -22,6 +22,11 @@ import scala.concurrent.Future
   */
 class FeedbackSpec extends PlaySpec with MockitoSugar with AllFixtures with PropertyChecks {
 
+  val upToTwentyAdHocSubmissions = for {
+    n <- Gen.choose(0, 20)
+    people <- Gen.listOfN(n, arbitrary[AdHocFeedback])
+  } yield people
+
   def fixture = {
     new {
       val mockPersonDao = mock[PersonDao]
@@ -56,18 +61,59 @@ class FeedbackSpec extends PlaySpec with MockitoSugar with AllFixtures with Prop
         contentAsString(result) mustBe ""
       }
     }
-//    "return a valid user" in {
-//      forAll() { (person: Person, st: SessionToken) =>
+    "reject and invalid request" in {
+      forAll() { (person: Person, st: SessionToken) =>
+        val f = fixture
+        when(f.mockSessionManager.extractToken(any())).thenReturn(Some(st))
+        when(f.mockPersonDao.findByEmail(st.username)).thenReturn(Some(person))
+        val fakeRequest = FakeRequest().withJsonBody(Json.toJson("{'this':'thing'}")).withCookies(SessionManager.createSessionCookie(st.token))
+        val result: Future[Result] = f.controller.createAdHocFeedback().apply(fakeRequest)
+
+        // verify
+        status(result) mustBe 400
+        verify(f.mockSessionManager).extractToken(any())
+        verify(f.mockPersonDao).findByEmail(st.username)
+      }
+    }
+//    "return an internal server error if the database write fails" in {
+//      forAll() { (person: Person, st: SessionToken, feedback: AdHocFeedback) =>
 //        val f = fixture
 //        when(f.mockSessionManager.extractToken(any())).thenReturn(Some(st))
 //        when(f.mockPersonDao.findByEmail(st.username)).thenReturn(Some(person))
-//        val result: Future[Result] = f.controller.getUser().apply(FakeRequest().withCookies(SessionManager.createSessionCookie(st.token)))
+//        when(f.mockPersonDao.findByEmail(feedback.toEmail)).thenReturn(Some(Person(None, feedback.toName, feedback.toRole, Credentials(feedback.toEmail,"",CredentialStatus.Active),"")))
+//        val newFeedback = feedback.copy(id = None, fromEmail = person.credentials.email, fromName = person.name, fromRole = person.role)
+//        println(s"testing for:  $newFeedback")
+//        when(f.mockAdHocFeedbackDao.createAdHocFeedback(newFeedback)).thenReturn(None)
+//        val fakeRequest = FakeRequest().withJsonBody(Json.toJson(AdHocFeedbackRequest(feedback.toEmail, feedback.message, feedback.publish))).withCookies(SessionManager.createSessionCookie(st.token))
+//        val result: Future[Result] = f.controller.createAdHocFeedback().apply(fakeRequest)
 //
 //        // verify
-//        status(result) mustBe 200
-//        contentAsJson(result) mustEqual Json.obj("body" -> Json.toJson(person))
+//        status(result) mustBe 500
+//        contentAsJson(result) mustBe Json.obj("message" -> "Could not create ad-hoc feedback.")
 //        verify(f.mockSessionManager).extractToken(any())
 //        verify(f.mockPersonDao).findByEmail(st.username)
+////        verify(f.mockPerosnDao).findByEmail(feedback.toEmail)
+//        verify(f.mockAdHocFeedbackDao).createAdHocFeedback(newFeedback)
+//      }
+//    }
+//    "return success when feedback is successfully created" in {
+//      forAll() { (person: Person, st: SessionToken, feedback: AdHocFeedback, id: Long) =>
+//        val f = fixture
+//        when(f.mockSessionManager.extractToken(any())).thenReturn(Some(st))
+//        when(f.mockPersonDao.findByEmail(st.username)).thenReturn(Some(person))
+//        when(f.mockPersonDao.findByEmail(feedback.toEmail)).thenReturn(Some(Person(None, feedback.toName, feedback.toRole, Credentials(feedback.toEmail,"",CredentialStatus.Active),"")))
+//        val newFeedback = feedback.copy(id = None)
+//        val createdFeedback = feedback.copy(id = Some(id))
+//        when(f.mockAdHocFeedbackDao.createAdHocFeedback(newFeedback)).thenReturn(Some(createdFeedback))
+//        val fakeRequest = FakeRequest().withJsonBody(Json.toJson(AdHocFeedbackRequest(feedback.toEmail, feedback.message, feedback.publish))).withCookies(SessionManager.createSessionCookie(st.token))
+//        val result: Future[Result] = f.controller.createAdHocFeedback().apply(fakeRequest)
+//
+//          // verify
+//        status(result) mustBe 200
+//        contentAsJson(result) mustEqual Json.obj("body" -> Json.toJson(createdFeedback))
+//        verify(f.mockSessionManager).extractToken(any())
+//        verify(f.mockPersonDao).findByEmail(st.username)
+//        verify(f.mockAdHocFeedbackDao).createAdHocFeedback(newFeedback)
 //      }
 //    }
   }
@@ -116,7 +162,7 @@ class FeedbackSpec extends PlaySpec with MockitoSugar with AllFixtures with Prop
       }
     }
     "successfully return a valid list of ad hoc feedback items for a given user" in {
-      forAll() { (person: Person, st: SessionToken, feedback: Seq[AdHocFeedback]) =>
+      forAll(arbitrary[Person], arbitrary[SessionToken], upToTwentyAdHocSubmissions) { (person: Person, st: SessionToken, feedback: Seq[AdHocFeedback]) =>
         val f = fixture
         when(f.mockSessionManager.extractToken(any())).thenReturn(Some(st))
         when(f.mockPersonDao.findByEmail(st.username)).thenReturn(Some(person))
@@ -132,7 +178,7 @@ class FeedbackSpec extends PlaySpec with MockitoSugar with AllFixtures with Prop
       }
     }
     "successfully return a valid list of ad hoc feedback items for a manager" in {
-      forAll() { (person: Person, st: SessionToken, feedback: Seq[AdHocFeedback]) =>
+      forAll(arbitrary[Person], arbitrary[SessionToken], upToTwentyAdHocSubmissions) { (person: Person, st: SessionToken, feedback: Seq[AdHocFeedback]) =>
         val f = fixture
         when(f.mockSessionManager.extractToken(any())).thenReturn(Some(st))
         when(f.mockPersonDao.findByEmail(st.username)).thenReturn(Some(person))
@@ -191,7 +237,7 @@ class FeedbackSpec extends PlaySpec with MockitoSugar with AllFixtures with Prop
       }
     }
     "successfully return a valid list of ad hoc feedback items" in {
-      forAll() { (person: Person, st: SessionToken, feedback: Seq[AdHocFeedback]) =>
+      forAll(arbitrary[Person], arbitrary[SessionToken], upToTwentyAdHocSubmissions) { (person: Person, st: SessionToken, feedback: Seq[AdHocFeedback]) =>
         val f = fixture
         when(f.mockSessionManager.extractToken(any())).thenReturn(Some(st))
         when(f.mockPersonDao.findByEmail(st.username)).thenReturn(Some(person))
