@@ -14,6 +14,7 @@ describe('provide feedback controller [ProvideCtrl]', function() {
     deferred = $q.defer();
 
     model = _Model_;
+    spyOn(model, 'createAdHocFeedback').and.returnValue(deferred.promise);
     spyOn(model, 'getNomineeCandidates').and.returnValue(deferred.promise);
     spyOn(model, 'getSubmittedAdHocFeedback').and.returnValue(deferred.promise);
 
@@ -29,8 +30,8 @@ describe('provide feedback controller [ProvideCtrl]', function() {
     it('for global controller variables', function() {
           expect(provideController).toBeDefined();
           expect(provideController.candidateList).toEqual([]);
-          expect(provideController.feedbackCandidate).toBeUndefined();
-          expect(provideController.publishToCandidate).toBe(false);
+          expect(provideController.feedbackRecipient).toBeUndefined();
+          expect(provideController.publishToRecipient).toBe(false);
           expect(provideController.message).toBeUndefined();
           expect(provideController.error).toBeUndefined();
           expect(provideController.submittedAdHocFeedback).toEqual([]);
@@ -45,43 +46,44 @@ describe('provide feedback controller [ProvideCtrl]', function() {
 
 	describe('when submitting feedback', function() {
 
-//		it('should call nomination.addNomination', function() {
-//			nominationController.addNomination("a@b.co", 1, "personal message");
-//			expect(nomination.addNomination).toHaveBeenCalledWith("a@b.co", 1, "personal message");
-//		});
-//
-//		it('should call clear error messages', function() {
-//			nominationController.error = "some value";
-//
-//			nominationController.addNomination("a@b.co", 1);
-//			expect(nominationController.error).toBeUndefined();
-//		});
-//
-//		it('should call set error messages for invalid parameters', function() {
-//			nominationController.addNomination();
-//			expect(nominationController.error).toEqual("Must send a nomination to a valid email address.");
-//
-//			nominationController.addNomination("a@b", 1);
-//			expect(nominationController.error).toEqual("Must send a nomination to a valid email address.");
-//		});
-//
-//		it('should call model.getCurrentNominations when successful', function() {
-//			nominationController.addNomination("a@b.co", 1);
-//
-//			deferredNom.resolve();
-//			scope.$digest();
-//
-//			expect(model.getCurrentNominations).toHaveBeenCalledWith(true);
-//		});
-//
-//		it('should call set and error message when unsuccessful', function() {
-//			nominationController.addNomination("a@b.co", 1);
-//
-//			deferredNom.reject();
-//			scope.$digest();
-//
-//			expect(nominationController.error).toEqual("Could not create nomination at this time.  Please try again later.");
-//		});
+		it('should call model.createAdHocFeedback', function() {
+			provideController.submitAdHocFeedback("a@b.co", "personal message", false);
+			expect(model.createAdHocFeedback).toHaveBeenCalledWith("a@b.co", "personal message", false);
+		});
+
+		it('should reset the error message when called', function() {
+			provideController.error = "some value";
+
+			provideController.submitAdHocFeedback("a@b.co", "personal message", true);
+			expect(model.createAdHocFeedback).toHaveBeenCalledWith("a@b.co", "personal message", true);
+			expect(provideController.error).toBeUndefined();
+		});
+
+		it('should update the controller after creating feedback', function() {
+      provideController.feedbackRecipient = "word";
+      provideController.message = "another word";
+		  provideController.publishToRecipient = true;
+
+			provideController.submitAdHocFeedback("a@b.co", "personal message", true);
+
+			deferred.resolve("something");
+			scope.$digest();
+
+			expect(provideController.error).toBeUndefined();
+			expect(provideController.submittedAdHocFeedback).toEqual("something");
+			expect(provideController.feedbackRecipient).toBeUndefined();
+			expect(provideController.message).toBeUndefined();
+			expect(provideController.publishToRecipient).toBe(false);
+		});
+
+		it('should set the error message if the create fails', function() {
+			provideController.submitAdHocFeedback("a@b.co", 1);
+
+			deferred.reject();
+			scope.$digest();
+
+			expect(provideController.error).toEqual("Could not create feedback.");
+		});
 	});
 
 });

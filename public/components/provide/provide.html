@@ -77,31 +77,30 @@
       <div class="col-sm-6">
       </div>
     </div> <!-- end row -->
-    <div class="row" data-ng-if="provide.submittedAdHocFeeedback && provide.submittedAdHocFeeedback.length > 0">
+    <div class="row" data-ng-if="provide.submittedAdHocFeedback && provide.submittedAdHocFeedback.length > 0">
       <div class="col-md-12">
         <div class="table-responsive">
           <table class="table table-hover">
-            <caption>Feedback you have previously received</caption>
+            <caption>Feedback you have provided</caption>
             <thead>
             <tr>
               <th>#</th>
               <th>Colleague</th>
               <th>Role</th>
-              <th>Status</th>
               <th>Submitted</th>
-              <th>View</th>
+              <th>Message</th>
+              <th>Published to Recipient</th>
             </tr>
             </thead>
             <tbody>
-            <tr data-ng-repeat="history in summary.feedbackHistoryList">
+            <tr data-ng-repeat="feedback in provide.submittedAdHocFeedback">
               <td>{{$index + 1}}</td>
-              <td>{{history.from.name}}</td>
-              <td>{{history.from.role}}</td>
-              <td>{{history.status}}</td>
-              <td>{{history.lastUpdated | date: 'medium'}}</td>
-              <td>
-                <a data-ng-if="history.shared && (history.status == 'Submitted' || history.status == 'Closed')" href="#/detailView?id={{history.id}}">View</a>
-              </td>
+              <td>{{feedback.toName}}</td>
+              <td>{{feedback.toRole}}</td>
+              <td>{{feedback.created | date: 'medium'}}</td>
+              <td>{{feedback.message}}</td>
+              <td data-ng-if="feedback.publish">Yes</td>
+              <td data-ng-if="!feedback.publish">No</td>
             </tr>
             </tbody>
           </table>

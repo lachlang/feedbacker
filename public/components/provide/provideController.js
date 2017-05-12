@@ -6,9 +6,9 @@ fbControllers.controller('ProvideCtrl',  ['$scope', '$log', 'Model', function($s
 	var ctrl = this;
 
     ctrl.candidateList = [];
-    ctrl.feedbackCandidate = undefined;
+    ctrl.feedbackRecipient = undefined;
     ctrl.message = undefined;
-    ctrl.publishToCandidate = false;
+    ctrl.publishToRecipient = false;
     ctrl.error = undefined;
     ctrl.submittedAdHocFeedback = [];
 
@@ -23,11 +23,14 @@ fbControllers.controller('ProvideCtrl',  ['$scope', '$log', 'Model', function($s
 	});
 
   ctrl.submitAdHocFeedback = function(recipientEmail, message, publishToRecipient) {
-		console.log(recipientEmail)
-		console.log(message)
-		console.log(publishToRecipient)
+    ctrl.error = undefined;
     Model.createAdHocFeedback(recipientEmail, message, publishToRecipient).then(function(response) {
       ctrl.submittedAdHocFeedback = response;
+      ctrl.feedbackRecipient = undefined;
+      ctrl.message = undefined;
+      ctrl.publishToRecipient = false;
+    }, function() {
+      ctrl.error = "Could not create feedback.";
     });
   };
 

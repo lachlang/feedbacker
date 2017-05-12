@@ -660,7 +660,7 @@ object AdHocFeedback{
       get[DateTime]("ad_hoc_feedback.created") ~
       get[Boolean]("ad_hoc_feedback.recipient_visible") map {
       case id~fromEmail~fromName~fromRole~toEmail~toName~toRole~message~created~candidateVisible =>
-        AdHocFeedback(id = id, fromEmail = fromEmail, fromName = fromName, fromRole = fromRole, toEmail = toEmail, toName = toName, toRole = toRole, created = created, message = message, publish = candidateVisible)
+        AdHocFeedback(id = id, fromEmail = fromEmail, fromName = fromName, fromRole = fromRole, toEmail = toEmail, toName = toName, toRole = toRole, created = created, message = new String(Base64.getDecoder.decode(message)), publish = candidateVisible)
     }
   }
 }
