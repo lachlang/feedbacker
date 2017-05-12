@@ -14,17 +14,12 @@
     </div>
     <div class="row">
       <div class="col-md-12">
-        <h3>Action Pending Feedback</h3>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-md-12">
         <div data-ng-if="!worklist.pendingActions || worklist.pendingActions.length == 0">
           <p class="lead">No pending actions</p>
         </div>
         <div class="table-responsive" data-ng-if="worklist.pendingActions && worklist.pendingActions.length > 0">
           <table class="table table-hover">
-            <caption>Feedback you need to action</caption>
+            <caption class="lead">Feedback you need to action</caption>
             <thead>
               <tr>
                 <th>#</th>
