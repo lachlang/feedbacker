@@ -117,12 +117,12 @@ class FeedbackSpec extends PlaySpec with MockitoSugar with AllFixtures with Prop
 //      }
 //    }
   }
-  "Feedback#getAdHocFeedbackFor" should {
+  "Feedback#getAdHocFeedbackForUser" should {
     "be forbidden when no session token is found" in {
       forAll() { person: Person =>
         val f = fixture
         when(f.mockSessionManager.extractToken(any())).thenReturn(None)
-        val result: Future[Result] = f.controller.getAdHocFeedbackFor(person.credentials.email).apply(FakeRequest())
+        val result: Future[Result] = f.controller.getAdHocFeedbackForUser(person.credentials.email).apply(FakeRequest())
 
         // verify
         verify(f.mockSessionManager).extractToken(any())
@@ -137,7 +137,7 @@ class FeedbackSpec extends PlaySpec with MockitoSugar with AllFixtures with Prop
         when(f.mockPersonDao.findByEmail(st.username)).thenReturn(None)
 
         // call
-        val result: Future[Result] = f.controller.getAdHocFeedbackFor(person.credentials.email).apply(FakeRequest().withCookies(SessionManager.createSessionCookie(st.token)))
+        val result: Future[Result] = f.controller.getAdHocFeedbackForUser(person.credentials.email).apply(FakeRequest().withCookies(SessionManager.createSessionCookie(st.token)))
 
         // verify
         verify(f.mockSessionManager).extractToken(any())
@@ -145,61 +145,143 @@ class FeedbackSpec extends PlaySpec with MockitoSugar with AllFixtures with Prop
         status(result) mustBe 403
       }
     }
-    "be forbidden for invalid user" in {
-      forAll() { (person: Person, st: SessionToken, invalidUsername: String) =>
-        whenever(invalidUsername != person.credentials.email & invalidUsername != person.managerEmail) {
-          val f = fixture
-          when(f.mockSessionManager.extractToken(any())).thenReturn(Some(st))
-          when(f.mockPersonDao.findByEmail(st.username)).thenReturn(Some(person))
-          val result: Future[Result] = f.controller.getAdHocFeedbackFor(invalidUsername).apply(FakeRequest().withCookies(SessionManager.createSessionCookie(st.token)))
-
-          // verify
-          verify(f.mockSessionManager).extractToken(any())
-          verify(f.mockPersonDao).findByEmail(st.username)
-          status(result) mustBe 403
-          contentAsString(result) mustEqual ""
-        }
-      }
-    }
-    "successfully return a valid list of ad hoc feedback items for a given user" in {
+    "successfully reject returning ad hoc feedback items for the given user" in {
       forAll(arbitrary[Person], arbitrary[SessionToken], upToTwentyAdHocSubmissions) { (person: Person, st: SessionToken, feedback: Seq[AdHocFeedback]) =>
         val f = fixture
         when(f.mockSessionManager.extractToken(any())).thenReturn(Some(st))
         when(f.mockPersonDao.findByEmail(st.username)).thenReturn(Some(person))
-        when(f.mockAdHocFeedbackDao.getAdHocFeedbackFor(person.credentials.email)).thenReturn(feedback)
-        val result: Future[Result] = f.controller.getAdHocFeedbackFor(person.credentials.email).apply(FakeRequest().withCookies(SessionManager.createSessionCookie(st.token)))
+        val result: Future[Result] = f.controller.getAdHocFeedbackForUser(person.credentials.email).apply(FakeRequest().withCookies(SessionManager.createSessionCookie(st.token)))
 
         // verify
         verify(f.mockSessionManager).extractToken(any())
         verify(f.mockPersonDao).findByEmail(st.username)
-        verify(f.mockAdHocFeedbackDao).getAdHocFeedbackFor(person.credentials.email)
+        status(result) mustBe 403
+        contentAsString(result) mustEqual ""
+      }
+    }
+    "successfully reject returning ad hoc feedback items for a user not in the appropriate line management structure" in {
+      forAll(arbitrary[Person], arbitrary[SessionToken], upToTwentyAdHocSubmissions) { (person: Person, st: SessionToken, feedback: Seq[AdHocFeedback]) =>
+        val f = fixture
+        when(f.mockSessionManager.extractToken(any())).thenReturn(Some(st))
+        when(f.mockPersonDao.findByEmail(st.username)).thenReturn(Some(person))
+        when(f.mockPersonDao.findByEmail(person.credentials.email)).thenReturn(Some(person))
+        when(f.mockPersonDao.findByEmail(person.managerEmail)).thenReturn(None)
+//        when(f.controller.isInReportingLine(person.credentials.email, Some(person))).thenReturn(false)
+        val result: Future[Result] = f.controller.getAdHocFeedbackForUser(person.credentials.email).apply(FakeRequest().withCookies(SessionManager.createSessionCookie(st.token)))
+
+        // verify
+        verify(f.mockSessionManager).extractToken(any())
+        verify(f.mockPersonDao).findByEmail(st.username)
+        status(result) mustBe 403
+        contentAsString(result) mustEqual ""
+      }
+    }
+    "successfully return an empty list of ad hoc feedback items for a manager" in {
+      forAll() { (requestor: Person, recipient: Person, st: SessionToken) =>
+        val f = fixture
+        when(f.mockSessionManager.extractToken(any())).thenReturn(Some(st))
+        when(f.mockPersonDao.findByEmail(st.username)).thenReturn(Some(requestor))
+        when(f.mockPersonDao.findByEmail(recipient.credentials.email)).thenReturn(Some(recipient.copy(managerEmail = requestor.credentials.email)))
+        when(f.mockAdHocFeedbackDao.getAdHocFeedbackForReport(recipient.credentials.email)).thenReturn(Seq())
+        val result: Future[Result] = f.controller.getAdHocFeedbackForUser(recipient.credentials.email).apply(FakeRequest().withCookies(SessionManager.createSessionCookie(st.token)))
+
+        // verify
+        verify(f.mockSessionManager).extractToken(any())
+        verify(f.mockPersonDao).findByEmail(st.username)
+        verify(f.mockPersonDao).findByEmail(recipient.credentials.email)
+        verify(f.mockAdHocFeedbackDao).getAdHocFeedbackForReport(recipient.credentials.email)
+        contentAsJson(result) mustBe Json.obj("apiVersion" -> "1.0", "body" -> Json.arr())
         status(result) mustBe 200
-        contentAsJson(result) mustBe Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(feedback))
       }
     }
     "successfully return a valid list of ad hoc feedback items for a manager" in {
-      forAll(arbitrary[Person], arbitrary[SessionToken], upToTwentyAdHocSubmissions) { (person: Person, st: SessionToken, feedback: Seq[AdHocFeedback]) =>
+      forAll(arbitrary[Person], arbitrary[Person], arbitrary[SessionToken], upToTwentyAdHocSubmissions) { (requestor: Person, recipient: Person, st: SessionToken, feedback: Seq[AdHocFeedback]) =>
         val f = fixture
         when(f.mockSessionManager.extractToken(any())).thenReturn(Some(st))
-        when(f.mockPersonDao.findByEmail(st.username)).thenReturn(Some(person))
-        when(f.mockAdHocFeedbackDao.getAdHocFeedbackFor(person.managerEmail)).thenReturn(feedback)
-        val result: Future[Result] = f.controller.getAdHocFeedbackFor(person.managerEmail).apply(FakeRequest().withCookies(SessionManager.createSessionCookie(st.token)))
+        when(f.mockPersonDao.findByEmail(st.username)).thenReturn(Some(requestor))
+        when(f.mockPersonDao.findByEmail(recipient.credentials.email)).thenReturn(Some(recipient.copy(managerEmail = requestor.credentials.email)))
+        when(f.mockAdHocFeedbackDao.getAdHocFeedbackForReport(recipient.credentials.email)).thenReturn(feedback)
+        val result: Future[Result] = f.controller.getAdHocFeedbackForUser(recipient.credentials.email).apply(FakeRequest().withCookies(SessionManager.createSessionCookie(st.token)))
 
         // verify
         verify(f.mockSessionManager).extractToken(any())
         verify(f.mockPersonDao).findByEmail(st.username)
-        verify(f.mockAdHocFeedbackDao).getAdHocFeedbackFor(person.managerEmail)
+        verify(f.mockPersonDao).findByEmail(recipient.credentials.email)
+        verify(f.mockAdHocFeedbackDao).getAdHocFeedbackForReport(recipient.credentials.email)
         contentAsJson(result) mustBe Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(feedback))
         status(result) mustBe 200
       }
     }
   }
-  "Feedback#getAdHocFeedbackFrom" should {
+  "Feedback#getAdHocFeedbackForSelf" should {
+    "be forbidden when no session token is found" in {
+      forAll() { person: Person =>
+        val f = fixture
+        when(f.mockSessionManager.extractToken(any())).thenReturn(None)
+        val result: Future[Result] = f.controller.getAdHocFeedbackForSelf.apply(FakeRequest())
+
+        // verify
+        verify(f.mockSessionManager).extractToken(any())
+        status(result) mustBe 403
+      }
+    }
+    "be forbidden for an unregistered user" in {
+      forAll() { (person: Person, st: SessionToken) =>
+        // mock
+        val f = fixture
+        when(f.mockSessionManager.extractToken(any())).thenReturn(Some(st))
+        when(f.mockPersonDao.findByEmail(st.username)).thenReturn(None)
+
+        // call
+        val result: Future[Result] = f.controller.getAdHocFeedbackForSelf.apply(FakeRequest().withCookies(SessionManager.createSessionCookie(st.token)))
+
+        // verify
+        verify(f.mockSessionManager).extractToken(any())
+        verify(f.mockPersonDao).findByEmail(st.username)
+        status(result) mustBe 403
+      }
+    }
+    "successfully return an empty list when there is no feedback for the current user" in {
+      forAll() { (person: Person, st: SessionToken, invalidUsername: String) =>
+        whenever(invalidUsername != person.credentials.email & invalidUsername != person.managerEmail) {
+          val f = fixture
+          when(f.mockSessionManager.extractToken(any())).thenReturn(Some(st))
+          when(f.mockPersonDao.findByEmail(st.username)).thenReturn(Some(person))
+          when(f.mockAdHocFeedbackDao.getAdHocFeedbackForSelf(person.credentials.email)).thenReturn(Seq())
+          val result: Future[Result] = f.controller.getAdHocFeedbackForSelf.apply(FakeRequest().withCookies(SessionManager.createSessionCookie(st.token)))
+
+          // verify
+          verify(f.mockSessionManager).extractToken(any())
+          verify(f.mockPersonDao).findByEmail(st.username)
+          verify(f.mockAdHocFeedbackDao).getAdHocFeedbackForSelf(person.credentials.email)
+          status(result) mustBe 200
+          contentAsJson(result) mustBe Json.obj("apiVersion" -> "1.0", "body" -> Json.arr())
+        }
+      }
+    }
+    "successfully return a valid list of ad hoc feedback items for the current user" in {
+      forAll(arbitrary[Person], arbitrary[SessionToken], upToTwentyAdHocSubmissions) { (person: Person, st: SessionToken, feedback: Seq[AdHocFeedback]) =>
+        val f = fixture
+        when(f.mockSessionManager.extractToken(any())).thenReturn(Some(st))
+        when(f.mockPersonDao.findByEmail(st.username)).thenReturn(Some(person))
+        when(f.mockAdHocFeedbackDao.getAdHocFeedbackForSelf(person.credentials.email)).thenReturn(feedback)
+        val result: Future[Result] = f.controller.getAdHocFeedbackForSelf.apply(FakeRequest().withCookies(SessionManager.createSessionCookie(st.token)))
+
+        // verify
+        verify(f.mockSessionManager).extractToken(any())
+        verify(f.mockPersonDao).findByEmail(st.username)
+        verify(f.mockAdHocFeedbackDao).getAdHocFeedbackForSelf(person.credentials.email)
+        status(result) mustBe 200
+        contentAsJson(result) mustBe Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(feedback))
+      }
+    }
+  }
+  "Feedback#getAdHocFeedbackFromSelf" should {
     "be forbidden for an invalid token" in {
       forAll() { (st: SessionToken) =>
         val f = fixture
         when(f.mockSessionManager.extractToken(any())).thenReturn(None)
-        val result: Future[Result] = f.controller.getAdHocFeedbackFrom.apply(FakeRequest().withCookies(SessionManager.createSessionCookie(st.token)))
+        val result: Future[Result] = f.controller.getAdHocFeedbackFromSelf.apply(FakeRequest().withCookies(SessionManager.createSessionCookie(st.token)))
 
         // verify
         status(result) mustBe 403
@@ -212,7 +294,7 @@ class FeedbackSpec extends PlaySpec with MockitoSugar with AllFixtures with Prop
         val f = fixture
         when(f.mockSessionManager.extractToken(any())).thenReturn(Some(st))
         when(f.mockPersonDao.findByEmail(st.username)).thenReturn(None)
-        val result: Future[Result] = f.controller.getAdHocFeedbackFrom.apply(FakeRequest().withCookies(SessionManager.createSessionCookie(st.token)))
+        val result: Future[Result] = f.controller.getAdHocFeedbackFromSelf.apply(FakeRequest().withCookies(SessionManager.createSessionCookie(st.token)))
 
         // verify
         verify(f.mockSessionManager).extractToken(any())
@@ -225,13 +307,13 @@ class FeedbackSpec extends PlaySpec with MockitoSugar with AllFixtures with Prop
         val f = fixture
         when(f.mockSessionManager.extractToken(any())).thenReturn(Some(st))
         when(f.mockPersonDao.findByEmail(st.username)).thenReturn(Some(person))
-        when(f.mockAdHocFeedbackDao.getAdHocFeedbackFrom(person.credentials.email)).thenReturn(Seq())
-        val result: Future[Result] = f.controller.getAdHocFeedbackFrom.apply(FakeRequest().withCookies(SessionManager.createSessionCookie(st.token)))
+        when(f.mockAdHocFeedbackDao.getAdHocFeedbackFromSelf(person.credentials.email)).thenReturn(Seq())
+        val result: Future[Result] = f.controller.getAdHocFeedbackFromSelf.apply(FakeRequest().withCookies(SessionManager.createSessionCookie(st.token)))
 
         // verify
         verify(f.mockSessionManager).extractToken(any())
         verify(f.mockPersonDao).findByEmail(st.username)
-        verify(f.mockAdHocFeedbackDao).getAdHocFeedbackFrom(person.credentials.email)
+        verify(f.mockAdHocFeedbackDao).getAdHocFeedbackFromSelf(person.credentials.email)
         status(result) mustBe 200
         contentAsJson(result) mustBe Json.obj("apiVersion" -> "1.0", "body" -> Json.arr())
       }
@@ -241,13 +323,13 @@ class FeedbackSpec extends PlaySpec with MockitoSugar with AllFixtures with Prop
         val f = fixture
         when(f.mockSessionManager.extractToken(any())).thenReturn(Some(st))
         when(f.mockPersonDao.findByEmail(st.username)).thenReturn(Some(person))
-        when(f.mockAdHocFeedbackDao.getAdHocFeedbackFrom(person.credentials.email)).thenReturn(feedback)
-        val result: Future[Result] = f.controller.getAdHocFeedbackFrom.apply(FakeRequest().withCookies(SessionManager.createSessionCookie(st.token)))
+        when(f.mockAdHocFeedbackDao.getAdHocFeedbackFromSelf(person.credentials.email)).thenReturn(feedback)
+        val result: Future[Result] = f.controller.getAdHocFeedbackFromSelf.apply(FakeRequest().withCookies(SessionManager.createSessionCookie(st.token)))
 
         // verify
         verify(f.mockSessionManager).extractToken(any())
         verify(f.mockPersonDao).findByEmail(st.username)
-        verify(f.mockAdHocFeedbackDao).getAdHocFeedbackFrom(person.credentials.email)
+        verify(f.mockAdHocFeedbackDao).getAdHocFeedbackFromSelf(person.credentials.email)
         status(result) mustBe 200
         contentAsJson(result) mustBe Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(feedback))
       }

@@ -62,11 +62,15 @@ fbServices.service('Feedback', ['$log','$http', function($log, $http) {
       });
 		},
 
-		getAdHocFeedbackFor: function(username) {
-		  return $http.get("/api/feedback/adhoc/for/" + username)
+		getAdHocFeedbackForUser: function(username) {
+		  return $http.get("/api/feedback/adhoc/" + username)
 		},
 
-		getAdHocFeedbackFrom: function() {
+		getAdHocFeedbackForSelf: function() {
+		  return $http.get("/api/feedback/adhoc/self")
+		},
+
+		getAdHocFeedbackFromSelf: function() {
 		  return $http.get("/api/feedback/adhoc/from")
 		}
 	}

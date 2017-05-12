@@ -25,8 +25,9 @@ describe('service [Model]', function() {
         spyOn(feedback, 'getActiveFeedbackCycles').and.returnValue(deferred.promise);
         spyOn(feedback, 'getFeedbackCycle').and.returnValue(deferred.promise);
         spyOn(feedback, 'createAdHocFeedback').and.returnValue(deferred.promise);
-        spyOn(feedback, 'getAdHocFeedbackFor').and.returnValue(deferred.promise);
-        spyOn(feedback, 'getAdHocFeedbackFrom').and.returnValue(deferred.promise);
+        spyOn(feedback, 'getAdHocFeedbackForUser').and.returnValue(deferred.promise);
+        spyOn(feedback, 'getAdHocFeedbackForSelf').and.returnValue(deferred.promise);
+        spyOn(feedback, 'getAdHocFeedbackFromSelf').and.returnValue(deferred.promise);
 
 	}));
 
@@ -48,7 +49,8 @@ describe('service [Model]', function() {
         expect(angular.isFunction(model.getActiveFeedbackCycles)).toBe(true);
         expect(angular.isFunction(model.getFeedbackCycle)).toBe(true);
         expect(angular.isFunction(model.createAdHocFeedback)).toBe(true);
-        expect(angular.isFunction(model.getAdHocFeedbackFor)).toBe(true);
+        expect(angular.isFunction(model.getAdHocFeedbackForUser)).toBe(true);
+        expect(angular.isFunction(model.getAdHocFeedbackForSelf)).toBe(true);
         expect(angular.isFunction(model.getSubmittedAdHocFeedback)).toBe(true);
     });
 
@@ -107,12 +109,16 @@ describe('service [Model]', function() {
             cacheTest(model.getFeedbackCycle, feedback.getFeedbackCycle);
         });
 
-        it('should call the feedback.getAdHocFeedbackFor service only once', function() {
-            cacheTest(model.getAdHocFeedbackFor, feedback.getAdHocFeedbackFor);
+        it('should call the feedback.getAdHocFeedbackForUser service only once', function() {
+            cacheTest(model.getAdHocFeedbackForUser, feedback.getAdHocFeedbackForUser);
         });
 
-        it('should call the feedback.getAdHocFeedbackFrom service only once', function() {
-            cacheTest(model.getSubmittedAdHocFeedback, feedback.getAdHocFeedbackFrom);
+        it('should call the feedback.getAdHocFeedbackForSelf service only once', function() {
+            cacheTest(model.getAdHocFeedbackForSelf, feedback.getAdHocFeedbackForSelf);
+        });
+
+        it('should call the feedback.getAdHocFeedbackFromSelf service only once', function() {
+            cacheTest(model.getSubmittedAdHocFeedback, feedback.getAdHocFeedbackFromSelf);
         });
 
     });
@@ -172,12 +178,16 @@ describe('service [Model]', function() {
             flushTest(model.getFeedbackCycle, feedback.getFeedbackCycle);
         });
 
-        it('should call the feedback.getAdHocFeedbackFor service when flushed', function(){
-            flushTest(model.getAdHocFeedbackFor, feedback.getAdHocFeedbackFor);
+        it('should call the feedback.getAdHocFeedbackForSelf service when flushed', function(){
+            flushTest(model.getAdHocFeedbackForSelf, feedback.getAdHocFeedbackForSelf);
         });
 
-        it('should call the feedback.getAdHocFeedbackFrom service when flushed', function(){
-            flushTest(model.getSubmittedAdHocFeedback, feedback.getAdHocFeedbackFrom);
+        it('should call the feedback.getAdHocFeedbackForUser service when flushed', function(){
+            flushTest(model.getAdHocFeedbackForUser, feedback.getAdHocFeedbackForUser);
+        });
+
+        it('should call the feedback.getAdHocFeedbackFromSelf service when flushed', function(){
+            flushTest(model.getSubmittedAdHocFeedback, feedback.getAdHocFeedbackFromSelf);
         });
     });
 
@@ -290,6 +300,17 @@ describe('service [Model]', function() {
             flushTest(model.getFeedbackCycle, feedback.getFeedbackCycle);
         });
 
+        it('should call the feedback.getAdHocFeedbackForSelf service only once', function() {
+            flushTest(model.getAdHocFeedbackForSelf, feedback.getAdHocFeedbackForSelf);
+        });
+
+        it('should call the feedback.getAdHocFeedbackForUser service only once', function() {
+            flushTest(model.getAdHocFeedbackForUser, feedback.getAdHocFeedbackForUser);
+        });
+
+        it('should call the feedback.getAdHocFeedbackForSelf service only once', function() {
+            flushTest(model.getAdHocFeedbackForUser, feedback.getAdHocFeedbackForUser);
+        });
 
     });
 });

@@ -37,6 +37,16 @@ class AuthenticatedController(person: PersonDao, sessionManager: SessionManager)
   private def getUser(request: RequestHeader): Option[Person] =
     sessionManager.extractToken(request).flatMap{st => person.findByEmail(st.username)}
 
+  def isInReportingLine(managerCreds: String, report: Option[Person]): Boolean =
+    report match {
+      case None => false
+      case Some(p) =>
+        if (managerCreds == p.managerEmail) {
+          true
+        } else {
+          isInReportingLine(managerCreds, person.findByEmail(p.managerEmail))
+        }
+    }
 }
 
 class Authentication @Inject() (person: PersonDao, sessionManager: SessionManager) extends Controller {
@@ -126,7 +136,6 @@ class SessionManager {
     destroySession(st)
     response.discardingCookies(DiscardingCookie(SessionManager.cookieName))
   }
-
 }
 
 object SessionManager {

@@ -684,11 +684,15 @@ class AdHocFeedbackDao @Inject() (db: play.api.db.Database) {
       ).executeInsert().map{ newId => f.copy(id = Some(newId)) }
   }
 
-  def getAdHocFeedbackFor(email: String): Seq[AdHocFeedback] = db.withConnection { implicit connection =>
+  def getAdHocFeedbackForReport(email: String): Seq[AdHocFeedback] = db.withConnection { implicit connection =>
     SQL("""select * from ad_hoc_feedback where to_email = {email}""").on('email -> email).as(AdHocFeedback.simple *)
   }
 
-  def getAdHocFeedbackFrom(email: String): Seq[AdHocFeedback] = db.withConnection { implicit connection =>
+  def getAdHocFeedbackForSelf(email: String): Seq[AdHocFeedback] = db.withConnection { implicit connection =>
+    SQL("""select * from ad_hoc_feedback where to_email = {email} and recipient_visible = true""").on('email -> email).as(AdHocFeedback.simple *)
+  }
+
+  def getAdHocFeedbackFromSelf(email: String): Seq[AdHocFeedback] = db.withConnection { implicit connection =>
     SQL("""select * from ad_hoc_feedback where from_email = {email}""").on('email -> email).as(AdHocFeedback.simple *)
   }
 }

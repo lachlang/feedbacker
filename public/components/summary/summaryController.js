@@ -8,6 +8,7 @@ fbControllers.controller('SummaryCtrl',  ['$scope', '$log', 'Model', function($s
 	ctrl.user = {};
 	ctrl.currentFeedbackList = [];
 	ctrl.feedbackHistoryList = [];
+	ctrl.adHocFeedbackList = []
 
 	// get the pending actions
 	Model.getCurrentUser().then(function(response) {
@@ -21,4 +22,8 @@ fbControllers.controller('SummaryCtrl',  ['$scope', '$log', 'Model', function($s
 	Model.getFeedbackHistory().then(function(response) {
 		ctrl.feedbackHistoryList = response;
 	});
+
+	Model.getAdHocFeedbackForSelf().then(function(response) {
+	  ctrl.adHocFeedbackList = response;
+	})
 }]);

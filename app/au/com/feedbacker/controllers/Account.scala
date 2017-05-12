@@ -95,17 +95,6 @@ class ReportFile @Inject() (person: PersonDao, nomination: NominationDao, cycle:
       }
     }
   }
-
-  private def isInReportingLine(managerCreds: String, report: Option[Person]): Boolean =
-    report match {
-      case None => false
-      case Some(p) =>
-        if (managerCreds == p.managerEmail) {
-          true
-        } else {
-          isInReportingLine(managerCreds, person.findByEmail(p.managerEmail))
-        }
-    }
 }
 
 case class Report(person: Person, reviewCycle: Seq[FeedbackGroup])

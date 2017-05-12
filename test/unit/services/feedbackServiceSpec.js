@@ -195,10 +195,26 @@ describe('service [Feedback]', function() {
             expect(result).toEqual(dummyResult);
         });
 
-        it('to retrieve ad-hoc feedback for a user', function() {
-            var result, promise = feedback.getAdHocFeedbackFor("username");
+        it('to retrieve ad-hoc feedback for any user', function() {
+            var result, promise = feedback.getAdHocFeedbackForUser("username");
 
-            $httpBackend.expectGET('/api/feedback/adhoc/for/username').respond(200, dummyResult);
+            $httpBackend.expectGET('/api/feedback/adhoc/username').respond(200, dummyResult);
+
+            // set the response value
+            promise.then(function(data) {
+                result = data.data;
+            });
+            expect(result).toBeUndefined();
+            $httpBackend.flush();
+
+            expect(result).toBeDefined();
+            expect(result).toEqual(dummyResult);
+        });
+
+        it('to retrieve ad-hoc feedback for a the current user', function() {
+            var result, promise = feedback.getAdHocFeedbackForSelf();
+
+            $httpBackend.expectGET('/api/feedback/adhoc/self').respond(200, dummyResult);
 
             // set the response value
             promise.then(function(data) {
@@ -212,7 +228,7 @@ describe('service [Feedback]', function() {
         });
 
         it('to retrieve ad-hoc feedback from a user', function() {
-            var result, promise = feedback.getAdHocFeedbackFrom();
+            var result, promise = feedback.getAdHocFeedbackFromSelf();
 
             $httpBackend.expectGET('/api/feedback/adhoc/from').respond(200, dummyResult);
 

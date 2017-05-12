@@ -29,8 +29,9 @@ GET  	  /api/feedback/current/:id 	au.com.feedbacker.controllers.Feedback.getCur
 GET 	  /api/feedback/history/self 	au.com.feedbacker.controllers.Feedback.getFeedbackHistoryForSelf
 GET 	  /api/feedback/history/:id 	au.com.feedbacker.controllers.Feedback.getFeedbackHistoryForUser(id: Long)
 POST	  /api/feedback/adhoc 	      au.com.feedbacker.controllers.Feedback.createAdHocFeedback
-GET 	  /api/feedback/adhoc/for/:em au.com.feedbacker.controllers.Feedback.getAdHocFeedbackFor(em: String)
-GET 	  /api/feedback/adhoc/from    au.com.feedbacker.controllers.Feedback.getAdHocFeedbackFrom
+GET 	  /api/feedback/adhoc/self    au.com.feedbacker.controllers.Feedback.getAdHocFeedbackForSelf
+GET 	  /api/feedback/adhoc/from    au.com.feedbacker.controllers.Feedback.getAdHocFeedbackFromSelf
+GET 	  /api/feedback/adhoc/:email  au.com.feedbacker.controllers.Feedback.getAdHocFeedbackForUser(email: String)
 
 GET     /api/nominations            au.com.feedbacker.controllers.Nominations.getCurrentNominations
 GET     /api/nominations/candidates au.com.feedbacker.controllers.Nominations.getRegisteredUsers

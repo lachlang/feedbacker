@@ -10,8 +10,9 @@ fbServices.service('Model', ['$log', '$q', 'Account', 'Feedback', 'Nomination', 
 	var nomineeCandidates = [];
 	var feedbackCycles = [];
 	var reports = [];
-  var adHocFeedbackFor = {};
-  var adHocFeedbackFrom = [];
+  var adHocFeedbackForUser = {};
+  var adHocFeedbackForSelf = [];
+  var adHocFeedbackFromSelf = [];
 	var errorResult = undefined;
 
 	var cacheServiceCall = function(mutateCache, updateRequired, getCache, serviceFunction, serviceCallName, mapKey) {
@@ -48,8 +49,9 @@ fbServices.service('Model', ['$log', '$q', 'Account', 'Feedback', 'Nomination', 
             nomineeCandidates = [];
             feedbackCycles = [];
             reports = [];
-            adHocFeedbackFor = {};
-            adHocFeedbackFrom = [];
+            adHocFeedbackForUser = {};
+            adHocFeedbackForSelf = [];
+            adHocFeedbackFromSelf = [];
             errorResult = undefined;
         },
 
@@ -163,8 +165,8 @@ fbServices.service('Model', ['$log', '$q', 'Account', 'Feedback', 'Nomination', 
 			Feedback.createAdHocFeedback(recipientEmail, message, publishToRecipient).then(function(result){
 				$log.debug("[Feedback.createAdHocFeedback] Response from server...");
 				$log.debug(result)
-				adHocFeedbackFrom.push(result.data.body);
-				deferred.resolve(adHocFeedbackFrom);
+				adHocFeedbackFromSelf.push(result.data.body);
+				deferred.resolve(adHocFeedbackFromSelf);
 			}, function(result){
 				$log.error("[Feedback.createAdHocFeedback] Error from server:  [" + result + "]");
 				errorResult = result.data;
@@ -173,21 +175,29 @@ fbServices.service('Model', ['$log', '$q', 'Account', 'Feedback', 'Nomination', 
 			return deferred.promise;
 		},
 
-		getAdHocFeedbackFor: function(recipientEmail, flushCache) {
-			return cacheServiceCall(function(result) { adHocFeedbackFor[recipientEmail] = result.data.body },
-									function(recipientEmail) { return (!adHocFeedbackFor[recipientEmail] || flushCache)},
-									function(recipientEmail) { return adHocFeedbackFor[recipientEmail] },
-									Feedback.getAdHocFeedbackFor,
-									"Feedback.getAdHocFeedbackFor",
+		getAdHocFeedbackForUser: function(recipientEmail, flushCache) {
+			return cacheServiceCall(function(result) { adHocFeedbackForUser[recipientEmail] = result.data.body },
+									function(recipientEmail) { return (!adHocFeedbackForUser[recipientEmail] || flushCache)},
+									function(recipientEmail) { return adHocFeedbackForUser[recipientEmail] },
+									Feedback.getAdHocFeedbackForUser,
+									"Feedback.getAdHocFeedbackForUser",
 									recipientEmail);
 		},
 
+		getAdHocFeedbackForSelf: function(flushCache) {
+			return cacheServiceCall(function(result) { adHocFeedbackForSelf = result.data.body },
+									function(recipientEmail) { return (!adHocFeedbackForSelf || adHocFeedbackForSelf.length == 0 || flushCache)},
+									function(recipientEmail) { return adHocFeedbackForSelf },
+									Feedback.getAdHocFeedbackForSelf,
+									"Feedback.getAdHocFeedbackForSelf");
+		},
+
 		getSubmittedAdHocFeedback: function(flushCache) {
-			return cacheServiceCall(function(result) { adHocFeedbackFrom = result.data.body },
-									function() { return (!adHocFeedbackFrom || adHocFeedbackFrom.length == 0 || flushCache)},
-									function() { return adHocFeedbackFrom },
-									Feedback.getAdHocFeedbackFrom,
-									"Feedback.getAdHocFeedbackFrom");
+			return cacheServiceCall(function(result) { adHocFeedbackFromSelf = result.data.body },
+									function() { return (!adHocFeedbackFromSelf || adHocFeedbackFromSelf.length == 0 || flushCache)},
+									function() { return adHocFeedbackFromSelf },
+									Feedback.getAdHocFeedbackFromSelf,
+									"Feedback.getAdHocFeedbackFromSelf");
 		},
 
 	}

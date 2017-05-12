@@ -137,4 +137,48 @@ class AuthenticatedControllerSpec extends PlaySpec with MockitoSugar with AllFix
       }
     }
   }
+  "SessionManager#isInReportingLine" should {
+    "match first level reports" in {
+      forAll { person: Person =>
+        val f = fixture
+        f.controller.isInReportingLine(person.managerEmail, Some(person)) mustBe true
+      }
+    }
+    "match to at least fifth level reports" in {
+      forAll { (person: Person, m1: Person, m2: Person, m3: Person, m4: Person, user: Person) =>
+        val f = fixture
+        when(f.mockPersonDao.findByEmail(person.managerEmail)).thenReturn(Some(m1))
+        when(f.mockPersonDao.findByEmail(m1.managerEmail)).thenReturn(Some(m2))
+        when(f.mockPersonDao.findByEmail(m2.managerEmail)).thenReturn(Some(m3))
+        when(f.mockPersonDao.findByEmail(m3.managerEmail)).thenReturn(Some(m4.copy(managerEmail = user.credentials.email)))
+        f.controller.isInReportingLine(user.credentials.email, Some(person)) mustBe true
+      }
+    }
+    "return false for registered manager" in {
+      forAll { (person: Person) =>
+        val f = fixture
+        f.controller.isInReportingLine(person.credentials.email, None) mustBe false
+      }
+    }
+    "return false when the reporting line ends" in {
+      forAll { (person: Person, m1: Person, m2: Person, m3: Person, m4: Person, user: Person) =>
+        whenever(
+          person.managerEmail != user.credentials.email &&
+            m1.managerEmail != user.credentials.email &&
+            m2.managerEmail != user.credentials.email &&
+            m3.managerEmail != user.credentials.email &&
+            m4.managerEmail != user.credentials.email
+        ) {
+          val f = fixture
+          when(f.mockPersonDao.findByEmail(person.managerEmail)).thenReturn(Some(m1))
+          when(f.mockPersonDao.findByEmail(m1.managerEmail)).thenReturn(Some(m2))
+          when(f.mockPersonDao.findByEmail(m2.managerEmail)).thenReturn(Some(m3))
+          when(f.mockPersonDao.findByEmail(m3.managerEmail)).thenReturn(Some(m4))
+          when(f.mockPersonDao.findByEmail(m4.managerEmail)).thenReturn(None)
+          f.controller.isInReportingLine(user.managerEmail, Some(person)) mustBe false
+        }
+      }
+    }
+  }
+
 }

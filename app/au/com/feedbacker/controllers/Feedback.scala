@@ -91,14 +91,13 @@ class Feedback @Inject() (person: PersonDao,
       nominationReadFilter(n.from, fromPerson.credentials.email) || nominationWriteFilter(n, fromPerson.credentials.email))
 
   def createAdHocFeedback = AuthenticatedRequestAction { (user , json) =>
-    json.validate[AdHocFeedbackRequest].asOpt.flatMap{request => println("processing request");person.findByEmail(request.toEmail).map{to =>
-      println("mapping");AdHocFeedback(None, user.credentials.email, user.name, user.role, request.toEmail, to.name, to.role, DateTime.now, request.message, request.publishToRecipient)}} match {
+    json.validate[AdHocFeedbackRequest].asOpt.flatMap{request => person.findByEmail(request.toEmail).map{to =>
+      AdHocFeedback(None, user.credentials.email, user.name, user.role, request.toEmail, to.name, to.role, DateTime.now, request.message, request.publishToRecipient)}} match {
       case None => BadRequest(Json.obj("message" -> "Invalid request."))
-      case Some(feedback) =>         println(s"testing with: $feedback")
+      case Some(feedback) =>
         if (feedback.toEmail == feedback.fromEmail) {
           BadRequest(Json.obj("message" -> "Can't send feedback to yourself."))
         } else {
-          println("now here...")
           adHocFeedback.createAdHocFeedback(feedback) match {
             case None => InternalServerError(Json.obj("message" -> "Could not create ad-hoc feedback."))
             case Some(savedFeedback) => Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(savedFeedback)))
@@ -107,17 +106,21 @@ class Feedback @Inject() (person: PersonDao,
     }
   }
 
-  def getAdHocFeedbackFor(username: String) = AuthenticatedAction { user =>
-    if (username == user.credentials.email ||
-        username == user.managerEmail) {
-      Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(adHocFeedback.getAdHocFeedbackFor(username))))
-    } else {
+  def getAdHocFeedbackForSelf = AuthenticatedAction { user =>
+    Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(adHocFeedback.getAdHocFeedbackForSelf(user.credentials.email))))
+  }
+
+  def getAdHocFeedbackForUser(username: String) = AuthenticatedAction { user =>
+    val personOpt = person.findByEmail(username)
+    if (username == user.credentials.email || !isInReportingLine(user.credentials.email, personOpt)) {
       Forbidden
+    } else {
+      Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(adHocFeedback.getAdHocFeedbackForReport(username))))
     }
   }
 
-  def getAdHocFeedbackFrom = AuthenticatedAction { user =>
-    Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(adHocFeedback.getAdHocFeedbackFrom(user.credentials.email))))
+  def getAdHocFeedbackFromSelf = AuthenticatedAction { user =>
+    Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(adHocFeedback.getAdHocFeedbackFromSelf(user.credentials.email))))
   }
 }
 
