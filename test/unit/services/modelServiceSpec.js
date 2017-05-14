@@ -2,33 +2,36 @@
 
 describe('service [Model]', function() {
 	
-	var account, feedback, model;
+	var account, feedback, nomination, model;
 	var deferred, scope;
 	
 	beforeEach(module('feedbacker.services'));
 
-	beforeEach(inject(function($q, _Model_, _Account_, _Feedback_, $rootScope) {
+	beforeEach(inject(function($q, _Model_, _Account_, _Feedback_, _Nomination_, $rootScope) {
 		scope = $rootScope.$new();
 		deferred = $q.defer();
 		model = _Model_;
 
-        account = _Account_;
-        spyOn(account, 'getCurrentUser').and.returnValue(deferred.promise)
-        spyOn(account, 'updateCurrentUser').and.returnValue(deferred.promise)
-        spyOn(account, 'getReports').and.returnValue(deferred.promise)
+    account = _Account_;
+    spyOn(account, 'getCurrentUser').and.returnValue(deferred.promise)
+    spyOn(account, 'updateCurrentUser').and.returnValue(deferred.promise)
+    spyOn(account, 'getReports').and.returnValue(deferred.promise)
 
 		feedback = _Feedback_;
-        spyOn(feedback, 'getPendingFeedbackActions').and.returnValue(deferred.promise);
-        spyOn(feedback, 'getCurrentFeedbackItemsForSelf').and.returnValue(deferred.promise);
-        spyOn(feedback, 'getFeedbackHistoryForSelf').and.returnValue(deferred.promise);
-        spyOn(feedback, 'getFeedbackItem').and.returnValue(deferred.promise);
-        spyOn(feedback, 'getActiveFeedbackCycles').and.returnValue(deferred.promise);
-        spyOn(feedback, 'getFeedbackCycle').and.returnValue(deferred.promise);
-        spyOn(feedback, 'createAdHocFeedback').and.returnValue(deferred.promise);
-        spyOn(feedback, 'getAdHocFeedbackForUser').and.returnValue(deferred.promise);
-        spyOn(feedback, 'getAdHocFeedbackForSelf').and.returnValue(deferred.promise);
-        spyOn(feedback, 'getAdHocFeedbackFromSelf').and.returnValue(deferred.promise);
+    spyOn(feedback, 'getPendingFeedbackActions').and.returnValue(deferred.promise);
+    spyOn(feedback, 'getCurrentFeedbackItemsForSelf').and.returnValue(deferred.promise);
+    spyOn(feedback, 'getFeedbackHistoryForSelf').and.returnValue(deferred.promise);
+    spyOn(feedback, 'getFeedbackItem').and.returnValue(deferred.promise);
+    spyOn(feedback, 'getActiveFeedbackCycles').and.returnValue(deferred.promise);
+    spyOn(feedback, 'getFeedbackCycle').and.returnValue(deferred.promise);
+    spyOn(feedback, 'createAdHocFeedback').and.returnValue(deferred.promise);
+    spyOn(feedback, 'getAdHocFeedbackForUser').and.returnValue(deferred.promise);
+    spyOn(feedback, 'getAdHocFeedbackForSelf').and.returnValue(deferred.promise);
+    spyOn(feedback, 'getAdHocFeedbackFromSelf').and.returnValue(deferred.promise);
 
+    nomination = _Nomination_;
+    spyOn(nomination, 'getCurrentNominations').and.returnValue(deferred.promise);
+    spyOn(nomination, 'getNomineeCandidates').and.returnValue(deferred.promise);
 	}));
 
 	it('can get an instantce of itself', function(){
@@ -45,6 +48,7 @@ describe('service [Model]', function() {
         expect(angular.isFunction(model.getFeedbackHistory)).toBe(true);
         expect(angular.isFunction(model.getFeedbackDetail)).toBe(true);
         expect(angular.isFunction(model.getNomineeCandidates)).toBe(true);
+        expect(angular.isFunction(model.getFeedbackCandidates)).toBe(true);
         expect(angular.isFunction(model.getCurrentNominations)).toBe(true);
         expect(angular.isFunction(model.getActiveFeedbackCycles)).toBe(true);
         expect(angular.isFunction(model.getFeedbackCycle)).toBe(true);
@@ -57,7 +61,7 @@ describe('service [Model]', function() {
     describe('caches data after the first call to server', function() {
     	
         var cacheTest = function(modelFunction, cachedService) {
-            var result, httpResponse = "dummy response";
+            var result, httpResponse = ["dummy response array"];
             modelFunction().then(function(data) {
                 result = data;
             });
@@ -121,12 +125,24 @@ describe('service [Model]', function() {
             cacheTest(model.getSubmittedAdHocFeedback, feedback.getAdHocFeedbackFromSelf);
         });
 
+        it('should call the nomination.getCurrentNominations service only once', function() {
+            cacheTest(model.getCurrentNominations, nomination.getCurrentNominations);
+        });
+
+        it('should call the nomination.getNomineeCandidates service only once', function() {
+            cacheTest(model.getNomineeCandidates, nomination.getNomineeCandidates);
+        });
+
+        it('should call the nomination.getNomineeCandidates for feedback candidates service only once', function() {
+            cacheTest(model.getFeedbackCandidates, nomination.getNomineeCandidates);
+        });
+
     });
     
     describe('flushes cached data when requested', function() {
 
         var flushTest = function(modelFunction, cachedService) {
-            var httpResponse = "dummy response", result;
+            var httpResponse = ["dummy response array"], result;
             modelFunction().then(function(data) {
                 result = data;
             });
@@ -189,6 +205,18 @@ describe('service [Model]', function() {
         it('should call the feedback.getAdHocFeedbackFromSelf service when flushed', function(){
             flushTest(model.getSubmittedAdHocFeedback, feedback.getAdHocFeedbackFromSelf);
         });
+
+        it('should call the nomination.getAdHocFeedbackFromSelf service when flushed', function(){
+            flushTest(model.getCurrentNominations, nomination.getCurrentNominations);
+        });
+
+        it('should call the nomination.getAdHocFeedbackFromSelf service when flushed', function(){
+            flushTest(model.getNomineeCandidates, nomination.getNomineeCandidates);
+        });
+
+        it('should call the nomination.getAdHocFeedbackFromSelf service when flushed', function(){
+            flushTest(model.getFeedbackCandidates, nomination.getNomineeCandidates);
+        });
     });
 
     describe('write through tests', function() {
@@ -238,7 +266,7 @@ describe('service [Model]', function() {
     describe('flushes the entire cache', function() {
 
         var flushTest = function(modelFunction, cachedService) {
-            var httpResponse = "dummy response", result;
+            var httpResponse = ["dummy response array"], result;
             modelFunction().then(function(data) {
                 result = data;
             });
@@ -312,5 +340,16 @@ describe('service [Model]', function() {
             flushTest(model.getAdHocFeedbackForUser, feedback.getAdHocFeedbackForUser);
         });
 
+        it('should call the nomination.getCurrentNominations service only once', function() {
+            flushTest(model.getCurrentNominations, nomination.getCurrentNominations);
+        });
+
+        it('should call the nomination.getNomineeCandidates service only once', function() {
+            flushTest(model.getNomineeCandidates, nomination.getNomineeCandidates);
+        });
+
+        it('should call the nomination.getAdHocFeedbackForSelf service only once', function() {
+            flushTest(model.getFeedbackCandidates, nomination.getNomineeCandidates);
+        });
     });
 });

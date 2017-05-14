@@ -30,7 +30,7 @@
     </div> <!-- end row -->
     <div class="row top-buffer">
       <div class="col-sm-2">
-        <span>Publish to candidate:</span>
+        <span>Publish to candidate: {{provide.feedbackRecipient}}</span>
       </div>
       <div class="col-sm-4">
         <div class="btn-group" role="group" aria-label="Publish feedback to candidate">
@@ -58,17 +58,17 @@
       <div class="col-md-4">
         <p class="lead">
           Provide feedback for
-          <strong data-ng-show="provide.feedbackCandidate" class="strong">{{provide.feedbackCandidate.display}}</strong>
-          <strong data-ng-hide="provide.feedbackCandidate">nobody</strong>
+          <strong data-ng-show="provide.feedbackRecipient" class="strong">{{provide.feedbackRecipient.display}}</strong>
+          <strong data-ng-hide="provide.feedbackRecipient">nobody</strong>
           .  Feedback will be published to
-          <span data-ng-show="provide.feedbackCandidate">{{provide.feedbackCandidate.managerEmail}}</span>
-          <span data-ng-hide="provide.feedbackCandidate">nobody</span>
+          <span data-ng-show="provide.feedbackRecipient">{{provide.feedbackRecipient.managerEmail}}</span>
+          <span data-ng-hide="provide.feedbackRecipient">nobody</span>
           and
           <strong data-ng-show="provide.publishToCandidate">will</strong>
           <span data-ng-hide="provide.publishToCandidate">will <strong>not</strong></span>
           be sent to
-          <span data-ng-show="provide.feedbackCandidate" class="strong">{{provide.feedbackCandidate.display}}</span>
-          <span data-ng-hide="provide.feedbackCandidate">anybody</span>.
+          <span data-ng-show="provide.feedbackRecipient" class="strong">{{provide.feedbackRecipient.display}}</span>
+          <span data-ng-hide="provide.feedbackRecipient">anybody</span>.
         </p>
       </div>
       <div class="col-md-2">

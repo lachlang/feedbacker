@@ -8,6 +8,7 @@ fbServices.service('Model', ['$log', '$q', 'Account', 'Feedback', 'Nomination', 
 	var feedbackCycle = {};
 	var currentNominations = [];
 	var nomineeCandidates = [];
+	var feedbackCandidates = [];
 	var feedbackCycles = [];
 	var reports = [];
   var adHocFeedbackForUser = {};
@@ -47,6 +48,7 @@ fbServices.service('Model', ['$log', '$q', 'Account', 'Feedback', 'Nomination', 
             feedbackCycle = {};
             currentNominations = [];
             nomineeCandidates = [];
+            feedbackCandidates = [];
             feedbackCycles = [];
             reports = [];
             adHocFeedbackForUser = {};
@@ -124,11 +126,24 @@ fbServices.service('Model', ['$log', '$q', 'Account', 'Feedback', 'Nomination', 
 		getNomineeCandidates: function(flushCache) {
 			return cacheServiceCall(function(result) { nomineeCandidates = result.data.body.map(function(item){
 											item.display = item.name + " (" + item.email + ")";
+											item.managerEmail = undefined;
 											return item;
 										});
 									},
 									function() { return ( !nomineeCandidates || nomineeCandidates.length == 0 || flushCache ) },
 									function() { return nomineeCandidates },
+									Nomination.getNomineeCandidates,
+									"Nomination.getNomineeCandidates");
+		},
+
+		getFeedbackCandidates: function(flushCache) {
+			return cacheServiceCall(function(result) { feedbackCandidates = result.data.body.map(function(item){
+											item.display = item.name + " (" + item.email + ")";
+											return item;
+										});
+									},
+									function() { return ( !feedbackCandidates || feedbackCandidates.length == 0 || flushCache ) },
+									function() { return feedbackCandidates },
 									Nomination.getNomineeCandidates,
 									"Nomination.getNomineeCandidates");
 		},
