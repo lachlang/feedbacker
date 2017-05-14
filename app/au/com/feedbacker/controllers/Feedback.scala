@@ -17,6 +17,7 @@ class Feedback @Inject() (person: PersonDao,
                           nomination: NominationDao,
                           feedbackCycle: FeedbackCycleDao,
                           adHocFeedback: AdHocFeedbackDao,
+                          emailer: Emailer,
                           sessionManager: SessionManager) extends AuthenticatedController(person, sessionManager) {
 
   def getPendingFeedbackActions = AuthenticatedAction { user =>
@@ -92,15 +93,16 @@ class Feedback @Inject() (person: PersonDao,
 
   def createAdHocFeedback = AuthenticatedRequestAction { (user , json) =>
     json.validate[AdHocFeedbackRequest].asOpt.flatMap{request => person.findByEmail(request.toEmail).map{to =>
-      AdHocFeedback(None, user.credentials.email, user.name, user.role, request.toEmail, to.name, to.role, DateTime.now, request.message, request.publishToRecipient)}} match {
+      (AdHocFeedback(None, user.credentials.email, user.name, user.role, request.toEmail, to.name, to.role, DateTime.now, request.message, request.publishToRecipient), to)}} match {
       case None => BadRequest(Json.obj("message" -> "Invalid request."))
-      case Some(feedback) =>
+      case Some((feedback, recipient)) =>
         if (feedback.toEmail == feedback.fromEmail) {
           BadRequest(Json.obj("message" -> "Can't send feedback to yourself."))
         } else {
           adHocFeedback.createAdHocFeedback(feedback) match {
             case None => InternalServerError(Json.obj("message" -> "Could not create ad-hoc feedback."))
-            case Some(savedFeedback) => Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(savedFeedback)))
+            case Some(savedFeedback) => emailer.sendAdHocFeedbackEmail(savedFeedback, person.findByEmail(recipient.managerEmail), recipient.managerEmail);
+              Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(savedFeedback)))
           }
         }
     }

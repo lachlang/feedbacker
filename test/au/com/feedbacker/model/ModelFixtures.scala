@@ -1,6 +1,6 @@
 package au.com.feedbacker.model
 
-import au.com.feedbacker.controllers.{RegistrationContent, ResetPasswordContent, SessionToken, UpdateContent}
+import au.com.feedbacker.controllers._
 import au.com.feedbacker.model.CredentialStatus.CredentialStatus
 import au.com.feedbacker.model.FeedbackStatus.FeedbackStatus
 import au.com.feedbacker.model.ResponseFormat.ResponseFormat
@@ -34,6 +34,14 @@ trait ModelFixtures {
       publish   <- arbitrary[Boolean]
     } yield AdHocFeedback(id = id, fromEmail = fromEmail, fromName = fromName, fromRole = fromRole, toEmail = toEmail,
       toName = toName, toRole = toRole, created = created, message = message, publish = publish)
+  )
+
+  implicit val arbAdHocFeedbackRequest: Arbitrary[AdHocFeedbackRequest] = Arbitrary(
+    for {
+      toEmail   <- validEmailAddresses()
+      message   <- arbitrary[String].suchThat(_.length > 0)
+      publish   <- arbitrary[Boolean]
+    } yield AdHocFeedbackRequest(toEmail = toEmail, message = message, publishToRecipient = publish)
   )
 
   implicit val arbCredential: Arbitrary[Credentials] = Arbitrary(

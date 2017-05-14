@@ -2,7 +2,8 @@ package au.com.feedbacker.util
 
 import au.com.feedbacker.controllers.SessionToken
 import javax.inject.Inject
-import au.com.feedbacker.model.Nomination
+
+import au.com.feedbacker.model.{AdHocFeedback, Nomination, Person}
 import play.api.libs.mailer.{Email, MailerClient}
 
 /**
@@ -65,23 +66,33 @@ class Emailer @Inject() (mailerClient: MailerClient, configuration: play.api.Con
     }
   }
 
+  def sendAdHocFeedbackEmail(feedback: AdHocFeedback, boss: Option[Person], bossEmail: String): Unit = {
+    val toAddress: String = boss match {
+      case None => bossEmail
+      case Some(b) => s"${b.name} <$bossEmail>"
+    }
+    val ccAddress: Seq[String] = {
+      if (feedback.publish) {
+        Seq(s"${feedback.toName} <${feedback.toEmail}>")
+      } else {
+        Seq()
+      }
+    }
+    val bossName: String = boss.map(m => s" ${m.name}").getOrElse("")
+    val email = Email(
+      "Feedbacker Password Reset",
+      from,
+      Seq(toAddress),
+      None,
+      Some(Emailer.adHocFeedbackBodyHtml(bossName, feedback, getServerPath)),
+      None,
+      ccAddress
+    )
+    sendEmail(email)
+  }
 }
 
 object Emailer {
-
-  private def activationBody(name: String, st: SessionToken, serverPath: String): String = s"""
-            Hi $name,
-
-            Thanks for registering to use Feedbacker.
-
-            To activate your account please navigate to following link
-
-            http://$serverPath/api/activate?username=${st.username}&token=${st.token}
-
-            Thanks
-            The Feedback Team
-            (Feedback is always welcome)
-         """.stripMargin
 
   private def activationBodyHtml(name: String, st: SessionToken, serverPath: String): String = s"""
             <p>Hi $name,</p>
@@ -89,29 +100,12 @@ object Emailer {
             <p>Thanks for registering to use Feedbacker.</p>
             <p/>
             <p>To activate your account please navigate to following link:
-            <a href="http://$serverPath/api/activate?username=${st.username}&token=${st.token}">Activate your account</a></p>
+            <a href="https://$serverPath/api/activate?username=${st.username}&token=${st.token}">Activate your account</a></p>
             <p/>
             <p>Thanks</p>
             <p>The Feedback Team</p>
             <p>(Feedback is always welcome)</p>
          """.stripMargin
-
-  private def nominationBody(toName: String, fromName: String, serverPath: String): String =
-    s"""
-       Hi $toName,
-
-       $fromName has nominated you to provide feedback on their performance using Feedbacker.
-
-       Feedbacker is a simple web application which simplifies the submission and collations of feedback.
-
-       To sign up to Feedbacker and submit your response, please navigate to:
-
-       http://$serverPath/#/landing
-
-       Thanks
-       The Feedbacker Team
-       (Feedback is always welcome)
-     """.stripMargin
 
   private def nominationBodyHtml(toName: String, fromName: String, serverPath: String, message: Option[String]): String =
     s"""
@@ -122,45 +116,12 @@ object Emailer {
       ${message.map{m => s"<blockquote><p>${m}</p></blockquote><p/>"}.getOrElse("")}
       <p>Feedbacker is a simple web application which simplifies the submission and collations of feedback.</p>
       <p/>
-      <p>To sign up to Feedbacker and submit your response, please navigate to: <a href="http://$serverPath/#/landing">Feedbacker address</a></p>
+      <p>To sign up to Feedbacker and submit your response, please navigate to <a href="https://$serverPath/#/landing">Feedbacker</a></p>
       <p/>
       <p>Thanks</p>
       <p>The Feedbacker Team</p>
       <p>(Feedback is always welcome)</p>
      """.stripMargin
-
-  private def nominationBody2(toName: String, fromName: String, serverPath: String): String =
-    s"""
-      Hi $toName,
-
-      $fromName has nominated you to provide feedback on their performance as part of their annual review using Feedbacker.
-
-      Feedbacker is a simple web application which simplifies the submission and collations of feedback.
-
-      Feedbacker is currently only being used as a limited trail and a voluntary opt-in basis.  If you do
-      not wish to use Feedbacker or are uncomfortable in any way please use your standard HR process.
-
-      To sign up to Feedbacker and submit your response, please navigate to:
-
-      http://$serverPath/#/landing
-
-      Thanks
-      The Feedbacker Team
-      (Feedback is always welcome)
-      """.stripMargin
-
-  private def resetPasswordBody(name: String, st: SessionToken, serverPath: String): String = s"""Hi $name,
-
-            Thanks for registering to use Feedbacker.
-
-            To reset your password please navigate to following link:
-
-            http://$serverPath/#/resetPassword?username=${st.username}&token=${st.token}
-
-            Thanks
-            The Feedback Team
-            (Feedback is always welcome)
-         """.stripMargin
 
   private def resetPasswordBodyHtml(name: String, st: SessionToken, serverPath: String): String = s"""
             <p>Hi $name,</p>
@@ -168,11 +129,27 @@ object Emailer {
             <p>Thanks for registering to use Feedbacker.</p>
             <p/>
             <p>To reset your password please navigate to following link:
-            <a href="http://$serverPath/#/resetPassword?username=${st.username}&token=${st.token}">Password reset</a></p>
+            <a href="https://$serverPath/#/resetPassword?username=${st.username}&token=${st.token}">Password reset</a></p>
             <p/>
             <p>Thanks</p>
             <p>The Feedback Team</p>
             <p>(Feedback is always welcome)</p>
          """.stripMargin
 
+  private def adHocFeedbackBodyHtml(name: String, feedback: AdHocFeedback, serverPath: String): String =
+    s"""
+       |<p>Hi $name,</p>
+       |<p/>
+       |<p>${feedback.fromName} has just provided some feedback for ${feedback.toName} using <a href="https://$serverPath/#/landing">Feedbacker</a>.</p>
+       |<p/>
+       |<p>${feedback.fromName} said:</p>
+       |<p/>
+       |<blockquote><p>${feedback.message}</p></blockquote>
+       |<p/>
+       |<p>You can view the response using Feedbacker by navigating to: <a href="https://$serverPath/#/landing">Feedbacker address</a></p>
+       |<p/>
+       |<p>Thanks</p>
+       |<p>The Feedbacker Team</p>
+       |<p>(Feedback is always welcome)</p>
+       |     """.stripMargin
 }

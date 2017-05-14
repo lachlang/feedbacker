@@ -2,6 +2,8 @@ package au.com.feedbacker.controllers
 
 import au.com.feedbacker.AllFixtures
 import au.com.feedbacker.model._
+import au.com.feedbacker.util.Emailer
+import org.joda.time.DateTime
 import org.mockito.Matchers._
 import org.mockito.Mockito._
 import org.scalacheck.Arbitrary.arbitrary
@@ -34,7 +36,8 @@ class FeedbackSpec extends PlaySpec with MockitoSugar with AllFixtures with Prop
       val mockFeedbackCycleDao = mock[FeedbackCycleDao]
       val mockAdHocFeedbackDao = mock[AdHocFeedbackDao]
       val mockSessionManager = mock[SessionManager]
-      val controller = new Feedback(mockPersonDao, mockNominationDao, mockFeedbackCycleDao, mockAdHocFeedbackDao, mockSessionManager)
+      val mockEmailer = mock[Emailer]
+      val controller = new Feedback(mockPersonDao, mockNominationDao, mockFeedbackCycleDao, mockAdHocFeedbackDao, mockEmailer, mockSessionManager)
     }
   }
 
@@ -75,47 +78,58 @@ class FeedbackSpec extends PlaySpec with MockitoSugar with AllFixtures with Prop
         verify(f.mockPersonDao).findByEmail(st.username)
       }
     }
-//    "return an internal server error if the database write fails" in {
-//      forAll() { (person: Person, st: SessionToken, feedback: AdHocFeedback) =>
-//        val f = fixture
-//        when(f.mockSessionManager.extractToken(any())).thenReturn(Some(st))
-//        when(f.mockPersonDao.findByEmail(st.username)).thenReturn(Some(person))
-//        when(f.mockPersonDao.findByEmail(feedback.toEmail)).thenReturn(Some(Person(None, feedback.toName, feedback.toRole, Credentials(feedback.toEmail,"",CredentialStatus.Active),"")))
-//        val newFeedback = feedback.copy(id = None, fromEmail = person.credentials.email, fromName = person.name, fromRole = person.role)
-//        println(s"testing for:  $newFeedback")
-//        when(f.mockAdHocFeedbackDao.createAdHocFeedback(newFeedback)).thenReturn(None)
-//        val fakeRequest = FakeRequest().withJsonBody(Json.toJson(AdHocFeedbackRequest(feedback.toEmail, feedback.message, feedback.publish))).withCookies(SessionManager.createSessionCookie(st.token))
-//        val result: Future[Result] = f.controller.createAdHocFeedback().apply(fakeRequest)
-//
-//        // verify
-//        status(result) mustBe 500
-//        contentAsJson(result) mustBe Json.obj("message" -> "Could not create ad-hoc feedback.")
-//        verify(f.mockSessionManager).extractToken(any())
-//        verify(f.mockPersonDao).findByEmail(st.username)
-////        verify(f.mockPerosnDao).findByEmail(feedback.toEmail)
-//        verify(f.mockAdHocFeedbackDao).createAdHocFeedback(newFeedback)
-//      }
-//    }
-//    "return success when feedback is successfully created" in {
-//      forAll() { (person: Person, st: SessionToken, feedback: AdHocFeedback, id: Long) =>
-//        val f = fixture
-//        when(f.mockSessionManager.extractToken(any())).thenReturn(Some(st))
-//        when(f.mockPersonDao.findByEmail(st.username)).thenReturn(Some(person))
-//        when(f.mockPersonDao.findByEmail(feedback.toEmail)).thenReturn(Some(Person(None, feedback.toName, feedback.toRole, Credentials(feedback.toEmail,"",CredentialStatus.Active),"")))
-//        val newFeedback = feedback.copy(id = None)
-//        val createdFeedback = feedback.copy(id = Some(id))
-//        when(f.mockAdHocFeedbackDao.createAdHocFeedback(newFeedback)).thenReturn(Some(createdFeedback))
-//        val fakeRequest = FakeRequest().withJsonBody(Json.toJson(AdHocFeedbackRequest(feedback.toEmail, feedback.message, feedback.publish))).withCookies(SessionManager.createSessionCookie(st.token))
-//        val result: Future[Result] = f.controller.createAdHocFeedback().apply(fakeRequest)
-//
-//          // verify
-//        status(result) mustBe 200
-//        contentAsJson(result) mustEqual Json.obj("body" -> Json.toJson(createdFeedback))
-//        verify(f.mockSessionManager).extractToken(any())
-//        verify(f.mockPersonDao).findByEmail(st.username)
-//        verify(f.mockAdHocFeedbackDao).createAdHocFeedback(newFeedback)
-//      }
-//    }
+    "return an internal server error if the database write fails" in {
+      forAll() { (user: Person, recipient: Person, st: SessionToken, feedbackReq: AdHocFeedbackRequest) =>
+        val f = fixture
+        when(f.mockSessionManager.extractToken(any())).thenReturn(Some(st))
+        when(f.mockPersonDao.findByEmail(st.username)).thenReturn(Some(user))
+        when(f.mockPersonDao.findByEmail(feedbackReq.toEmail)).thenReturn(Some(recipient))
+        when(f.mockAdHocFeedbackDao.createAdHocFeedback(AdHocFeedback(None, fromEmail = user.credentials.email, fromName = user.name,
+          fromRole = user.role, toEmail = recipient.credentials.email, toName = recipient.name, toRole = recipient.role,
+          created = any(), message = feedbackReq.message, publish = feedbackReq.publishToRecipient))).thenReturn(None)
+        val fakeRequest = FakeRequest().withJsonBody(Json.toJson(feedbackReq)).withCookies(SessionManager.createSessionCookie(st.token))
+        val result: Future[Result] = f.controller.createAdHocFeedback().apply(fakeRequest)
+
+        // verify
+        status(result) mustBe 500
+        contentAsJson(result) mustBe Json.obj("message" -> "Could not create ad-hoc feedback.")
+        verify(f.mockSessionManager).extractToken(any())
+        verify(f.mockPersonDao).findByEmail(st.username)
+        verify(f.mockPersonDao).findByEmail(feedbackReq.toEmail)
+        verify(f.mockAdHocFeedbackDao).createAdHocFeedback(AdHocFeedback(None, fromEmail = user.credentials.email, fromName = user.name,
+          fromRole = user.role, toEmail = recipient.credentials.email, toName = recipient.name, toRole = recipient.role,
+          created = any(), message = feedbackReq.message, publish = feedbackReq.publishToRecipient))
+      }
+    }
+    "return success when feedback is successfully created" in {
+      forAll() { (user: Person, recipient: Person, st: SessionToken, feedbackReq: AdHocFeedbackRequest, id: Long) =>
+        val f = fixture
+        when(f.mockSessionManager.extractToken(any())).thenReturn(Some(st))
+        when(f.mockPersonDao.findByEmail(st.username)).thenReturn(Some(user))
+        when(f.mockPersonDao.findByEmail(feedbackReq.toEmail)).thenReturn(Some(recipient))
+        val feedback = AdHocFeedback(Some(id), fromEmail = user.credentials.email, fromName = user.name,
+          fromRole = user.role, toEmail = recipient.credentials.email, toName = recipient.name, toRole = recipient.role,
+          created = DateTime.now, message = feedbackReq.message, publish = feedbackReq.publishToRecipient)
+        when(f.mockAdHocFeedbackDao.createAdHocFeedback(AdHocFeedback(None, fromEmail = user.credentials.email, fromName = user.name,
+          fromRole = user.role, toEmail = recipient.credentials.email, toName = recipient.name, toRole = recipient.role,
+          created = any(), message = feedbackReq.message, publish = feedbackReq.publishToRecipient))).thenReturn(Some(feedback))
+        when(f.mockPersonDao.findByEmail(recipient.managerEmail)).thenReturn(Some(recipient))
+        val fakeRequest = FakeRequest().withJsonBody(Json.toJson(feedbackReq)).withCookies(SessionManager.createSessionCookie(st.token))
+        val result: Future[Result] = f.controller.createAdHocFeedback().apply(fakeRequest)
+
+          // verify
+        status(result) mustBe 200
+        contentAsJson(result) mustEqual Json.obj("apiVersion" -> "1.0","body" -> Json.toJson(feedback))
+        verify(f.mockSessionManager).extractToken(any())
+        verify(f.mockPersonDao).findByEmail(st.username)
+        verify(f.mockPersonDao).findByEmail(feedbackReq.toEmail)
+        verify(f.mockPersonDao).findByEmail(recipient.managerEmail)
+        verify(f.mockAdHocFeedbackDao).createAdHocFeedback(AdHocFeedback(None, fromEmail = user.credentials.email, fromName = user.name,
+          fromRole = user.role, toEmail = recipient.credentials.email, toName = recipient.name, toRole = recipient.role,
+          created = any(), message = feedbackReq.message, publish = feedbackReq.publishToRecipient))
+        verify(f.mockEmailer).sendAdHocFeedbackEmail(feedback, Some(recipient), recipient.managerEmail)
+      }
+    }
   }
   "Feedback#getAdHocFeedbackForUser" should {
     "be forbidden when no session token is found" in {
@@ -166,7 +180,6 @@ class FeedbackSpec extends PlaySpec with MockitoSugar with AllFixtures with Prop
         when(f.mockPersonDao.findByEmail(st.username)).thenReturn(Some(person))
         when(f.mockPersonDao.findByEmail(person.credentials.email)).thenReturn(Some(person))
         when(f.mockPersonDao.findByEmail(person.managerEmail)).thenReturn(None)
-//        when(f.controller.isInReportingLine(person.credentials.email, Some(person))).thenReturn(false)
         val result: Future[Result] = f.controller.getAdHocFeedbackForUser(person.credentials.email).apply(FakeRequest().withCookies(SessionManager.createSessionCookie(st.token)))
 
         // verify
