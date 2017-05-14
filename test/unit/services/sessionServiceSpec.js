@@ -2,14 +2,21 @@
 
 describe('service [Session]', function() {
 	
-	var session, $httpBackend;
+	var session, $httpBackend, $cookies, $location;
 
     beforeEach(module('feedbacker.services'));
     
-    beforeEach(inject(function(_Session_, _$httpBackend_) {
+    beforeEach(inject(function(_Session_, _$httpBackend_, _$cookies_, _$location_) {
 
     	session = _Session_;
     	$httpBackend = _$httpBackend_;
+
+    	$cookies = _$cookies_;
+    	spyOn($cookies, 'get');
+    	spyOn($cookies, 'remove');
+
+    	$location = _$location_;
+    	spyOn($location, 'path');
     }));
     
     afterEach(function() {
@@ -43,25 +50,30 @@ describe('service [Session]', function() {
     		$httpBackend.flush();
 
     		expect(result).toBeDefined();
-            expect(result).toEqual(dummyResult);
+        expect(result).toEqual(dummyResult);
     	});
 
-        it('to logout a user', function() {
-            var result, promise = session.logout();
+      it('to logout a user', function() {
+          var result, promise = session.logout();
 
-            $httpBackend.expectGET('/api/session/logout').respond(200, dummyResult);
-            
-            // set the response value
-            promise.then(function(data) {
-                result = data.data;
-            });
-            expect(result).toBeUndefined();
-            $httpBackend.flush();
+          $httpBackend.expectGET('/api/session/logout').respond(200, dummyResult);
 
-            expect(result).toBeDefined();
-            expect(result).toEqual(dummyResult);
-        });
+          // set the response value
+          promise.then(function(data) {
+              result = data.data;
+          });
+          expect(result).toBeUndefined();
+          $httpBackend.flush();
 
+          expect(result).toBeDefined();
+          expect(result).toEqual(dummyResult);
+      });
+
+      it('should validate a session', function() {
+        session.validSession();
+
+        expect($cookies.get).toHaveBeenCalledWith("FEEDBACKER_SESSION");
+      });
     });
 
     describe("has the correct state when", function() {
@@ -83,18 +95,23 @@ describe('service [Session]', function() {
             expect(session.validSession()).toBe(false);
         });
 
-        xit('logging in a user', function() {
-            doLogin();
+        it('logging in a user', function() {
+
+            session.login("user","pass");
+            $httpBackend.expectPUT('/api/session/login',
+                '{"apiVersion":"1.0","body":{"username":"user","password":"pass"}}',
+                function(headers) { return headers['Cookies'] = 'FEEDBACKER_SESSION=abcdef'}
+                ).respond(200, "dummyResult");
+            $httpBackend.flush();
         });
 
-        xit('logging out a user', function() {
-            doLogin();
-
+        it('logging out a user', function() {
             session.logout();
+
+            expect($cookies.remove).toHaveBeenCalledWith("FEEDBACKER_SESSION");
+            expect($location.path).toHaveBeenCalledWith("#/landing");
             $httpBackend.expectGET('/api/session/logout').respond(200, "dummyResult");
             $httpBackend.flush();
-
-            expect(session.validSession()).toBe(false);
         });
 
     });
