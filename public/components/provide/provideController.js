@@ -5,7 +5,7 @@ fbControllers.controller('ProvideCtrl',  ['$scope', '$log', 'Model', function($s
 
 	var ctrl = this;
 
-    ctrl.candidateList = [];
+    ctrl.recipientList = [];
     ctrl.feedbackRecipient = undefined;
     ctrl.message = undefined;
     ctrl.publishToRecipient = false;
@@ -14,7 +14,7 @@ fbControllers.controller('ProvideCtrl',  ['$scope', '$log', 'Model', function($s
 
 	// get the registered users
 	Model.getNomineeCandidates().then(function(response) {
-		ctrl.candidateList = response;
+		ctrl.recipientList = response;
 	});
 
 	// get the users ad-hoc feedback history

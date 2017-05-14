@@ -48,7 +48,6 @@ describe('service [Model]', function() {
         expect(angular.isFunction(model.getFeedbackHistory)).toBe(true);
         expect(angular.isFunction(model.getFeedbackDetail)).toBe(true);
         expect(angular.isFunction(model.getNomineeCandidates)).toBe(true);
-        expect(angular.isFunction(model.getFeedbackCandidates)).toBe(true);
         expect(angular.isFunction(model.getCurrentNominations)).toBe(true);
         expect(angular.isFunction(model.getActiveFeedbackCycles)).toBe(true);
         expect(angular.isFunction(model.getFeedbackCycle)).toBe(true);
@@ -133,10 +132,6 @@ describe('service [Model]', function() {
             cacheTest(model.getNomineeCandidates, nomination.getNomineeCandidates);
         });
 
-        it('should call the nomination.getNomineeCandidates for feedback candidates service only once', function() {
-            cacheTest(model.getFeedbackCandidates, nomination.getNomineeCandidates);
-        });
-
     });
     
     describe('flushes cached data when requested', function() {
@@ -214,9 +209,6 @@ describe('service [Model]', function() {
             flushTest(model.getNomineeCandidates, nomination.getNomineeCandidates);
         });
 
-        it('should call the nomination.getAdHocFeedbackFromSelf service when flushed', function(){
-            flushTest(model.getFeedbackCandidates, nomination.getNomineeCandidates);
-        });
     });
 
     describe('write through tests', function() {
@@ -348,8 +340,5 @@ describe('service [Model]', function() {
             flushTest(model.getNomineeCandidates, nomination.getNomineeCandidates);
         });
 
-        it('should call the nomination.getAdHocFeedbackForSelf service only once', function() {
-            flushTest(model.getFeedbackCandidates, nomination.getNomineeCandidates);
-        });
     });
 });

@@ -22,18 +22,19 @@
       <div class="col-sm-4">
         <input class="form-control"
                data-ng-model="provide.feedbackRecipient"
-               uib-typeahead="candidate as candidate.display for candidate in provide.candidateList | filter:$viewValue | limitTo:8"
-               placeholder="Name or email of colleague">
+               uib-typeahead="recipient as recipient.display for recipient in provide.recipientList | filter:{display:$viewValue} | limitTo:8"
+               placeholder="Name or email of colleague"
+               typeahead-show-hint="true">
       </div>
       <div class="col-sm-6">
       </div>
     </div> <!-- end row -->
     <div class="row top-buffer">
       <div class="col-sm-2">
-        <span>Publish to candidate: {{provide.feedbackRecipient}}</span>
+        <span>Publish to recipient:</span>
       </div>
       <div class="col-sm-4">
-        <div class="btn-group" role="group" aria-label="Publish feedback to candidate">
+        <div class="btn-group" role="group" aria-label="Publish feedback to recipient">
           <button class="btn btn-primary"
                   for="true"
                   data-ng-model="provide.publishToRecipient"
@@ -64,8 +65,8 @@
           <span data-ng-show="provide.feedbackRecipient">{{provide.feedbackRecipient.managerEmail}}</span>
           <span data-ng-hide="provide.feedbackRecipient">nobody</span>
           and
-          <strong data-ng-show="provide.publishToCandidate">will</strong>
-          <span data-ng-hide="provide.publishToCandidate">will <strong>not</strong></span>
+          <strong data-ng-show="provide.publishToRecipient">will</strong>
+          <span data-ng-hide="provide.publishToRecipient">will <strong>not</strong></span>
           be sent to
           <span data-ng-show="provide.feedbackRecipient" class="strong">{{provide.feedbackRecipient.display}}</span>
           <span data-ng-hide="provide.feedbackRecipient">anybody</span>.

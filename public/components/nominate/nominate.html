@@ -17,8 +17,9 @@
 		<div class="col-sm-4">
 			<input class="form-control"
                    data-ng-model="nominate.nominee"
-                   uib-typeahead="nominee as nominee.display for nominee in nominate.nomineeCandidates | filter:$viewValue | limitTo:8"
-                   placeholder="Name or Email">
+                   uib-typeahead="nominee as nominee.display for nominee in nominate.nomineeCandidates | filter:{display:$viewValue} | limitTo:8"
+                   placeholder="Name or Email"
+									 typeahead-show-hint="true">
 		</div>
 		<div class="col-sm-6">
 		</div>

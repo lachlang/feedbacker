@@ -29,7 +29,7 @@ describe('provide feedback controller [ProvideCtrl]', function() {
 
     it('for global controller variables', function() {
           expect(provideController).toBeDefined();
-          expect(provideController.candidateList).toEqual([]);
+          expect(provideController.recipientList).toEqual([]);
           expect(provideController.feedbackRecipient).toBeUndefined();
           expect(provideController.publishToRecipient).toBe(false);
           expect(provideController.message).toBeUndefined();
