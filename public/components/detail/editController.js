@@ -55,7 +55,7 @@ fbControllers.controller('EditCtrl',  ['$scope', '$log', 'Model','Feedback', 'ui
 	ctrl.initialiseController();
 
 	ctrl.navigateToList = function() {
-		$location.path("list");
+		$location.path("worklist");
 	};
 
 	ctrl.resetError = function() {

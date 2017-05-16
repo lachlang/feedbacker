@@ -45,10 +45,11 @@
 	</div>
 	<div class="row top-buffer">
 		<div class="col-md-4">
-			<p class="lead">Nominate <strong data-ng-show="nominate.nominee" class="strong">{{nominate.nominee.display}}</strong><strong data-ng-hide="nominate.nominee">nobody</strong> to provide feedback for yourself as part of {{nominate.selectedCycle.label}}?</p>
+			<p class="lead">Nominate <strong data-ng-show="nominate.nominee.display" class="strong">{{nominate.nominee.display}}</strong><strong data-ng-hide="nominate.nominee.display" class="strong">{{nominate.nominee}}</strong><strong data-ng-hide="nominate.nominee">nobody</strong> to provide feedback for yourself as part of {{nominate.selectedCycle.label}}?</p>
 		</div>
 		<div class="col-md-2">
-			<a class="btn btn-primary" data-ng-click="nominate.addNomination(nominate.nominee.email, nominate.selectedCycle.id, nominate.message)">Send Feedback Request</a>
+			<a data-ng-show="nominate.nominee.email" class="btn btn-primary" data-ng-click="nominate.addNomination(nominate.nominee.email, nominate.selectedCycle.id, nominate.message)">Send Feedback Request</a>
+			<a data-ng-hide="nominate.nominee.email" class="btn btn-primary" data-ng-click="nominate.addNomination(nominate.nominee, nominate.selectedCycle.id, nominate.message)">Send Feedback Request</a>
 		</div>
 		<div class="col-sm-6">
 
