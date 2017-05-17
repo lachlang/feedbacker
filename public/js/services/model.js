@@ -8,8 +8,10 @@ fbServices.service('Model', ['$log', '$q', 'Account', 'Feedback', 'Nomination', 
 	var feedbackCycle = {};
 	var currentNominations = [];
 	var nomineeCandidates = [];
+	var registeredUsers = [];
 	var feedbackCandidates = [];
-	var feedbackCycles = [];
+	var activeFeedbackCycles = [];
+	var allFeedbackCycles = [];
 	var reports = [];
   var adHocFeedbackForUser = {};
   var adHocFeedbackForSelf = [];
@@ -48,8 +50,10 @@ fbServices.service('Model', ['$log', '$q', 'Account', 'Feedback', 'Nomination', 
             feedbackCycle = {};
             currentNominations = [];
             nomineeCandidates = [];
+            registeredUsers = [];
             feedbackCandidates = [];
-            feedbackCycles = [];
+            activeFeedbackCycles = [];
+            allFeedbackCycles = [];
             reports = [];
             adHocFeedbackForUser = {};
             adHocFeedbackForSelf = [];
@@ -135,6 +139,18 @@ fbServices.service('Model', ['$log', '$q', 'Account', 'Feedback', 'Nomination', 
 									"Nomination.getNomineeCandidates");
 		},
 
+		getRegisteredUsers: function(flushCache) {
+			return cacheServiceCall(function(result) { registeredUsers = result.data.body.map(function(item){
+											item.display = item.name + " (" + item.email + ")";
+											return item;
+										});
+									},
+									function() { return ( !registeredUsers || registeredUsers.length == 0 || flushCache ) },
+									function() { return registeredUsers },
+									Account.getRegisteredUsers,
+									"Account.getRegisteredUsers");
+		},
+
 		getCurrentNominations: function(flushCache) {
 			return cacheServiceCall(function(result) { currentNominations = result.data.body },
 									function() { return ( !currentNominations || currentNominations.length == 0 || flushCache ) },
@@ -144,11 +160,19 @@ fbServices.service('Model', ['$log', '$q', 'Account', 'Feedback', 'Nomination', 
 		},
 
 		getActiveFeedbackCycles: function(flushCache) {
-			return cacheServiceCall(function(result) { feedbackCycles = result.data.body },
-									function() { return ( !feedbackCycles || feedbackCycles.length == 0 || flushCache ) },
-									function() { return feedbackCycles },
+			return cacheServiceCall(function(result) { activeFeedbackCycles = result.data.body },
+									function() { return ( !activeFeedbackCycles || activeFeedbackCycles.length == 0 || flushCache ) },
+									function() { return activeFeedbackCycles },
 									Feedback.getActiveFeedbackCycles,
 									"Feedback.getActiveFeedbackCycles");
+		},
+
+		getAllFeedbackCycles: function(flushCache) {
+			return cacheServiceCall(function(result) { allFeedbackCycles = result.data.body },
+									function() { return ( !activeFeedbackCycles || allFeedbackCycles.length == 0 || flushCache ) },
+									function() { return allFeedbackCycles },
+									Feedback.getAllFeedbackCycles,
+									"Feedback.getAllFeedbackCycles");
 		},
 
 		getFeedbackCycle: function(cycleId, flushCache) {

@@ -113,6 +113,15 @@ trait ModelFixtures {
     } yield QuestionResponse(id = id, text = text, format = format, responseOptions = responseOptions, response = response, comments = comments, helpText = helpText)
   )
 
+  implicit val arbRegisteredUser: Arbitrary[RegisteredUser] = Arbitrary(
+    for {
+      name          <- arbitrary[String].suchThat( _.length > 0)
+      role          <- arbitrary[String].suchThat( _.length > 0)
+      email         <- validEmailAddresses()
+      managerEmail  <- validEmailAddresses()
+    } yield RegisteredUser(name = name, role = role, email = email, managerEmail = managerEmail)
+  )
+
   implicit val arbRegistrationContent: Arbitrary[RegistrationContent] = Arbitrary(
     for {
       name          <- arbitrary[String].suchThat( _.length > 0)

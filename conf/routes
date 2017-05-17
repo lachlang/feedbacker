@@ -12,6 +12,8 @@ GET    	/api/user                   au.com.feedbacker.controllers.Account.getUse
 GET    	/api/user/reports           au.com.feedbacker.controllers.Account.getReports
 PUT     /api/user/update/:email     au.com.feedbacker.controllers.Account.updateUserDetailsForAdmin(email: String)
 PUT    	/api/user/update            au.com.feedbacker.controllers.Account.updateUserDetails
+GET     /api/user/active            au.com.feedbacker.controllers.Account.getActiveUsers
+GET     /api/user/all               au.com.feedbacker.controllers.Account.getRegisteredUsers
 
 GET     /api/report/cycle/:id       au.com.feedbacker.controllers.ReportFile.generateReportForCycle(id: Long)
 GET     /api/report/user/:id        au.com.feedbacker.controllers.ReportFile.generateHistoryReportForUser(id: Long)
@@ -35,11 +37,11 @@ GET 	  /api/feedback/adhoc/from    au.com.feedbacker.controllers.Feedback.getAdH
 GET 	  /api/feedback/adhoc/:email  au.com.feedbacker.controllers.Feedback.getAdHocFeedbackForUser(email: String)
 
 GET     /api/nominations            au.com.feedbacker.controllers.Nominations.getCurrentNominations
-GET     /api/nominations/candidates au.com.feedbacker.controllers.Nominations.getRegisteredUsers
 POST    /api/nominations            au.com.feedbacker.controllers.Nominations.createNomination
 GET     /api/nominations/cancel/:id au.com.feedbacker.controllers.Nominations.cancelNomination(id: Long)
 GET     /api/cycle/active           au.com.feedbacker.controllers.Nominations.getActiveFeedbackCycles
 GET     /api/cycle/:id              au.com.feedbacker.controllers.Feedback.getCycleForFeedback(id: Long)
+GET     /api/cycle                  au.com.feedbacker.controllers.Nominations.getAllFeedbackCycles
 
 
 # Map static resources from the /public folder to the /assets URL path

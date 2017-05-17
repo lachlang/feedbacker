@@ -229,9 +229,16 @@ object RegisteredUser {
 }
 
 class RegisteredUserDao @Inject()(db: play.api.db.Database) {
-  def findRegisteredUsers: Seq[RegisteredUser] = db.withConnection { implicit connection =>
+  def findActiveUsers: Seq[RegisteredUser] = db.withConnection { implicit connection =>
     SQL("select name, email, role, manager_email from person where user_status in ({activeStatus}, {inactiveStatus})")
       .on('activeStatus -> CredentialStatus.Active.toString, 'inactiveStatus -> CredentialStatus.Inactive.toString).as(RegisteredUser.simple *)
+  }
+
+  def findRegisteredUsers: Seq[RegisteredUser] = db.withConnection { implicit connection =>
+    SQL("select name, email, role, manager_email from person where user_status in ({activeStatus}, {inactiveStatus}, {disabledStatus)")
+      .on('activeStatus -> CredentialStatus.Active.toString,
+        'inactiveStatus -> CredentialStatus.Inactive.toString,
+        'disabledStatus -> CredentialStatus.Disabled.toString).as(RegisteredUser.simple *)
   }
 }
 
@@ -621,7 +628,11 @@ class FeedbackCycleDao @Inject() (db: play.api.db.Database) {
   }
 
   def findActiveCycles: Seq[FeedbackCycle] = db.withConnection { implicit connection =>
-    SQL("""select * from cycle where active = true""").as(FeedbackCycle.simple *)
+    SQL("""select * from cycle where active = true order by start_date desc""").as(FeedbackCycle.simple *)
+  }
+
+  def findAllCycles: Seq[FeedbackCycle] = db.withConnection { implicit connection =>
+    SQL("""select * from cycle order by start_date desc""").as(FeedbackCycle.simple *)
   }
 
   def validateCycle(cycleId: Long) : Boolean = db.withConnection { implicit connection =>

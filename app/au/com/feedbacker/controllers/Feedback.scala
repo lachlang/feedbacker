@@ -175,15 +175,10 @@ class Nominations @Inject() (emailer: Emailer,
                              person: PersonDao,
                              nomination: NominationDao,
                              feedbackCycle: FeedbackCycleDao,
-                             users: RegisteredUserDao,
                              sessionManager: SessionManager) extends AuthenticatedController(person, sessionManager) {
 
   def getCurrentNominations = AuthenticatedAction { person =>
     Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(nomination.getCurrentNominationsFromUser(person.credentials.email))))
-  }
-
-  def getRegisteredUsers = AuthenticatedAction { person =>
-    Ok(Json.obj("body" -> Json.toJson(users.findRegisteredUsers)))
   }
 
   def createNomination = AuthenticatedRequestAction { (fromUser, json) =>
@@ -231,6 +226,11 @@ class Nominations @Inject() (emailer: Emailer,
 
   def getActiveFeedbackCycles = AuthenticatedAction { person =>
     Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(feedbackCycle.findActiveCycles)))
+  }
+
+  def getAllFeedbackCycles = AuthenticatedAction { person =>
+    if (!person.isAdmin) Forbidden
+    else Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(feedbackCycle.findAllCycles)))
   }
 }
 //case class Response[T : Writes](apiVersion: String, body: T)

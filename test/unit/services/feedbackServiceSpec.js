@@ -30,6 +30,8 @@ describe('service [Feedback]', function() {
         expect(angular.isFunction(feedback.getFeedbackHistoryForUser)).toBe(true);
         expect(angular.isFunction(feedback.getFeedbackHistoryForSelf)).toBe(true);
         expect(angular.isFunction(feedback.getActiveFeedbackCycles)).toBe(true);
+        expect(angular.isFunction(feedback.getAllFeedbackCycles)).toBe(true);
+        expect(angular.isFunction(feedback.getFeedbackCycle)).toBe(true);
     });
 
     describe("calls the appropriate server api", function() {
@@ -151,6 +153,22 @@ describe('service [Feedback]', function() {
             var result, promise = feedback.getActiveFeedbackCycles();
 
             $httpBackend.expectGET('/api/cycle/active').respond(200, dummyResult);
+
+            // set the response value
+            promise.then(function(data) {
+                result = data.data;
+            });
+            expect(result).toBeUndefined(); // it really should at this point
+            $httpBackend.flush();
+
+            expect(result).toBeDefined();
+            expect(result).toEqual(dummyResult);
+        });
+
+        it('to retrieve all feedback cycles', function() {
+            var result, promise = feedback.getAllFeedbackCycles();
+
+            $httpBackend.expectGET('/api/cycle').respond(200, dummyResult);
 
             // set the response value
             promise.then(function(data) {

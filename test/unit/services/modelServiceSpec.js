@@ -15,6 +15,7 @@ describe('service [Model]', function() {
     account = _Account_;
     spyOn(account, 'getCurrentUser').and.returnValue(deferred.promise)
     spyOn(account, 'updateCurrentUser').and.returnValue(deferred.promise)
+    spyOn(account, 'getRegisteredUsers').and.returnValue(deferred.promise)
     spyOn(account, 'getReports').and.returnValue(deferred.promise)
 
 		feedback = _Feedback_;
@@ -23,6 +24,7 @@ describe('service [Model]', function() {
     spyOn(feedback, 'getFeedbackHistoryForSelf').and.returnValue(deferred.promise);
     spyOn(feedback, 'getFeedbackItem').and.returnValue(deferred.promise);
     spyOn(feedback, 'getActiveFeedbackCycles').and.returnValue(deferred.promise);
+    spyOn(feedback, 'getAllFeedbackCycles').and.returnValue(deferred.promise);
     spyOn(feedback, 'getFeedbackCycle').and.returnValue(deferred.promise);
     spyOn(feedback, 'createAdHocFeedback').and.returnValue(deferred.promise);
     spyOn(feedback, 'getAdHocFeedbackForUser').and.returnValue(deferred.promise);
@@ -48,8 +50,10 @@ describe('service [Model]', function() {
         expect(angular.isFunction(model.getFeedbackHistory)).toBe(true);
         expect(angular.isFunction(model.getFeedbackDetail)).toBe(true);
         expect(angular.isFunction(model.getNomineeCandidates)).toBe(true);
+        expect(angular.isFunction(model.getRegisteredUsers)).toBe(true);
         expect(angular.isFunction(model.getCurrentNominations)).toBe(true);
         expect(angular.isFunction(model.getActiveFeedbackCycles)).toBe(true);
+        expect(angular.isFunction(model.getAllFeedbackCycles)).toBe(true);
         expect(angular.isFunction(model.getFeedbackCycle)).toBe(true);
         expect(angular.isFunction(model.createAdHocFeedback)).toBe(true);
         expect(angular.isFunction(model.getAdHocFeedbackForUser)).toBe(true);
@@ -84,6 +88,10 @@ describe('service [Model]', function() {
             cacheTest(model.getCurrentUser, account.getCurrentUser);
         });
 
+        it('should call the account.getRegisteredUsers service only once', function() {
+            cacheTest(model.getRegisteredUsers, account.getRegisteredUsers);
+        });
+
         it('should call the account.getReports service only once', function() {
             cacheTest(model.getReports, account.getReports);
         });
@@ -106,6 +114,10 @@ describe('service [Model]', function() {
 
         it('should call the feedback.getActiveFeedbackCycles service only once', function() {
             cacheTest(model.getActiveFeedbackCycles, feedback.getActiveFeedbackCycles);
+        });
+
+        it('should call the feedback.getAllFeedbackCycles service only once', function() {
+            cacheTest(model.getAllFeedbackCycles, feedback.getAllFeedbackCycles);
         });
 
         it('should call the feedback.getFeedbackCycle service only once', function() {
@@ -161,6 +173,10 @@ describe('service [Model]', function() {
             flushTest(model.getCurrentUser, account.getCurrentUser);
         });
 
+        it('should call the account.getRegisteredUsers service when flushed', function(){
+            flushTest(model.getRegisteredUsers, account.getRegisteredUsers);
+        });
+
         it('should call the account.getReport service when flushed', function(){
             flushTest(model.getReports, account.getReports);
         });
@@ -183,6 +199,10 @@ describe('service [Model]', function() {
 
         it('should call the feedback.getActiveFeedbackCycles service when flushed', function(){
             flushTest(model.getActiveFeedbackCycles, feedback.getActiveFeedbackCycles);
+        });
+
+        it('should call the feedback.getAllFeedbackCycles service when flushed', function(){
+            flushTest(model.getAllFeedbackCycles, feedback.getAllFeedbackCycles);
         });
 
         it('should call the feedback.getFeedbackCycle service when flushed', function(){
@@ -292,6 +312,10 @@ describe('service [Model]', function() {
             flushTest(model.getCurrentUser, account.getCurrentUser);
         });
 
+        it('should call the account.getRegisteredUsers service only once', function() {
+            flushTest(model.getRegisteredUsers, account.getRegisteredUsers);
+        });
+
         it('should call the account.getReports service only once', function() {
             flushTest(model.getReports, account.getReports);
         });
@@ -314,6 +338,10 @@ describe('service [Model]', function() {
 
         it('should call the feedback.getActiveFeedbackCycles service only once', function() {
             flushTest(model.getActiveFeedbackCycles, feedback.getActiveFeedbackCycles);
+        });
+
+        it('should call the feedback.getAllFeedbackCycles service only once', function() {
+            flushTest(model.getAllFeedbackCycles, feedback.getAllFeedbackCycles);
         });
 
         it('should call the feedback.getFeedbackCycle service only once', function() {

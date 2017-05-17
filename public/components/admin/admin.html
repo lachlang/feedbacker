@@ -2,7 +2,6 @@
   <div class="row">
     <div class="col-md-12">
       <h2>Administration</h2>
-      <p class="lead">Manage users</p>
     </div>
   </div>
   <div data-ng-controller="AdminCtrl as admin">
@@ -13,6 +12,7 @@
     </div>
     <div class="row">
       <div class="col-md-12">
+        <p class="lead">Manage users</p>
       </div>
     </div>
     <div class="row top-buffer">
@@ -22,12 +22,38 @@
       <div class="col-sm-4">
         <input class="form-control"
                data-ng-model="admin.user"
-               uib-typeahead="user as user.display for user in admin.users | filter:{display:$viewValue} | limitTo:8"
+               uib-typeahead="user as user.display for user in admin.registeredUsers | filter:{display:$viewValue} | limitTo:8"
                placeholder="Name or Email"
                typeahead-show-hint="true">
       </div>
       <div class="col-sm-6">
       </div>
+    </div>
+    <div class="row top-buffer">
+      <div class="col-md-12">
+        <p class="lead">Manage review cycles</p>
+      </div>
+    </div>
+    <div class="row top-buffer">
+      <div class="col-md-2"><button class="btn btn-primary" data-ng-click="admin.createNewCycle()">Create New</button></div>
+    </div>
+    <div class="row top-buffer">
+      <div class="col-md-2">
+        <span>Edit existing review cycle</span>
+      </div>
+      <div class="col-md-6">
+        <select class="form-control"
+                data-ng-options="cycle as cycle.label for cycle in admin.reviewCycles"
+                data-ng-model="admin.selectedCycle">
+        </select>
+      </div>
+      <div class="col-md-4"></div>
+    </div>
+    <div class="row top-buffer" data-ng-show="admin.selectedCycle">
+      <div class="col-md-2"><button class="btn btn-default" data-ng-click="admin.clearSelectedCycle()">Clear</button></div>
+    </div>
+    <div class="row top-buffer" data-ng-show="admin.selectedCycle">
+      <div class="col-md-4"><p>{{admin.selectedCycle}}</p></div>
     </div>
     <div class="row top-buffer">
       <div class="col-md-12">

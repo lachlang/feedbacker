@@ -42,7 +42,10 @@ class Registration @Inject() (emailer: Emailer,
   }
 }
 
-class Account @Inject() (person: PersonDao, nomination: NominationDao, sessionManager: SessionManager) extends AuthenticatedController(person, sessionManager) {
+class Account @Inject() (person: PersonDao,
+                         nomination: NominationDao,
+                         users: RegisteredUserDao,
+                         sessionManager: SessionManager) extends AuthenticatedController(person, sessionManager) {
 
   def getUser = AuthenticatedAction { user =>
     Ok(Json.obj("body" -> Json.toJson(user)))
@@ -92,6 +95,16 @@ class Account @Inject() (person: PersonDao, nomination: NominationDao, sessionMa
       }
     }
   }
+
+  def getActiveUsers = AuthenticatedAction { person =>
+    Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(users.findActiveUsers)))
+  }
+
+  def getRegisteredUsers = AuthenticatedAction { person =>
+    if (!person.isAdmin) Forbidden
+    else Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(users.findRegisteredUsers)))
+  }
+
 }
 
 class ReportFile @Inject() (person: PersonDao, nomination: NominationDao, cycle: FeedbackCycleDao, sessionManager: SessionManager, csvReport: CsvReport) extends AuthenticatedController(person, sessionManager) {

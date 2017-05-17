@@ -27,12 +27,18 @@ class AccountSpec extends PlaySpec with MockitoSugar with AllFixtures with Prope
     people <- Gen.listOfN(n, arbitrary[Person])
   } yield people
 
+  val upToTenRegistedUsers = for {
+    n <- Gen.choose(0, 10)
+    people <- Gen.listOfN(n, arbitrary[RegisteredUser])
+  } yield people
+
   def fixture = {
     new {
       val mockPersonDao = mock[PersonDao]
       val mockNominationDao = mock[NominationDao]
+      val mockRegisteredUserDao = mock[RegisteredUserDao]
       val mockSessionManager = mock[SessionManager]
-      val controller = new Account(mockPersonDao, mockNominationDao, mockSessionManager)
+      val controller = new Account(mockPersonDao, mockNominationDao, mockRegisteredUserDao, mockSessionManager)
     }
   }
 
@@ -229,6 +235,79 @@ class AccountSpec extends PlaySpec with MockitoSugar with AllFixtures with Prope
         verify(f.mockPersonDao).update(upPerson)
         status(result) mustBe 200
         contentAsJson(result) mustBe Json.obj("apiVersion" -> "1.0") ++ Json.obj("body" -> Json.toJson(upPerson))
+      }
+    }
+  }
+  "Account#getActiveUsers" should {
+    "be forbidden for an invalid user" in {
+      forAll() { st: SessionToken =>
+        val f = fixture
+        when(f.mockSessionManager.extractToken(any())).thenReturn(None)
+        val result: Future[Result] = f.controller.getActiveUsers().apply(FakeRequest().withCookies(SessionManager.createSessionCookie(st.token)))
+
+        // verify
+        status(result) mustBe 403
+        contentAsString(result) mustBe ""
+        verifyZeroInteractions(f.mockPersonDao)
+        verifyZeroInteractions(f.mockRegisteredUserDao)
+      }
+    }
+    "return a list of users" in {
+      forAll(arbitrary[SessionToken], arbitrary[Person], upToTenRegistedUsers) { (st: SessionToken, person: Person, registeredUsers: Seq[RegisteredUser]) =>
+        val f = fixture
+        when(f.mockSessionManager.extractToken(any())).thenReturn(Some(st))
+        when(f.mockPersonDao.findByEmail(st.username)).thenReturn(Some(person))
+        when(f.mockRegisteredUserDao.findActiveUsers).thenReturn(registeredUsers)
+        val result: Future[Result] = f.controller.getActiveUsers().apply(FakeRequest().withCookies(SessionManager.createSessionCookie(st.token)))
+
+        // verify
+        status(result) mustBe 200
+        contentAsJson(result) mustBe Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(registeredUsers))
+        verify(f.mockPersonDao).findByEmail(st.username)
+        verify(f.mockRegisteredUserDao).findActiveUsers
+      }
+    }
+  }
+  "Account#getRegisteredUsers" should {
+    "be forbidden for an invalid user" in {
+      forAll() { st: SessionToken =>
+        val f = fixture
+        when(f.mockSessionManager.extractToken(any())).thenReturn(None)
+        val result: Future[Result] = f.controller.getRegisteredUsers().apply(FakeRequest().withCookies(SessionManager.createSessionCookie(st.token)))
+
+        // verify
+        status(result) mustBe 403
+        contentAsString(result) mustBe ""
+        verifyZeroInteractions(f.mockPersonDao)
+      }
+    }
+    "be forbidden for non admin users" in {
+      forAll() { (st: SessionToken, u: Person) =>
+        val user = u.copy(isAdmin = false)
+        val f = fixture
+        when(f.mockSessionManager.extractToken(any())).thenReturn(None)
+        when(f.mockPersonDao.findByEmail(st.username)).thenReturn(Some(user))
+        val result: Future[Result] = f.controller.getRegisteredUsers().apply(FakeRequest().withCookies(SessionManager.createSessionCookie(st.token)))
+
+        // verify
+        status(result) mustBe 403
+        contentAsString(result) mustBe ""
+        verifyZeroInteractions(f.mockRegisteredUserDao)
+      }
+    }
+    "return a list of users" in {
+      forAll(arbitrary[SessionToken], arbitrary[Person], upToTenRegistedUsers) { (st: SessionToken, u: Person, registeredUsers: Seq[RegisteredUser]) =>
+        val f = fixture
+        val user = u.copy(isAdmin = true)
+        when(f.mockSessionManager.extractToken(any())).thenReturn(Some(st))
+        when(f.mockPersonDao.findByEmail(st.username)).thenReturn(Some(user))
+        when(f.mockRegisteredUserDao.findRegisteredUsers).thenReturn(registeredUsers)
+        val result: Future[Result] = f.controller.getRegisteredUsers().apply(FakeRequest().withCookies(SessionManager.createSessionCookie(st.token)))
+
+        // verify
+        status(result) mustBe 200
+        contentAsJson(result) mustBe Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(registeredUsers))
+        verify(f.mockRegisteredUserDao).findRegisteredUsers
       }
     }
   }
