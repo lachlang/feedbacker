@@ -55,7 +55,6 @@ class Account @Inject() (person: PersonDao, nomination: NominationDao, sessionMa
     Ok(Json.obj("body" -> Json.toJson(reports)))
   }
 
-  // TODO: fix isLeader for manager changes
   def updateUserDetails = AuthenticatedRequestAction { (user, json) =>
     json.validate[UpdateContent].asOpt.map(uc =>
       Person(user.id, uc.name, uc.role, user.credentials, uc.managerEmail.toLowerCase, user.isLeader)) match {
@@ -63,7 +62,7 @@ class Account @Inject() (person: PersonDao, nomination: NominationDao, sessionMa
       case None => BadRequest(s"""{ "body": { "message": "Could not update user details."}} """)
       case Some(personUpdates) => person.update(personUpdates) match {
         case Left(e) => BadRequest(Json.obj("body" -> Json.obj("message" -> e.getMessage)))
-        case Right(updatedPerson) => Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(updatedPerson)))
+        case Right(updatedPerson) => person.recalculateIsLeader(updatedPerson.managerEmail); Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(updatedPerson)))
       }
     }
   }
@@ -75,28 +74,23 @@ class Account @Inject() (person: PersonDao, nomination: NominationDao, sessionMa
       person.findByEmail(username).flatMap{ targetPerson =>
       json.validate[UpdateContentForAdmin].asOpt.map{uc =>
         val status =
-          if (targetPerson.credentials.status == CredentialStatus.Active && uc.isEnabled == false) CredentialStatus.Inactive
-          else if (targetPerson.credentials.status == CredentialStatus.Inactive && uc.isEnabled == true) CredentialStatus.Inactive
+          if (targetPerson.credentials.status == CredentialStatus.Active && uc.isEnabled == false) CredentialStatus.Disabled
+          else if (targetPerson.credentials.status == CredentialStatus.Disabled && uc.isEnabled == true) CredentialStatus.Inactive
           else targetPerson.credentials.status
-        Person(targetPerson.id, uc.name, uc.role, user.credentials, uc.managerEmail.toLowerCase, targetPerson.isLeader, isAdmin = uc.isAdmin)}} match {
+        Person(id = targetPerson.id,
+          name = uc.name,
+          role = uc.role,
+          credentials = user.credentials.copy(status = status),
+          managerEmail = uc.managerEmail.toLowerCase,
+          isLeader = targetPerson.isLeader,
+          isAdmin = uc.isAdmin)}} match {
         case (None) => BadRequest
-        case (Some(updatedPerson)) => {
-          Ok
+        case (Some(updatedDetails)) => person.update(updatedDetails) match {
+          case Left(e) => BadRequest(Json.obj("body" -> Json.obj("message" -> e.getMessage)))
+          case Right(updatedPerson) => person.recalculateIsLeader(updatedPerson.managerEmail); Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(updatedPerson)))
         }
-
       }
     }
-//      json.validate[UpdateContent].asOpt.map(uc =>
-//        Person(user.id, uc.name, uc.role, user.credentials, uc.managerEmail.toLowerCase, user.isLeader)) match {
-//
-//        case None => BadRequest(s"""{ "body": { "message": "Could not update user details."}} """)
-//        case Some(personUpdates) => person.update(personUpdates) match {
-//          case Left(e) => BadRequest(Json.obj("body" -> Json.obj("message" -> e.getMessage)))
-//          case Right(updatedPerson) => Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(updatedPerson)))
-//        }
-//      }
-//    }
-//      Ok
   }
 }
 

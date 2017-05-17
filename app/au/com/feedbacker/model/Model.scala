@@ -138,6 +138,10 @@ class PersonDao @Inject() (db: play.api.db.Database, activation: ActivationDao, 
     SQL("""update person SET is_manager = true where email = {email}""").on('email -> email).executeUpdate == 1
   }
 
+  def recalculateIsLeader(username: String): Boolean = db.withConnection { implicit connection =>
+    SQL("""update person SET is_manager = (select count(*) > 0 from person where manager_email = {email}) where email = {email}""").on('email -> username).executeUpdate() == 1
+  }
+
   def createNominee(username: String): Either[Throwable, Long] = {
     db.withConnection { implicit connection =>
       try {
