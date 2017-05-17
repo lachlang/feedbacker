@@ -21,7 +21,7 @@
       </div>
       <div class="col-sm-4">
         <input class="form-control"
-               data-ng-model="admin.user"
+               data-ng-model="admin.selectedUser"
                uib-typeahead="user as user.display for user in admin.registeredUsers | filter:{display:$viewValue} | limitTo:8"
                placeholder="Name or Email"
                typeahead-show-hint="true">
@@ -29,6 +29,71 @@
       <div class="col-sm-6">
       </div>
     </div>
+    <div class="row top-buffer" data-ng-show="admin.selectedUser.display">
+      <div class="col-md-12">
+        <p>Update user <strong>{{admin.selectedUser.display}}</strong> - {{admin.selectedUser.role}}</p>
+      </div>
+    </div>
+
+    <form class="form-group" data-ng-submit="admin.updateUser()" data-ng-show="admin.selectedUser.display">
+      <div class="row">
+        <div class="col-sm-1"><p>Name:</p></div>
+        <div class="col-sm-5">
+          <input type="text" class="form-control" placeholder="Name" data-ng-model="admin.selectedUser.name" required>
+        </div>
+      </div>
+      <div class="row top-buffer-small">
+        <div class="col-sm-1"><p>Role:</p></div>
+        <div class="col-sm-5">
+          <input type="text" class="form-control" placeholder="Your Role" data-ng-model="admin.selectedUser.role" required>
+        </div>
+      </div>
+      <div class="row top-buffer-small">
+        <div class="col-sm-1"><p>Boss Email:</p></div>
+        <div class="col-sm-5">
+          <input type="email" class="form-control" placeholder="Boss's Email" data-ng-model="admin.selectedUser.managerEmail" required>
+        </div>
+      </div>
+      <div class="row top-buffer-small">
+        <div class="col-sm-1"><p>Admin User: <span data-ng-show="admin.selectedUser.isAdmin"> (Yes)</span>
+          <span data-ng-hide="admin.selectedUser.isAdmin">(No)</span></p></div>
+        <div class="col-sm-2">
+          <div class="btn-group" role="group" aria-label="Is admin user">
+            <button class="btn btn-info"
+                    for="true"
+                    data-ng-model="admin.selectedUser.isAdmin"
+                    uib-btn-radio="true">Yes</button>
+            <button class="btn btn-info"
+                    for="false"
+                    data-ng-model="admin.selectedUser.isAdmin"
+                    uib-btn-radio="false">No</button>
+        </div>
+        </div>
+        <div class="col-sm-1"><p>User Disabled: <span data-ng-show="admin.selectedUser.isEnabled"> (No)</span>
+          <span data-ng-hide="admin.selectedUser.isEnabled">(Yes)</span></p></div>
+        <div class="col-sm-2">
+          <div class="btn-group" role="group" aria-label="Is admin user">
+            <button class="btn btn-info"
+                    for="false"
+                    data-ng-model="admin.selectedUser.isEnabled"
+                    uib-btn-radio="false">Yes</button>
+            <button class="btn btn-info"
+                    for="true"
+                    data-ng-model="admin.selectedUser.isEnabled"
+                    uib-btn-radio="true">No</button>
+          </div>
+        </div>
+      </div>
+      <div class="row top-buffer-small">
+        <div class="col-sm-5">
+          <button type="submit" class="btn btn-primary">Update</button>
+        </div>
+        <div class="col-sm-1">
+          <button class="btn btn-default" data-ng-click="admin.clearSelectedUser()">Cancel</button>
+        </div>
+      </div>
+    </form>
+
     <div class="row top-buffer">
       <div class="col-md-12">
         <p class="lead">Manage review cycles</p>

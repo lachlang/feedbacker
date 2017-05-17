@@ -9,6 +9,7 @@ fbControllers.controller('AdminCtrl',  ['$scope', '$log', 'Model', function($sco
   ctrl.reviewCycles = [];
   ctrl.selectedCycle = undefined;
   ctrl.registeredUsers = [];
+  ctrl.selectedUser = undefined;
   ctrl.error = undefined;
 
   Model.getAllFeedbackCycles().then(function(result) {
@@ -25,12 +26,24 @@ fbControllers.controller('AdminCtrl',  ['$scope', '$log', 'Model', function($sco
     ctrl.selectedCycle = undefined;
   };
 
+  ctrl.clearSelectedUser = function() {
+    ctrl.selectedUser = undefined;
+  };
+
   ctrl.createNewCycle = function() {
+
   };
 
   ctrl.updateFeedbackCycle = function() {
+
   };
 
   ctrl.createFeedbackCycle = function() {
+
   };
+
+  ctrl.updateUser = function() {
+    alert("Please contact your administrator to implement this exciting feature.");
+  };
+
 }]);

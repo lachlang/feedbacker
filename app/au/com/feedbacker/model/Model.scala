@@ -84,7 +84,8 @@ object Person {
       get[String]("person.manager_email") ~
       get[Boolean]("person.is_manager") ~
       get[Boolean]("person.is_admin") map {
-      case id~name~role~email~pass_hash~user_status~manager_email~isLeader~isAdmin => Person(id, name, role, Credentials(email, pass_hash, CredentialStatus.withName(user_status)), manager_email, isLeader, isAdmin)
+      case id~name~role~email~pass_hash~user_status~manager_email~isLeader~isAdmin =>
+        Person(id, name, role, Credentials(email, pass_hash, CredentialStatus.withName(user_status)), manager_email, isLeader, isAdmin)
     }
   }
 
@@ -212,7 +213,8 @@ class PersonDao @Inject() (db: play.api.db.Database, activation: ActivationDao, 
   }
 }
 
-case class RegisteredUser(name: Person.Name, email: Person.Username, role: String, managerEmail: String)
+case class RegisteredUser(name: Person.Name, email: Person.Username, role: String, managerEmail: String,
+                          isEnabled: Option[Boolean] = None, isAdmin: Option[Boolean] = None)
 
 object RegisteredUser {
 
@@ -226,6 +228,24 @@ object RegisteredUser {
       case name ~ email ~ role ~ managerEmail => RegisteredUser(name, email, role, managerEmail)
     }
   }
+
+  val admin = {
+    get[String]("name") ~
+      get[String]("email") ~
+      get[String]("role") ~
+      get[String]("manager_email") ~
+      get[Boolean]("is_admin") ~
+      get[String]("user_status") map {
+      case name ~ email ~ role ~ managerEmail ~isAdmin ~ status =>
+        RegisteredUser(name = name, email = email, role = role, managerEmail = managerEmail, isAdmin = Some(isAdmin),
+          isEnabled = CredentialStatus.withName(status) match {
+          case CredentialStatus.Disabled => Some(false)
+          case CredentialStatus.Active => Some(true)
+          case CredentialStatus.Inactive => Some(true)
+          case CredentialStatus.Nominated => None
+        })
+    }
+  }
 }
 
 class RegisteredUserDao @Inject()(db: play.api.db.Database) {
@@ -235,10 +255,10 @@ class RegisteredUserDao @Inject()(db: play.api.db.Database) {
   }
 
   def findRegisteredUsers: Seq[RegisteredUser] = db.withConnection { implicit connection =>
-    SQL("select name, email, role, manager_email from person where user_status in ({activeStatus}, {inactiveStatus}, {disabledStatus})")
+    SQL("select name, email, role, manager_email, is_admin, user_status from person where user_status in ({activeStatus}, {inactiveStatus}, {disabledStatus})")
       .on('activeStatus -> CredentialStatus.Active.toString,
         'inactiveStatus -> CredentialStatus.Inactive.toString,
-        'disabledStatus -> CredentialStatus.Disabled.toString).as(RegisteredUser.simple *)
+        'disabledStatus -> CredentialStatus.Disabled.toString).as(RegisteredUser.admin *)
   }
 }
 
