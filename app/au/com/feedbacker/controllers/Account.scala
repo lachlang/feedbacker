@@ -65,7 +65,7 @@ class Account @Inject() (person: PersonDao,
       case None => BadRequest(s"""{ "body": { "message": "Could not update user details."}} """)
       case Some(personUpdates) => person.update(personUpdates) match {
         case Left(e) => BadRequest(Json.obj("body" -> Json.obj("message" -> e.getMessage)))
-        case Right(updatedPerson) => person.recalculateIsLeader(updatedPerson.managerEmail); Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(updatedPerson)))
+        case Right(updatedPerson) => person.recalculateIsLeader(user.managerEmail, updatedPerson.managerEmail); Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(updatedPerson)))
       }
     }
   }
@@ -74,23 +74,26 @@ class Account @Inject() (person: PersonDao,
     if (!user.isAdmin) {
       Forbidden(Json.obj("message" -> "Must be an adminstrator to update user."))
     } else {
-      person.findByEmail(username).flatMap{ targetPerson =>
-      json.validate[UpdateContentForAdmin].asOpt.map{uc =>
-        val status =
-          if (targetPerson.credentials.status == CredentialStatus.Active && uc.isEnabled == false) CredentialStatus.Disabled
-          else if (targetPerson.credentials.status == CredentialStatus.Disabled && uc.isEnabled == true) CredentialStatus.Inactive
-          else targetPerson.credentials.status
-        Person(id = targetPerson.id,
-          name = uc.name,
-          role = uc.role,
-          credentials = user.credentials.copy(status = status),
-          managerEmail = uc.managerEmail.toLowerCase,
-          isLeader = targetPerson.isLeader,
-          isAdmin = uc.isAdmin)}} match {
-        case (None) => BadRequest
-        case (Some(updatedDetails)) => person.update(updatedDetails) match {
-          case Left(e) => BadRequest(Json.obj("body" -> Json.obj("message" -> e.getMessage)))
-          case Right(updatedPerson) => person.recalculateIsLeader(updatedPerson.managerEmail); Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(updatedPerson)))
+      (json.validate[UpdateContentForAdmin].asOpt, person.findByEmail(username)) match {
+        case (None, None) => BadRequest(Json.obj("message" -> "Invalid request."))
+        case (None, _) => BadRequest(Json.obj("message" -> "Invalid Request."))
+        case (_, None) => BadRequest(Json.obj("message" -> "Cannot update invalid user."))
+        case (Some(uc), Some(targetPerson)) => {
+          val status =
+            if (targetPerson.credentials.status == CredentialStatus.Active && uc.isEnabled == false) CredentialStatus.Disabled
+            else if (targetPerson.credentials.status == CredentialStatus.Disabled && uc.isEnabled == true) CredentialStatus.Inactive
+            else targetPerson.credentials.status
+          person.update(Person(id = targetPerson.id,
+                    name = uc.name,
+                    role = uc.role,
+                    credentials = user.credentials.copy(status = status),
+                    managerEmail = uc.managerEmail.toLowerCase,
+                    isLeader = targetPerson.isLeader,
+                    isAdmin = uc.isAdmin)) match {
+              case Left(e) => BadRequest(Json.obj("body" -> Json.obj("message" -> e.getMessage)))
+              case Right(updatedPerson) => person.recalculateIsLeader(targetPerson.managerEmail, updatedPerson.managerEmail); Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(updatedPerson)))
+
+          }
         }
       }
     }
