@@ -2,18 +2,44 @@
   <div class="row">
     <div class="col-md-12">
       <h2>Administration</h2>
+      <p class="lead">Manage users</p>
     </div>
   </div>
   <div data-ng-controller="AdminCtrl as admin">
+    <div data-ng-if="nominate.error" class="row top-buffer">
+      <div class="col-md-12">
+        <div class="alert alert-danger" role="alert">{{admin.error}}</div>
+      </div>
+    </div>
     <div class="row">
+      <div class="col-md-12">
+      </div>
+    </div>
+    <div class="row top-buffer">
+      <div class="col-sm-2">
+        <span>Search for users:</span>
+      </div>
+      <div class="col-sm-4">
+        <input class="form-control"
+               data-ng-model="admin.user"
+               uib-typeahead="user as user.display for user in admin.users | filter:{display:$viewValue} | limitTo:8"
+               placeholder="Name or Email"
+               typeahead-show-hint="true">
+      </div>
+      <div class="col-sm-6">
+      </div>
+    </div>
+    <div class="row top-buffer">
       <div class="col-md-12">
         <p class="lead">Stay tuned folks.  This exciting section is coming soon :)</p>
         <p>Features will include:</p>
         <ul>
           <li>Set users as admin</li>
+          <li>Disable registered users</li>
           <li>Create new review cycles</li>
           <li>Update question text, response options and help text</li>
           <li>Disable existing review cycles</li>
+          <li>Create a 360 degree review</li>
         </ul>
       </div>
     </div> <!-- end row -->

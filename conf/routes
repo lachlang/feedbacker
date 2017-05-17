@@ -10,7 +10,8 @@ GET     /api/session/logout         au.com.feedbacker.controllers.Authentication
 
 GET    	/api/user                   au.com.feedbacker.controllers.Account.getUser
 GET    	/api/user/reports           au.com.feedbacker.controllers.Account.getReports
-PUT    	/api/user                   au.com.feedbacker.controllers.Account.updateUserDetails
+PUT     /api/user/update/:email     au.com.feedbacker.controllers.Account.updateUserDetailsForAdmin(email: String)
+PUT    	/api/user/update            au.com.feedbacker.controllers.Account.updateUserDetails
 
 GET     /api/report/cycle/:id       au.com.feedbacker.controllers.ReportFile.generateReportForCycle(id: Long)
 GET     /api/report/user/:id        au.com.feedbacker.controllers.ReportFile.generateHistoryReportForUser(id: Long)
@@ -39,6 +40,7 @@ POST    /api/nominations            au.com.feedbacker.controllers.Nominations.cr
 GET     /api/nominations/cancel/:id au.com.feedbacker.controllers.Nominations.cancelNomination(id: Long)
 GET     /api/cycle/active           au.com.feedbacker.controllers.Nominations.getActiveFeedbackCycles
 GET     /api/cycle/:id              au.com.feedbacker.controllers.Feedback.getCycleForFeedback(id: Long)
+
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /components/*file           controllers.Assets.at(path="/public/components", file)

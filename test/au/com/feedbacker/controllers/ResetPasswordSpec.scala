@@ -61,7 +61,7 @@ class ResetPasswordSpec extends PlaySpec with MockitoSugar with AllFixtures with
         verifyZeroInteractions(f.mockPersonDao)
       }
     }
-    "fail for invalid users" in {
+    "fail for unregistered users" in {
       forAll() { request: ResetPasswordContent =>
         val f = fixture
         when(f.mockActivationDao.validateToken(SessionToken(request.username.toLowerCase, request.token.replaceAll(" ", "+")))).thenReturn(true)
@@ -77,10 +77,29 @@ class ResetPasswordSpec extends PlaySpec with MockitoSugar with AllFixtures with
         verifyZeroInteractions(f.mockEmailer)
       }
     }
+    "return forbidden for users who are not active" in {
+      forAll() { (user: Person, request: ResetPasswordContent) =>
+        whenever(user.credentials.status != CredentialStatus.Active) {
+          val f = fixture
+          when(f.mockActivationDao.validateToken(SessionToken(request.username.toLowerCase, request.token.replaceAll(" ", "+")))).thenReturn(true)
+          when(f.mockPersonDao.findByEmail(request.username.toLowerCase)).thenReturn(Some(user))
+          val result: Future[Result] = f.controller.resetPassword().apply(FakeRequest().withBody(Json.toJson(request)))
+
+          // verify
+          status(result) mustBe 403
+          contentAsString(result) mustBe ""
+          verify(f.mockActivationDao).validateToken(SessionToken(request.username.toLowerCase, request.token.replaceAll(" ", "+")))
+          verify(f.mockPersonDao).findByEmail(request.username.toLowerCase)
+          verifyZeroInteractions(f.mockSessionManager)
+          verifyZeroInteractions(f.mockEmailer)
+        }
+      }
+    }
     "return a bad request code when the user update fails" in {
-      forAll() { (request: ResetPasswordContent, person: Person) =>
+      forAll() { (request: ResetPasswordContent, p: Person) =>
         // mocks
 
+        val person = p.copy(credentials = p.credentials.copy(status = CredentialStatus.Active))
         val errorMessage: String = "error message"
         val f = fixture
         when(f.mockActivationDao.validateToken(SessionToken(request.username.toLowerCase, request.token.replaceAll(" ", "+")))).thenReturn(true)
@@ -100,8 +119,9 @@ class ResetPasswordSpec extends PlaySpec with MockitoSugar with AllFixtures with
       }
     }
     "reset the users password" in {
-      forAll() { (request: ResetPasswordContent, person: Person) =>
+      forAll() { (request: ResetPasswordContent, p: Person) =>
         val f = fixture
+        val person = p.copy(credentials = p.credentials.copy(status = CredentialStatus.Active))
         when(f.mockActivationDao.validateToken(SessionToken(request.username.toLowerCase, request.token.replaceAll(" ", "+")))).thenReturn(true)
         when(f.mockPersonDao.findByEmail(request.username.toLowerCase)).thenReturn(Some(person))
         when(f.mockPersonDao.update(person)).thenReturn(Right(person))
@@ -144,7 +164,7 @@ class ResetPasswordSpec extends PlaySpec with MockitoSugar with AllFixtures with
       }
     }
     "fail when cannot create token" in {
-      forAll() { person:Person =>
+      forAll() { person: Person =>
         val f = fixture
         when(f.mockPersonDao.findByEmail(person.credentials.email.toLowerCase)).thenReturn(Some(person))
         when(f.mockActivationDao.createActivationToken(person.credentials.email.toLowerCase)).thenReturn(None)
@@ -159,8 +179,27 @@ class ResetPasswordSpec extends PlaySpec with MockitoSugar with AllFixtures with
         verifyZeroInteractions(f.mockSessionManager)
       }
     }
-    "send a password reset email" in {
+    "return forbidden user is not active" in {
       forAll() { (person: Person, token: String) =>
+        whenever(person.credentials.status != CredentialStatus.Active) {
+          val f = fixture
+          when(f.mockPersonDao.findByEmail(person.credentials.email.toLowerCase)).thenReturn(Some(person))
+          when(f.mockActivationDao.createActivationToken(person.credentials.email.toLowerCase)).thenReturn(Some(SessionToken(person.credentials.email, token)))
+          val result = f.controller.sendPasswordResetEmail().apply(FakeRequest().withJsonBody(Json.obj("body" -> Json.obj("email" -> person.credentials.email))))
+
+          // verify
+          status(result) mustBe 403
+          contentAsString(result) mustBe ""
+          verify(f.mockPersonDao).findByEmail(person.credentials.email.toLowerCase)
+          verify(f.mockActivationDao).createActivationToken(person.credentials.email.toLowerCase)
+          verifyZeroInteractions(f.mockEmailer)
+          verifyZeroInteractions(f.mockSessionManager)
+        }
+      }
+    }
+    "send a password reset email" in {
+      forAll() { (p: Person, token: String) =>
+        val person = p.copy(credentials = p.credentials.copy(status = CredentialStatus.Active))
         val f = fixture
         when(f.mockPersonDao.findByEmail(person.credentials.email.toLowerCase)).thenReturn(Some(person))
         when(f.mockActivationDao.createActivationToken(person.credentials.email.toLowerCase)).thenReturn(Some(SessionToken(person.credentials.email, token)))

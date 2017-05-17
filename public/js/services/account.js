@@ -34,13 +34,30 @@ fbServices.service('Account', ['$log', '$http', '$q', function($log, $http, $q) 
 		updateCurrentUser: function(name, role, managerEmail) {
 			return $http({
 				method: "PUT",
-				url: "/api/user",
+				url: "/api/user/update",
 				data: {
 					apiVersion: "1.0",
 					body: {
 						name: name,
 						role: role,
 						managerEmail: managerEmail
+					}
+				}
+			});
+		},
+
+		updateUser: function(email, name, role, managerEmail, isAdmin, isEnabled) {
+			return $http({
+				method: "PUT",
+				url: "/api/user/update/" + email,
+				data: {
+					apiVersion: "1.0",
+					body: {
+						name: name,
+						role: role,
+						managerEmail: managerEmail,
+						isAdmin: isAdmin,
+						isEnabled: isEnabled
 					}
 				}
 			});

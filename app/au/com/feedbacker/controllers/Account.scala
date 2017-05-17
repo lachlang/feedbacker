@@ -55,6 +55,7 @@ class Account @Inject() (person: PersonDao, nomination: NominationDao, sessionMa
     Ok(Json.obj("body" -> Json.toJson(reports)))
   }
 
+  // TODO: fix isLeader for manager changes
   def updateUserDetails = AuthenticatedRequestAction { (user, json) =>
     json.validate[UpdateContent].asOpt.map(uc =>
       Person(user.id, uc.name, uc.role, user.credentials, uc.managerEmail.toLowerCase, user.isLeader)) match {
@@ -65,6 +66,37 @@ class Account @Inject() (person: PersonDao, nomination: NominationDao, sessionMa
         case Right(updatedPerson) => Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(updatedPerson)))
       }
     }
+  }
+
+  def updateUserDetailsForAdmin(username: String) = AuthenticatedRequestAction { (user, json) =>
+    if (!user.isAdmin) {
+      Forbidden(Json.obj("message" -> "Must be an adminstrator to update user."))
+    } else {
+      person.findByEmail(username).flatMap{ targetPerson =>
+      json.validate[UpdateContentForAdmin].asOpt.map{uc =>
+        val status =
+          if (targetPerson.credentials.status == CredentialStatus.Active && uc.isEnabled == false) CredentialStatus.Inactive
+          else if (targetPerson.credentials.status == CredentialStatus.Inactive && uc.isEnabled == true) CredentialStatus.Inactive
+          else targetPerson.credentials.status
+        Person(targetPerson.id, uc.name, uc.role, user.credentials, uc.managerEmail.toLowerCase, targetPerson.isLeader, isAdmin = uc.isAdmin)}} match {
+        case (None) => BadRequest
+        case (Some(updatedPerson)) => {
+          Ok
+        }
+
+      }
+    }
+//      json.validate[UpdateContent].asOpt.map(uc =>
+//        Person(user.id, uc.name, uc.role, user.credentials, uc.managerEmail.toLowerCase, user.isLeader)) match {
+//
+//        case None => BadRequest(s"""{ "body": { "message": "Could not update user details."}} """)
+//        case Some(personUpdates) => person.update(personUpdates) match {
+//          case Left(e) => BadRequest(Json.obj("body" -> Json.obj("message" -> e.getMessage)))
+//          case Right(updatedPerson) => Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(updatedPerson)))
+//        }
+//      }
+//    }
+//      Ok
   }
 }
 
@@ -129,6 +161,19 @@ object UpdateContent {
     )(UpdateContent.apply, unlift(UpdateContent.unapply))
 }
 
+case class UpdateContentForAdmin(name: String, role: String, managerEmail: String, isAdmin: Boolean = false, isEnabled: Boolean = false)
+
+object UpdateContentForAdmin {
+
+  implicit val format: Format[UpdateContentForAdmin] = (
+    (JsPath \ "body" \ "name").format[String] and
+      (JsPath \ "body" \ "role").format[String] and
+      (JsPath \ "body" \ "managerEmail").format[String](Reads.email) and
+      (JsPath \ "body" \ "isAdmin").format[Boolean] and
+      (JsPath \ "body" \ "isEnabled").format[Boolean]
+    )(UpdateContentForAdmin.apply, unlift(UpdateContentForAdmin.unapply))
+}
+
 class ActivationCtrl @Inject() (emailer: Emailer, person: PersonDao, activation: ActivationDao, sessionManager: SessionManager) extends Controller {
 
   def activate = LoggingAction { request =>
@@ -159,19 +204,26 @@ class ResetPassword @Inject() (emailer: Emailer,
   def resetPassword = LoggingAction(parse.json(maxLength = 300)) { request => {
     request.body.validate[ResetPasswordContent].asOpt match {
       case None => BadRequest
-      case Some(content) =>
+      case Some(content) => {
         val st = SessionToken(content.username.toLowerCase, content.token.replaceAll(" ", "+"))
-        if (!activation.validateToken(st)) Forbidden
-        else {
+        if (!activation.validateToken(st)) {
+          Forbidden
+        } else {
           person.findByEmail(st.username) match {
             case None => BadRequest
-            case Some(p) => person.update(p.setNewHash(sessionManager.hash(content.password))) match {
-                case Left(e) => BadRequest(Json.obj("body" -> Json.obj("message" -> e.getMessage)))
-                case Right(_) => activation.expireToken(st.token); Ok
+            case Some(p) =>
+              if (p.credentials.status == CredentialStatus.Active) {
+                person.update(p.setNewHash(sessionManager.hash(content.password))) match {
+                  case Left(e) => BadRequest(Json.obj("body" -> Json.obj("message" -> e.getMessage)))
+                  case Right(_) => activation.expireToken(st.token); Ok
+                }
+              } else {
+                Forbidden
               }
             }
           }
         }
+      }
     }
   }
 
@@ -180,7 +232,14 @@ class ResetPassword @Inject() (emailer: Emailer,
     request.body.asJson.flatMap { json => (json \ "body" \ "email").asOpt[String](Reads.email) }.map(_.toLowerCase) match {
       case None => BadRequest
       case Some(username) => (person.findByEmail(username),activation.createActivationToken(username)) match {
-        case (Some(p),Some(st)) => emailer.sendPasswordResetEmail(p.name, st); Ok
+        case (Some(p),Some(st)) => {
+          if (p.credentials.status == CredentialStatus.Active) {
+            emailer.sendPasswordResetEmail(p.name, st)
+            Ok
+          } else {
+            Forbidden
+          }
+        }
         case _ => BadRequest
       }
     }

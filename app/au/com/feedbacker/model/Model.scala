@@ -18,7 +18,7 @@ object CredentialStatus extends Enumeration {
   val Active = Value("Active")
   val Nominated = Value("Nominated")
 	val Inactive = Value("Inactive")
-	val Restricted = Value("Restricted")
+	val Disabled = Value("Disabled")
 
   implicit val writes: Writes[CredentialStatus] = new Writes[CredentialStatus] {
     def writes(v: CredentialStatus): JsValue = JsString(v.toString)
@@ -199,24 +199,11 @@ class PersonDao @Inject() (db: play.api.db.Database, activation: ActivationDao, 
       ).as(scalar[Long].single) == 1
   }
 
-  /**
-   * validates the token exists, belongs to the correct user, has not been used and has not expired,
-   * then invalidates the token and updates the user status
-   * @param st: SessionToken
-   * @return
-   */
-  def resetPassword(st: SessionToken, passwordHash: String): Boolean = db.withConnection { implicit connection =>
-    if (!activation.validateToken(st)) false else
-      activation.expireToken(st.token) &&
-        SQL("update into person (user_status, pass_hash) values ({status}, {hash}) where email = {email}")
-          .on('status -> CredentialStatus.Active.toString,
-            'hash -> passwordHash,
-            'email -> st.username).executeUpdate == 1
-  }
-
   def findDirectReports(username: String) : Seq[Person] = db.withConnection { implicit connection =>
-    SQL("""select * from person where manager_email = {email} and user_status != {status}""")
-      .on('email -> username.toLowerCase, 'status -> CredentialStatus.Nominated.toString)
+    SQL("""select * from person where manager_email = {email} and user_status in ({activeStatus}, {inactiveStatus})""")
+      .on('email -> username.toLowerCase,
+        'activeStatus -> CredentialStatus.Active.toString,
+        'inactiveStatus -> CredentialStatus.Inactive.toString)
       .as(Person.simple *)
   }
 }

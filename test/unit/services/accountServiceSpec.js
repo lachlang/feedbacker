@@ -53,7 +53,7 @@ describe('service [Account]', function() {
     	it('to update the current user', function() {
     		var result, promise = account.updateCurrentUser("string1", "string2", "string3");
 
-            $httpBackend.expectPUT('/api/user', '{"apiVersion":"1.0","body":{"name":"string1","role":"string2","managerEmail":"string3"}}').respond(200, dummyResult);
+            $httpBackend.expectPUT('/api/user/update', '{"apiVersion":"1.0","body":{"name":"string1","role":"string2","managerEmail":"string3"}}').respond(200, dummyResult);
 
     		// set the response value
     		promise.then(function(data) {
@@ -66,100 +66,116 @@ describe('service [Account]', function() {
             expect(result).toEqual(dummyResult);
     	});
 
-        it('to retrieve the current user', function() {
-            var result, promise = account.getCurrentUser();
+    	it('to update the current user', function() {
+    		var result, promise = account.updateUser("email","string1", "string2", "string3", "string4", "string5");
 
-            $httpBackend.expectGET('/api/user').respond(200, dummyResult);
+            $httpBackend.expectPUT('/api/user/update/email', '{"apiVersion":"1.0","body":{"name":"string1","role":"string2","managerEmail":"string3","isAdmin":"string4","isEnabled":"string5"}}').respond(200, dummyResult);
 
-            // set the response value
-            promise.then(function(data) {
-                result = data.data;
-            });
-            expect(result).toBeUndefined(); // it really should at this point
-            $httpBackend.flush();
+    		// set the response value
+    		promise.then(function(data) {
+    			result = data.data;
+    		});
+    		expect(result).toBeUndefined();
+    		$httpBackend.flush();
 
-            expect(result).toBeDefined();
+    		expect(result).toBeDefined();
             expect(result).toEqual(dummyResult);
-        });
+    	});
 
-        it('to activate a user', function() {
-            var result, promise = account.activate("string1", "string2");
+      it('to retrieve the current user', function() {
+          var result, promise = account.getCurrentUser();
 
-            $httpBackend.expectPOST('/api/register/activate', '{"apiVersion":"1.0","body":{"email":"string1","token":"string2"}}').respond(200, dummyResult);
-            
-            // set the response value
-            promise.then(function(data) {
-                result = data.data;
-            });
-            expect(result).toBeUndefined(); // it really should at this point
-            $httpBackend.flush();
+          $httpBackend.expectGET('/api/user').respond(200, dummyResult);
 
-            expect(result).toBeDefined();
-            expect(result).toEqual(dummyResult);
-        });
+          // set the response value
+          promise.then(function(data) {
+              result = data.data;
+          });
+          expect(result).toBeUndefined(); // it really should at this point
+          $httpBackend.flush();
 
-        it('to request an activation email be sent', function() {
-            var result, promise = account.sendActivationEmail("thisIsEMAIL");
+          expect(result).toBeDefined();
+          expect(result).toEqual(dummyResult);
+      });
 
-            $httpBackend.expectPOST('/api/activate/email', '{"apiVersion":"1.0","body":{"username":"thisIsEMAIL"}}').respond(200, dummyResult);
-            
-            // set the response value
-            promise.then(function(data) {
-                result = data.data;
-            });
-            expect(result).toBeUndefined(); // it really should at this point
-            $httpBackend.flush();
+      it('to activate a user', function() {
+          var result, promise = account.activate("string1", "string2");
 
-            expect(result).toBeDefined();
-            expect(result).toEqual(dummyResult);
-        });
+          $httpBackend.expectPOST('/api/register/activate', '{"apiVersion":"1.0","body":{"email":"string1","token":"string2"}}').respond(200, dummyResult);
 
-        it('to reset a password', function() {
-            var result, promise = account.resetPassword("string1", "string2", "string3");
+          // set the response value
+          promise.then(function(data) {
+              result = data.data;
+          });
+          expect(result).toBeUndefined(); // it really should at this point
+          $httpBackend.flush();
 
-            $httpBackend.expectPOST('/api/password/reset', '{"apiVersion":"1.0","body":{"password":"string1","token":"string2","username":"string3"}}').respond(200, dummyResult);
-            
-            // set the response value
-            promise.then(function(data) {
-                result = data.data;
-            });
-            expect(result).toBeUndefined(); // it really should at this point
-            $httpBackend.flush();
+          expect(result).toBeDefined();
+          expect(result).toEqual(dummyResult);
+      });
 
-            expect(result).toBeDefined();
-            expect(result).toEqual(dummyResult);
-        });
+      it('to request an activation email be sent', function() {
+          var result, promise = account.sendActivationEmail("thisIsEMAIL");
 
-        it('to request a password email be sent', function() {
-            var result, promise = account.sendPasswordResetEmail("thisIsEMAIL");
+          $httpBackend.expectPOST('/api/activate/email', '{"apiVersion":"1.0","body":{"username":"thisIsEMAIL"}}').respond(200, dummyResult);
 
-            $httpBackend.expectPOST('/api/password/reset/email', '{"apiVersion":"1.0","body":{"email":"thisIsEMAIL"}}').respond(200, dummyResult);
-            
-            // set the response value
-            promise.then(function(data) {
-                result = data.data;
-            });
-            expect(result).toBeUndefined(); // it really should at this point
-            $httpBackend.flush();
+          // set the response value
+          promise.then(function(data) {
+              result = data.data;
+          });
+          expect(result).toBeUndefined(); // it really should at this point
+          $httpBackend.flush();
 
-            expect(result).toBeDefined();
-            expect(result).toEqual(dummyResult);
-        });
+          expect(result).toBeDefined();
+          expect(result).toEqual(dummyResult);
+      });
 
-        it('to get the list of people reporting to the current user', function() {
-            var result, promise = account.getReports();
+      it('to reset a password', function() {
+          var result, promise = account.resetPassword("string1", "string2", "string3");
 
-            $httpBackend.expectGET('/api/user/reports').respond(200, dummyResult);
+          $httpBackend.expectPOST('/api/password/reset', '{"apiVersion":"1.0","body":{"password":"string1","token":"string2","username":"string3"}}').respond(200, dummyResult);
 
-            // set the response value
-            promise.then(function(data) {
-                result = data.data;
-            });
-            expect(result).toBeUndefined();
-            $httpBackend.flush();
+          // set the response value
+          promise.then(function(data) {
+              result = data.data;
+          });
+          expect(result).toBeUndefined(); // it really should at this point
+          $httpBackend.flush();
 
-            expect(result).toBeDefined();
-            expect(result).toEqual(dummyResult);
+          expect(result).toBeDefined();
+          expect(result).toEqual(dummyResult);
+      });
+
+      it('to request a password email be sent', function() {
+          var result, promise = account.sendPasswordResetEmail("thisIsEMAIL");
+
+          $httpBackend.expectPOST('/api/password/reset/email', '{"apiVersion":"1.0","body":{"email":"thisIsEMAIL"}}').respond(200, dummyResult);
+
+          // set the response value
+          promise.then(function(data) {
+              result = data.data;
+          });
+          expect(result).toBeUndefined(); // it really should at this point
+          $httpBackend.flush();
+
+          expect(result).toBeDefined();
+          expect(result).toEqual(dummyResult);
+      });
+
+      it('to get the list of people reporting to the current user', function() {
+          var result, promise = account.getReports();
+
+          $httpBackend.expectGET('/api/user/reports').respond(200, dummyResult);
+
+          // set the response value
+          promise.then(function(data) {
+              result = data.data;
+          });
+          expect(result).toBeUndefined();
+          $httpBackend.flush();
+
+          expect(result).toBeDefined();
+          expect(result).toEqual(dummyResult);
         });
     });
 
