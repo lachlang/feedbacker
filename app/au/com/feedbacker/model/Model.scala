@@ -235,7 +235,7 @@ class RegisteredUserDao @Inject()(db: play.api.db.Database) {
   }
 
   def findRegisteredUsers: Seq[RegisteredUser] = db.withConnection { implicit connection =>
-    SQL("select name, email, role, manager_email from person where user_status in ({activeStatus}, {inactiveStatus}, {disabledStatus)")
+    SQL("select name, email, role, manager_email from person where user_status in ({activeStatus}, {inactiveStatus}, {disabledStatus})")
       .on('activeStatus -> CredentialStatus.Active.toString,
         'inactiveStatus -> CredentialStatus.Inactive.toString,
         'disabledStatus -> CredentialStatus.Disabled.toString).as(RegisteredUser.simple *)
