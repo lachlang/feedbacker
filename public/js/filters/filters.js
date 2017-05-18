@@ -1,8 +1,15 @@
 fbFilters.filter('reviewCycle', function() {
+
+    function isInteger(value) {
+       return typeof value === 'number' &&
+         isFinite(value) &&
+         Math.floor(value) === value;
+    };
+
     return function(input, reviewCycleId) {
         if (!Array.isArray(input)) {
             return [];
-        } else if (!reviewCycleId || !Number.isInteger(reviewCycleId)) {
+        } else if (!reviewCycleId || !isInteger(reviewCycleId)) {
             return input;
         } else {
             return input.filter(function (item) {

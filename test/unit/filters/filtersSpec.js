@@ -17,7 +17,7 @@ describe('review cycle filter [reviewCycle]', function() {
             expect(result).toEqual([]);
         });
 
-        it('should return the input when not given an undefined cycle id', function() {
+        it('should return the input when given an undefined cycle id', function() {
             var result, input = [{"some": "thing"}, {"some": "other thing"}];
             result = $filter('reviewCycle')(input);
             expect(result).toBe(input);
@@ -25,13 +25,13 @@ describe('review cycle filter [reviewCycle]', function() {
             expect(result).toBe(input);
         });
 
-        it('should return the input when not given an object valid cycle id', function() {
+        it('should return the input not given an object cycle id', function() {
             var result, input = [{"some": "thing"}, {"some": "other thing"}];
             result = $filter('reviewCycle')(input);
             expect(result).toBe(input);
         });
 
-        it('should return the input when not given a floading point cycle id', function() {
+        it('should return the input when not given a floating point cycle id', function() {
             var result, input = [{"some": "thing"}, 12.3];
             result = $filter('reviewCycle')(input);
             expect(result).toBe(input);
