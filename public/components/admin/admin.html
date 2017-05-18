@@ -35,7 +35,7 @@
       </div>
     </div>
 
-    <form class="form-group" data-ng-submit="admin.updateUser()" data-ng-show="admin.selectedUser.display">
+    <div class="form-group" data-ng-show="admin.selectedUser.display">
       <div class="row">
         <div class="col-sm-1"><p>Name:</p></div>
         <div class="col-sm-5">
@@ -55,7 +55,7 @@
         </div>
       </div>
       <div class="row top-buffer-small">
-        <div class="col-sm-1"><p>Admin User: <span data-ng-show="admin.selectedUser.isAdmin"> (Yes)</span>
+        <div class="col-sm-1"><p>Admin User: <span data-ng-show="admin.selectedUser.isAdmin">(Yes)</span>
           <span data-ng-hide="admin.selectedUser.isAdmin">(No)</span></p></div>
         <div class="col-sm-2">
           <div class="btn-group" role="group" aria-label="Is admin user">
@@ -69,7 +69,7 @@
                     uib-btn-radio="false">No</button>
         </div>
         </div>
-        <div class="col-sm-1"><p>User Disabled: <span data-ng-show="admin.selectedUser.isEnabled"> (No)</span>
+        <div class="col-sm-1"><p>User Disabled: <span data-ng-show="admin.selectedUser.isEnabled">(No)</span>
           <span data-ng-hide="admin.selectedUser.isEnabled">(Yes)</span></p></div>
         <div class="col-sm-2">
           <div class="btn-group" role="group" aria-label="Is admin user">
@@ -86,13 +86,13 @@
       </div>
       <div class="row top-buffer-small">
         <div class="col-sm-5">
-          <button type="submit" class="btn btn-primary">Update</button>
+          <button type="submit" class="btn btn-primary" data-ng-click="admin.updateUser()">Update</button>
         </div>
         <div class="col-sm-1">
           <button class="btn btn-default" data-ng-click="admin.clearSelectedUser()">Cancel</button>
         </div>
       </div>
-    </form>
+    </div>
 
     <div class="row top-buffer">
       <div class="col-md-12">
@@ -115,11 +115,50 @@
       </div>
       <div class="col-md-4"></div>
     </div>
-    <div class="row top-buffer" data-ng-show="admin.selectedCycle">
-      <div class="col-md-2"><button class="btn btn-default" data-ng-click="admin.clearSelectedCycle()">Clear</button></div>
-    </div>
-    <div class="row top-buffer" data-ng-show="admin.selectedCycle">
-      <div class="col-md-4"><p>{{admin.selectedCycleDetails}}</p></div>
+    <div data-ng-show="admin.selectedCycleDetails">
+      <div class="row top-buffer">
+        <div class="col-md-5"><button class="btn btn-default" data-ng-click="admin.updateFeedbackCycle()">Update Feedback Cycle</button></div>
+        <div class="col-md-1"><button class="btn btn-default" data-ng-click="admin.clearSelectedCycle()">Clear selected</button></div>
+      </div>
+      <div class="row top-buffer">
+        <div class="col-md-1">Cycle name:</div>
+        <div class="col-md-3">
+          <input type="text" class="form-control" placeholder="Feedback cycle name" data-ng-model="admin.selectedCycleDetails.label" required>
+        </div>
+        <div class="col-md-1">Start date:</div>
+        <div class="col-md-3">
+          <p class="input-group">
+            <input type="text" class="form-control"
+                   uib-datepicker-popup="dd-MMMM-yyyy"
+                   data-ng-model="admin.selectedCycleDetails.startDate"
+                   is-open="admin.startPopup.opened"
+                   datepicker-options="dateOptions"
+                   ng-required="true" close-text="Close"
+                   alt-input-formats="altInputFormats" />
+            <span class="input-group-btn">
+            <button type="button" class="btn btn-default" data-ng-click="admin.openStart()"><i class="fa fa-calendar"></i></button>
+          </span>
+          </p>
+        </div>
+        <div class="col-md-1">End date:</div>
+        <div class="col-md-3">
+          <p class="input-group">
+            <input type="text" class="form-control"
+                   uib-datepicker-popup="dd-MMMM-yyyy"
+                   data-ng-model="admin.selectedCycleDetails.endDate"
+                   is-open="admin.endPopup.opened"
+                   datepicker-options="dateOptions"
+                   ng-required="true" close-text="Close"
+                   alt-input-formats="altInputFormats" />
+            <span class="input-group-btn">
+            <button type="button" class="btn btn-default" data-ng-click="admin.endStart()"><i class="fa fa-calendar"></i></button>
+          </span>
+          </p>
+        </div>
+      </div>
+      <div class="row top-buffer">
+        <div class="col-md-4"><p>{{admin.selectedCycleDetails}}</p></div>
+      </div>
     </div>
     <div class="row top-buffer">
       <div class="col-md-12">

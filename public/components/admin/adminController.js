@@ -13,6 +13,14 @@ fbControllers.controller('AdminCtrl',  ['$scope', '$log', 'Model', function($sco
   ctrl.selectedUser = undefined;
   ctrl.error = undefined;
 
+  ctrl.startPopup = {
+    opened: false
+  };
+
+  ctrl.endPopup = {
+    opened: false
+  };
+
   Model.getAllFeedbackCycles().then(function(result) {
     ctrl.reviewCycles = result;
   }, function(result) {
@@ -24,6 +32,7 @@ fbControllers.controller('AdminCtrl',  ['$scope', '$log', 'Model', function($sco
   });
 
   ctrl.clearSelectedCycle = function() {
+    ctrl.selectedCycleDetails = undefined;
     ctrl.selectedCycle = undefined;
   };
 
@@ -38,19 +47,26 @@ fbControllers.controller('AdminCtrl',  ['$scope', '$log', 'Model', function($sco
   };
 
   ctrl.createNewCycle = function() {
-
+    alert("Please contact your administrator to implement this exciting feature.");
   };
 
   ctrl.updateFeedbackCycle = function() {
-
+    alert("Please contact your administrator to implement this exciting feature.");
   };
 
   ctrl.createFeedbackCycle = function() {
-
+    alert("Please contact your administrator to implement this exciting feature.");
   };
 
   ctrl.updateUser = function() {
     alert("Please contact your administrator to implement this exciting feature.");
   };
 
+  ctrl.openStart = function() {
+    ctrl.startPopup.opened = true;
+  };
+
+  ctrl.openEnd = function() {
+    ctrl.endPopup.opened = true;
+  };
 }]);

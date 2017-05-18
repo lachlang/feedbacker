@@ -155,7 +155,7 @@ object DetailItem {
 
   def detailFromNomination(nomination: Nomination, cycle: Option[FeedbackCycle]): Option[DetailItem] = nomination match {
     case Nomination(Some(id), Some(fromPerson), Some(toPerson), status, _, questions, shared, _, message) =>
-      Some(DetailItem(id, status, fromPerson.name, toPerson.name, None, fromPerson.managerEmail, message, questions, shared, cycle.map(_.label), cycle.map(_.end_date)))
+      Some(DetailItem(id, status, fromPerson.name, toPerson.name, None, fromPerson.managerEmail, message, questions, shared, cycle.map(_.label), cycle.map(_.endDate)))
     case _ => None
   }
 }

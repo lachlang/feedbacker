@@ -629,7 +629,7 @@ object FeedbackGroup {
   implicit val writes: Writes[FeedbackGroup] = Json.writes[FeedbackGroup]
 }
 
-case class FeedbackCycle(id: Option[Long], label: String, start_date: DateTime, end_date: DateTime, active: Boolean,
+case class FeedbackCycle(id: Option[Long], label: String, startDate: DateTime, endDate: DateTime, active: Boolean,
                          questions: Seq[QuestionTemplate], isThreeSixtyReview: Boolean = false,
                          hasOptionalSharing: Boolean = false, hasForcedSharing: Boolean = false)
 

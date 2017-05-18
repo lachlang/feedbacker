@@ -25,7 +25,7 @@ class CsvReport {
   private def serialiseReviewCycles(feedback: Seq[FeedbackGroup], output: String = ""): String = {
     feedback match {
       case Nil      => output
-      case fg::fgs  => serialiseReviewCycles(fgs, s"\n$output\n\n${fg.cycle.label},${fg.cycle.end_date}\n${serialiseNominations(fg.feedback)}")
+      case fg::fgs  => serialiseReviewCycles(fgs, s"\n$output\n\n${fg.cycle.label},${fg.cycle.endDate}\n${serialiseNominations(fg.feedback)}")
     }
   }
 

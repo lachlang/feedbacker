@@ -144,7 +144,7 @@ object Emailer {
        |<p/>
        |<p>${feedback.fromName} said:</p>
        |<p/>
-       |<blockquote><p>${feedback.message}</p></blockquote>
+       |<blockquote><p><em>${feedback.message}</em></p></blockquote>
        |<p/>
        |<p>You can view the response using Feedbacker by navigating to: <a href="https://$serverPath/#/landing">Feedbacker address</a></p>
        |<p/>
