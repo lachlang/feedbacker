@@ -77,14 +77,14 @@ fbControllers.controller('AdminCtrl',  ['$scope', '$log', 'Model', 'Account', fu
       return;
     }
     Account.updateUser(user.email, user.name, user.role, user.managerEmail, user.isAdmin, user.isEnabled).then(function(result){
-      // TODO: This is a bug and will put a full person object in the summary person search array.
-      // It will be fine for now.  LG 2017-05-18
-      ctrl.selectedUser = result.data.body;
-      ctrl.selectedUser.display = result.data.body.name + "(" + result.data.body.credentials.email + ")"
-      ctrl.selectedUser.isDisabled = result.data.body.credentials.status == 'Disabled';
-      ctrl.selectedUser.email = result.data.body.credentials.email;
+      ctrl.selectedUser.display = result.data.body.name + "(" + result.data.body.credentials.email + ")";
+      ctrl.selectedUser.role = result.data.body.role;
+      ctrl.selectedUser.name = result.data.body.name;
+      ctrl.selectedUser.isDisabled = (result.data.body.credentials.status === 'Disabled');
+      ctrl.selectedUser.isAdmin = result.data.body.isAdmin;
       $log.debug("[AdminCtrl.updateUser] Updated user...");
       $log.debug(result.data.body);
+      $log.debug(ctrl.selectedUser);
     })
   };
 

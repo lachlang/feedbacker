@@ -182,12 +182,43 @@ class PersonDao @Inject() (db: play.api.db.Database, activation: ActivationDao, 
                               manager_email={manager_email}
                               where email={email}
           """).on(
+          'name -> person.name,
+          'role -> person.role,
+          'email -> person.credentials.email.toLowerCase,
+          'pass_hash -> person.credentials.hash,
+          'user_status -> person.credentials.status.toString,
+          'manager_email -> person.managerEmail.toLowerCase
+        ).executeUpdate() match {
+          case 1 => Right(person)
+          case _ => Left(new Exception("Could not update."))
+        }
+      } catch {
+        case e: Exception => Left(e)
+      }
+    }
+  }
+
+  def updateWithAdmin(person: Person): Either[Throwable, Person] = {
+    db.withConnection { implicit connection =>
+      try {
+        SQL(
+          """
+          update person SET name={name},
+                            role={role},
+                            email={email},
+                            pass_hash={pass_hash},
+                            user_status={user_status},
+                            manager_email={manager_email},
+                            is_admin={isAdmin}
+                            where email={email}
+        """).on(
             'name -> person.name,
             'role -> person.role,
             'email -> person.credentials.email.toLowerCase,
             'pass_hash -> person.credentials.hash,
             'user_status -> person.credentials.status.toString,
-            'manager_email -> person.managerEmail.toLowerCase
+            'manager_email -> person.managerEmail.toLowerCase,
+            'isAdmin -> person.isAdmin
           ).executeUpdate() match {
           case 1 => Right(person)
           case _ => Left(new Exception("Could not update."))

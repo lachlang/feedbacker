@@ -80,7 +80,7 @@ class Account @Inject() (person: PersonDao,
           if ((targetPerson.credentials.status == CredentialStatus.Active || targetPerson.credentials.status == CredentialStatus.Inactive) && uc.isEnabled == false) CredentialStatus.Disabled
           else if (targetPerson.credentials.status == CredentialStatus.Disabled && uc.isEnabled == true) CredentialStatus.Inactive
           else targetPerson.credentials.status
-        person.update(Person(id = targetPerson.id,
+        person.updateWithAdmin(Person(id = targetPerson.id,
                   name = uc.name,
                   role = uc.role,
                   credentials = targetPerson.credentials.copy(status = status),
