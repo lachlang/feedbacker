@@ -24,17 +24,28 @@ describe('edit feedback detail controller [EditCtrl]', function() {
 
     	it('should define functions', function() {
             expect(angular.isFunction(adminController.clearSelectedCycle)).toBe(true);
-            expect(angular.isFunction(adminController.createNewCycle)).toBe(true);
+            expect(angular.isFunction(adminController.clearSelectedUser)).toBe(true);
+            expect(angular.isFunction(adminController.getFeedbackCycle)).toBe(true);
+            expect(angular.isFunction(adminController.initialiseNewCycle)).toBe(true);
             expect(angular.isFunction(adminController.updateFeedbackCycle)).toBe(true);
-            expect(angular.isFunction(adminController.createFeedbackCycle)).toBe(true);
+            expect(angular.isFunction(adminController.createNewFeedbackCycle)).toBe(true);
+            expect(angular.isFunction(adminController.updateUser)).toBe(true);
+            expect(angular.isFunction(adminController.removeQuestion)).toBe(true);
+            expect(angular.isFunction(adminController.addQuestion)).toBe(true);
+            expect(angular.isFunction(adminController.openStart)).toBe(true);
+            expect(angular.isFunction(adminController.openEnd)).toBe(true);
     	});
 
     	it('for global controller variables', function() {
             expect(adminController).toBeDefined();
             expect(adminController.registeredUsers).toEqual([]);
             expect(adminController.reviewCycles).toEqual([]);
-            expect(adminController.selected).not.toBeDefined();
+            expect(adminController.selectedUser).not.toBeDefined();
+            expect(adminController.selectedCycle).not.toBeDefined();
+            expect(adminController.selectedCycleDetails).not.toBeDefined();
             expect(adminController.error).not.toBeDefined();
+            expect(adminController.startPopup.opened).toBe(false);
+            expect(adminController.endPopup.opened).toBe(false)
     	});
 
     	it('and calls the necessary services to pre-populate the model', function(){
@@ -42,6 +53,65 @@ describe('edit feedback detail controller [EditCtrl]', function() {
             expect(model.getAllFeedbackCycles).toHaveBeenCalled();
     	});
 
+	});
+
+	describe('has simple state manipulation functions to', function() {
+
+    it('open the start date picker popup', function() {
+      expect(adminController.startPopup.opened).toBe(false)
+      adminController.openStart();
+      expect(adminController.startPopup.opened).toBe(true)
+    });
+
+    it('open the end date picker popup', function() {
+      expect(adminController.endPopup.opened).toBe(false)
+      adminController.openEnd();
+      expect(adminController.endPopup.opened).toBe(true)
+    });
+
+    it('add a blank question to the selected cycle question array', function() {
+      adminController.selectedCycleDetails = { "questions": []};
+      adminController.addQuestion();
+      expect(adminController.selectedCycleDetails.questions).toEqual([{ "format": "RADIO"}])
+    });
+
+    it('remove a question from the selected cycle question array', function() {
+      adminController.selectedCycleDetails = { "questions" : ["zero", "one", "two", "three", "four"]}
+      adminController.removeQuestion(4);
+      expect(adminController.selectedCycleDetails.questions).toEqual(["zero", "one", "two", "three"]);
+
+      adminController.removeQuestion(0);
+      expect(adminController.selectedCycleDetails.questions).toEqual(["one", "two", "three"]);
+
+      adminController.removeQuestion(1);
+      expect(adminController.selectedCycleDetails.questions).toEqual(["one", "three"]);
+    });
+
+    it('clear the selected user', function() {
+      adminController.selectedUser = {"some":"thing"}
+      adminController.clearSelectedUser();
+      expect(adminController.selectedUser).toBeUndefined()
+    });
+
+    it('clear the selected cycle', function() {
+      adminController.selectedCycle = {"some":"thing"}
+      adminController.selectedCycleDetails = {"some":"one"}
+      adminController.clearSelectedCycle();
+      expect(adminController.selectedCycle).toBeUndefined()
+      expect(adminController.selectedCycleDetails).toBeUndefined()
+    });
+
+    it('should initialise a new cycle for creation', function() {
+      expect(adminController.selectedCycleDetails).toBeUndefined();
+      adminController.initialiseNewCycle();
+      expect(adminController.selectedCycleDetails).toEqual({
+        "active": false,
+        "hasForcedSharing": false,
+        "hasOptionalSharing": true,
+        "isThreeSixtyReview": false,
+        "questions": [ {"format": "RADIO"}, {"format": "RADIO"}, {"format": "RADIO"}, {"format": "RADIO"}, {"format": "RADIO"}]
+      });
+    });
 	});
 
 });

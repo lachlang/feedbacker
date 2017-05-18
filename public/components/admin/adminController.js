@@ -5,7 +5,6 @@ fbControllers.controller('AdminCtrl',  ['$scope', '$log', 'Model', function($sco
 
 	var ctrl = this;
 
-
   ctrl.reviewCycles = [];
   ctrl.selectedCycle = undefined;
   ctrl.selectedCycleDetails = undefined;
@@ -46,20 +45,37 @@ fbControllers.controller('AdminCtrl',  ['$scope', '$log', 'Model', function($sco
     });
   };
 
-  ctrl.createNewCycle = function() {
-    alert("Please contact your administrator to implement this exciting feature.");
+  ctrl.initialiseNewCycle = function() {
+    ctrl.selectedCycleDetails = {
+            "active": false,
+            "hasForcedSharing": false,
+            "hasOptionalSharing": true,
+            "isThreeSixtyReview": false,
+            "questions":
+            [ {"format": "RADIO"}, {"format": "RADIO"}, {"format": "RADIO"}, {"format": "RADIO"}, {"format": "RADIO"}]
+            };
   };
 
   ctrl.updateFeedbackCycle = function() {
     alert("Please contact your administrator to implement this exciting feature.");
   };
 
-  ctrl.createFeedbackCycle = function() {
+  ctrl.createNewFeedbackCycle = function() {
     alert("Please contact your administrator to implement this exciting feature.");
   };
 
   ctrl.updateUser = function() {
     alert("Please contact your administrator to implement this exciting feature.");
+  };
+
+  ctrl.removeQuestion = function(index) {
+    ctrl.selectedCycleDetails.questions.splice(index, 1);
+  };
+
+  ctrl.addQuestion = function() {
+    if (ctrl.selectedCycleDetails && ctrl.selectedCycleDetails.questions) {
+      ctrl.selectedCycleDetails.questions.push({ "format": "RADIO" });
+    }
   };
 
   ctrl.openStart = function() {

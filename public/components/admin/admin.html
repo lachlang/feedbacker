@@ -10,6 +10,7 @@
         <div class="alert alert-danger" role="alert">{{admin.error}}</div>
       </div>
     </div>
+    <hr />
     <div class="row">
       <div class="col-md-12">
         <p class="lead">Manage users</p>
@@ -93,32 +94,41 @@
         </div>
       </div>
     </div>
-
+    <hr />
     <div class="row top-buffer">
       <div class="col-md-12">
         <p class="lead">Manage review cycles</p>
       </div>
     </div>
-    <div class="row top-buffer">
-      <div class="col-md-2"><button class="btn btn-primary" data-ng-click="admin.createNewCycle()">Create New</button></div>
-    </div>
-    <div class="row top-buffer">
-      <div class="col-md-2">
-        <span>Edit existing review cycle</span>
+    <div data-ng-hide="admin.selectedCycleDetails">
+      <div class="row top-buffer">
+        <div class="col-md-2"><button class="btn btn-primary" data-ng-click="admin.initialiseNewCycle()">Create New</button></div>
       </div>
-      <div class="col-md-6">
-        <select class="form-control"
-                data-ng-options="cycle as cycle.label for cycle in admin.reviewCycles"
-                data-ng-model="admin.selectedCycle"
-                data-ng-change="admin.getFeedbackCycle(admin.selectedCycle.id)">
-        </select>
+      <div class="row top-buffer">
+        <div class="col-md-2">
+          <span>Edit existing review cycle</span>
+        </div>
+        <div class="col-md-6">
+          <select class="form-control"
+                  data-ng-options="cycle as cycle.label for cycle in admin.reviewCycles"
+                  data-ng-model="admin.selectedCycle"
+                  data-ng-change="admin.getFeedbackCycle(admin.selectedCycle.id)">
+          </select>
+        </div>
+        <div class="col-md-4"></div>
       </div>
-      <div class="col-md-4"></div>
     </div>
     <div data-ng-show="admin.selectedCycleDetails">
       <div class="row top-buffer">
-        <div class="col-md-5"><button class="btn btn-default" data-ng-click="admin.updateFeedbackCycle()">Update Feedback Cycle</button></div>
-        <div class="col-md-1"><button class="btn btn-default" data-ng-click="admin.clearSelectedCycle()">Clear selected</button></div>
+        <div class="col-md-2"><button class="btn btn-primary" data-ng-click="admin.updateFeedbackCycle()">Save changes</button></div>
+        <div class="col-md-2"><button class="btn btn-default" data-ng-click="admin.previewChanges()">Preview changes</button></div>
+        <div class="col-md-2"><button class="btn btn-default" data-ng-click="admin.clearSelectedCycle()">Cancel changes</button></div>
+      </div>
+      <!--<div ng-include="./feedbackCycleEditFragment.html"></div>-->
+      <div class="row top-buffer">
+        <div class="col-md-6">
+          <p class="lead">Feedback cycle options</p>
+        </div>
       </div>
       <div class="row top-buffer">
         <div class="col-md-1">Cycle name:</div>
@@ -157,9 +167,92 @@
         </div>
       </div>
       <div class="row top-buffer">
-        <div class="col-md-4"><p>{{admin.selectedCycleDetails}}</p></div>
+        <div class="col-sm-2"><p>Feedback cycle is currently enabled: <span data-ng-show="admin.selectedCycleDetails.active">(Yes)</span>
+          <span data-ng-hide="admin.selectedCycleDetails.active">(No)</span></p></div>
+        <div class="col-sm-2">
+          <div class="btn-group" role="group" aria-label="Is admin user">
+            <button class="btn btn-info"
+                    for="false"
+                    data-ng-model="admin.selectedCycleDetails.active"
+                    uib-btn-radio="true">Yes</button>
+            <button class="btn btn-info"
+                    for="true"
+                    data-ng-model="admin.selectedCycleDetails.active"
+                    uib-btn-radio="false">No</button>
+          </div>
+        </div>
+        <div class="col-sm-2"><p>Automatic sharing with recipient: <span data-ng-show="admin.selectedCycleDetails.hasForcedSharing">(No)</span>
+          <span data-ng-hide="admin.selectedCycleDetails.hasForcedSharing">(Yes)</span></p></div>
+        <div class="col-sm-2">
+          <div class="btn-group" role="group" aria-label="Is admin user">
+            <button class="btn btn-info"
+                    for="true"
+                    data-ng-model="admin.selectedCycleDetails.hasForcedSharing"
+                    uib-btn-radio="true">Yes</button>
+            <button class="btn btn-info"
+                    for="false"
+                    data-ng-model="admin.selectedCycleDetails.hasForcedSharing"
+                    uib-btn-radio="false">No</button>
+          </div>
+        </div>
+        <div class="col-sm-2"><p>Hide option to share feedback with recipient: <span data-ng-show="admin.selectedCycleDetails.hasOptionalSharing">(No)</span>
+          <span data-ng-hide="admin.selectedCycleDetails.hasOptionalSharing">(Yes)</span></p></div>
+        <div class="col-sm-2">
+          <div class="btn-group" role="group" aria-label="Is admin user">
+            <button class="btn btn-info"
+                    for="false"
+                    data-ng-model="admin.selectedCycleDetails.hasOptionalSharing"
+                    uib-btn-radio="false">Yes</button>
+            <button class="btn btn-info"
+                    for="true"
+                    data-ng-model="admin.selectedCycleDetails.hasOptionalSharing"
+                    uib-btn-radio="true">No</button>
+          </div>
+        </div>
+      </div>
+      <div class="row top-buffer">
+        <div class="col-md-6">
+          <p class="lead">Feedback cycle questions</p>
+        </div>
+      </div>
+      <div class="row top-buffer" data-ng-repeat="question in admin.selectedCycleDetails.questions">
+        <div class="col-sm-2">
+          <button class="btn btn-warning" data-ng-click="admin.removeQuestion($index)">Remove question {{$index +1}}</button>
+        </div>
+        <div class="col-sm-3">
+          <textarea class="form-control" class="form-control" placeholder="Question text" data-ng-model="question.text"  rows="3"></textarea>
+        </div>
+        <div class="col-sm-2">
+          <textarea class="form-control" class="form-control" placeholder="Optional help text" data-ng-model="question.helpText"  rows="3"></textarea>
+        </div>
+        <div class="col-sm-3">
+          <textarea class="form-control" placeholder="Response options written in a comma separated list e.g. 'Yes,No' or '1 Strongly Agree,2,3,4,5 Strongly Disagree'" rows="3" data-ng-model="question.responseOptions" ></textarea>
+        </div>
+        <div class="col-lg-2">
+          <div class="btn-group" role="group" aria-label="question response display format">
+            <button class="btn btn-info"
+                    for="SELECT"
+                    data-ng-model="question.format"
+                    uib-btn-radio="'SELECT'">Drop-down</button>
+            <button class="btn btn-info"
+                    for="RADIO"
+                    data-ng-model="question.format"
+                    uib-btn-radio="'RADIO'">Radio Button</button>
+          </div>
+        </div>
+      </div>
+      <div class="row top-buffer">
+        <div class="col-md-4">
+          <button class="btn btn-info" data-ng-click="admin.addQuestion()">Add question</button>
+        </div>
+      </div>
+      <div class="row top-buffer">
+        <div class="col-md-2"><button class="btn btn-primary" data-ng-click="admin.updateFeedbackCycle()">Save changes</button></div>
+        <div class="col-md-2"><button class="btn btn-default" data-ng-click="admin.previewChanges()">Preview changes</button></div>
+        <div class="col-md-2"><button class="btn btn-default" data-ng-click="admin.clearSelectedCycle()">Cancel changes</button></div>
       </div>
     </div>
+    <hr />
     <div class="row top-buffer">
       <div class="col-md-12">
         <p class="lead">Stay tuned folks.  This exciting section is coming soon :)</p>

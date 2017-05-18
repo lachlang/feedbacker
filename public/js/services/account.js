@@ -110,7 +110,7 @@ fbServices.service('Account', ['$log', '$http', '$q', function($log, $http, $q) 
 					body: { 
 						password: password,
 						token: token,
-						username
+						username: username
 					}
 				}
 			});
