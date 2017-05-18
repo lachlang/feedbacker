@@ -120,10 +120,7 @@
     </div>
     <div data-ng-show="admin.selectedCycleDetails">
       <div class="row top-buffer">
-        <div class="col-md-2" data-ng-show="admin.showNewCycleView">
-          <button class="btn btn-primary" data-ng-click="admin.createFeedbackCycle(admin.selectedUserDetails)">Create new</button></div>
-        <div class="col-md-2" data-ng-hide="admin.showNewCycleView">
-          <button class="btn btn-primary" data-ng-click="admin.updateFeedbackCycle(admin.selectedUserDetails)">Save changes</button></div>
+        <div class="col-md-2"><button class="btn btn-primary" data-ng-click="admin.updateFeedbackCycle(admin.selectedUserDetails)">Save changes</button></div>
         <div class="col-md-2"><button class="btn btn-default" data-ng-click="admin.previewChanges()">Preview changes</button></div>
         <div class="col-md-2"><button class="btn btn-default" data-ng-click="admin.clearSelectedCycle()">Cancel changes</button></div>
       </div>
@@ -169,33 +166,33 @@
           </p>
         </div>
       </div>
-      <div class="row top-buffer" data-ng-show="admin.showNewCycleView">
-        <div class="col-md-2">
-          <p class="lead">Create 360 review cycle</p><p>This will automatically register all reporting managers for feedback from their direct reports.</p>
-        </div>
-        <div class="col-md-2">
-          <div class="btn-group" role="group" aria-label="create 360 degree review">
-            <button class="btn btn-info"
-                    for="true"
-                    data-ng-model="admin.selectedCycleDetails.isThreeSixtyReview"
-                    uib-btn-radio="true">Yes</button>
-            <button class="btn btn-info"
-                    for="false"
-                    data-ng-model="admin.selectedCycleDetails.isThreeSixtyReview"
-                    uib-btn-radio="false">No</button>
-          </div>
-        </div>
-        <div class="col-md-2" data-ng-show="admin.selectedCycleDetails.isThreeSixtyReview">
-          <p>Please provide the name of the top level manager for the 360 degree review.</p>
-        </div>
-        <div class="col-md-3" data-ng-show="admin.selectedCycleDetails.isThreeSixtyReview">
-          <input class="form-control"
-                 data-ng-model="admin.selectedCycleDetails.threeSixtyTop"
-                 uib-typeahead="user as user.display for user in admin.registeredUsers | filter:{display:$viewValue} | limitTo:8"
-                 placeholder="Name or Email"
-                 typeahead-show-hint="true">
-        </div>
-      </div>
+      <!--<div class="row top-buffer">-->
+        <!--<div class="col-md-2">-->
+          <!--<p class="lead">Create 360 review cycle</p><p>This will automatically register all reporting managers for feedback from their direct reports.</p>-->
+        <!--</div>-->
+        <!--<div class="col-md-2">-->
+          <!--<div class="btn-group" role="group" aria-label="create 360 degree review">-->
+            <!--<button class="btn btn-info"-->
+                    <!--for="true"-->
+                    <!--data-ng-model="admin.selectedCycleDetails.isThreeSixtyReview"-->
+                    <!--uib-btn-radio="true">Yes</button>-->
+            <!--<button class="btn btn-info"-->
+                    <!--for="false"-->
+                    <!--data-ng-model="admin.selectedCycleDetails.isThreeSixtyReview"-->
+                    <!--uib-btn-radio="false">No</button>-->
+          <!--</div>-->
+        <!--</div>-->
+        <!--<div class="col-md-2" data-ng-show="admin.selectedCycleDetails.isThreeSixtyReview">-->
+          <!--<p>Please provide the name of the top level manager for the 360 degree review.</p>-->
+        <!--</div>-->
+        <!--<div class="col-md-3" data-ng-show="admin.selectedCycleDetails.isThreeSixtyReview">-->
+          <!--<input class="form-control"-->
+                 <!--data-ng-model="admin.selectedCycleDetails.threeSixtyTop"-->
+                 <!--uib-typeahead="user as user.display for user in admin.registeredUsers | filter:{display:$viewValue} | limitTo:8"-->
+                 <!--placeholder="Name or Email"-->
+                 <!--typeahead-show-hint="true">-->
+        <!--</div>-->
+      <!--</div>-->
       <div class="row top-buffer">
         <div class="col-sm-2"><p>Feedback cycle is currently enabled: <span data-ng-show="admin.selectedCycleDetails.active">(Yes)</span>
           <span data-ng-hide="admin.selectedCycleDetails.active">(No)</span></p></div>
@@ -277,10 +274,7 @@
         </div>
       </div>
       <div class="row top-buffer">
-        <div class="col-md-2" data-ng-show="admin.showNewCycleView">
-          <button class="btn btn-primary" data-ng-click="admin.createNewFeedbackCycle(admin.selectedUserDetails)">Create new</button></div>
-        <div class="col-md-2" data-ng-hide="admin.showNewCycleView">
-          <button class="btn btn-primary" data-ng-click="admin.updateFeedbackCycle(admin.selectedUserDetails)">Save changes</button></div>
+        <div class="col-md-2"><button class="btn btn-primary" data-ng-click="admin.updateFeedbackCycle(admin.selectedUserDetails)">Save changes</button></div>
         <div class="col-md-2"><button class="btn btn-default" data-ng-click="admin.previewChanges()">Preview changes</button></div>
         <div class="col-md-2"><button class="btn btn-default" data-ng-click="admin.clearSelectedCycle()">Cancel changes</button></div>
       </div>
