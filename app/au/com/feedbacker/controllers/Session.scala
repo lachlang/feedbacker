@@ -27,11 +27,21 @@ class AuthenticatedController(person: PersonDao, sessionManager: SessionManager)
     }
   }
 
+  def AuthenticatedAdminAction(body: Person => Result) = AuthenticatedAction { user =>
+    if (!user.isAdmin) Forbidden(Json.obj("message" -> "Administrative access is required for this operation."))
+    else body(user)
+  }
+
   def AuthenticatedRequestAction(body: (Person, JsValue) => Result) = LoggingAction { request =>
     (getUser(request), request.body.asJson) match {
       case (Some(person), Some(requestBody)) => body(person, requestBody)
       case _ => Forbidden
     }
+  }
+
+  def AuthenticatedAdminRequestAction(body: (Person, JsValue) => Result) = AuthenticatedRequestAction { (user, requestBody) =>
+    if (!user.isAdmin) Forbidden(Json.obj("message" -> "Administrative access is required for this operation."))
+    else body(user, requestBody)
   }
 
   private def getUser(request: RequestHeader): Option[Person] =

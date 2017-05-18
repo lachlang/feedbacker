@@ -68,8 +68,8 @@ class Feedback @Inject() (person: PersonDao,
     ???
   }
 
-  def getCycleForFeedback(cycleId: Long) = AuthenticatedAction { user =>
-    feedbackCycle.findById(cycleId) match {
+  def getFeedbackCycleDetails(cycleId: Long) = AuthenticatedAdminAction { user =>
+    feedbackCycle.findDetailsById(cycleId) match {
       case Some(cycle) => Ok(Json.obj("body" -> Json.toJson(cycle)))
       case None => BadRequest
     }
@@ -228,9 +228,8 @@ class Nominations @Inject() (emailer: Emailer,
     Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(feedbackCycle.findActiveCycles)))
   }
 
-  def getAllFeedbackCycles = AuthenticatedAction { person =>
-    if (!person.isAdmin) Forbidden
-    else Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(feedbackCycle.findAllCycles)))
+  def getAllFeedbackCycles = AuthenticatedAdminAction { person =>
+    Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(feedbackCycle.findAllCycles)))
   }
 }
 //case class Response[T : Writes](apiVersion: String, body: T)

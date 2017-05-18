@@ -420,6 +420,8 @@ object QuestionTemplate {
       case id ~ text ~ format ~ responseOptions ~ helpText => QuestionTemplate(id, text, ResponseFormat.withName(format), responseOptions.split(","), helpText)
     }
   }
+
+  implicit val format: Format[QuestionTemplate] = Json.format[QuestionTemplate]
 }
 
 class QuestionTemplateDao @Inject() (db: play.api.db.Database) {
@@ -627,7 +629,9 @@ object FeedbackGroup {
   implicit val writes: Writes[FeedbackGroup] = Json.writes[FeedbackGroup]
 }
 
-case class FeedbackCycle(id: Long, label: String, start_date: DateTime, end_date: DateTime, active: Boolean)
+case class FeedbackCycle(id: Option[Long], label: String, start_date: DateTime, end_date: DateTime, active: Boolean,
+                         questions: Seq[QuestionTemplate], isThreeSixtyReview: Boolean = false,
+                         hasOptionalSharing: Boolean = false, hasForcedSharing: Boolean = false)
 
 object FeedbackCycle {
 
@@ -638,17 +642,41 @@ object FeedbackCycle {
       get[String]("cycle.label") ~
       get[DateTime]("cycle.start_date") ~
       get[DateTime]("cycle.end_date") ~
-      get[Boolean]("cycle.active") map {
-      case id ~ label ~ start_date ~ end_date ~ active => FeedbackCycle(id, label, start_date, end_date, active)
+      get[Boolean]("cycle.active") ~
+      get[Boolean]("cycle.three_sixty_review") ~
+      get[Boolean]("cycle.optional_sharing") ~
+      get[Boolean]("cycle.forced_sharing") map {
+      case id ~ label ~ start_date ~ end_date ~ active ~ isThreeSixty ~ forcedSharing ~ optionalSharing =>
+        FeedbackCycle(Some(id), label, start_date, end_date, active, Seq(), isThreeSixtyReview = isThreeSixty,
+          hasForcedSharing = forcedSharing, hasOptionalSharing = optionalSharing)
     }
   }
 
-  val orphan = FeedbackCycle(0, "Review Cycle no longer maintained", new DateTime(0), new DateTime(0), false)
+  val rich = {
+    get[Long]("cycle.id") ~
+      get[String]("cycle.label") ~
+      get[DateTime]("cycle.start_date") ~
+      get[DateTime]("cycle.end_date") ~
+      get[Boolean]("cycle.active") ~
+      get[Boolean]("cycle.three_sixty_review") ~
+      get[Boolean]("cycle.optional_sharing") ~
+      get[Boolean]("cycle.forced_sharing") map {
+      case id ~ label ~ start_date ~ end_date ~ active ~ isThreeSixty ~ forcedSharing ~ optionalSharing =>
+        FeedbackCycle(Some(id), label, start_date, end_date, active, Seq(),//questionTemplate.findQuestionsForCycle(id),
+          isThreeSixtyReview = isThreeSixty, hasForcedSharing = forcedSharing, hasOptionalSharing = optionalSharing)
+    }
+  }
+
+  val orphan = FeedbackCycle(None, "Review Cycle no longer maintained", new DateTime(0), new DateTime(0), false, Seq())
 }
 
-class FeedbackCycleDao @Inject() (db: play.api.db.Database) {
+class FeedbackCycleDao @Inject() (db: play.api.db.Database, questionTemplate: QuestionTemplateDao) {
   def findById(id: Long): Option[FeedbackCycle] = db.withConnection { implicit connection =>
     SQL("""select * from cycle where id = {id}""").on('id -> id).as(FeedbackCycle.simple.singleOpt)
+  }
+
+  def findDetailsById(id: Long): Option[FeedbackCycle] = findById(id).map{
+    cycle => cycle.copy(questions = questionTemplate.findQuestionsForCycle(id))
   }
 
   def findActiveCycles: Seq[FeedbackCycle] = db.withConnection { implicit connection =>
@@ -675,7 +703,7 @@ object AdHocFeedback{
   implicit val format: Format[AdHocFeedback] = Json.format[AdHocFeedback]
 
   val simple = {
-    get[Option[Long]]("ad_hoc_feedback.id") ~
+    get[Long]("ad_hoc_feedback.id") ~
       get[String]("ad_hoc_feedback.from_email") ~
       get[String]("ad_hoc_feedback.from_name") ~
       get[String]("ad_hoc_feedback.from_role") ~
@@ -686,7 +714,7 @@ object AdHocFeedback{
       get[DateTime]("ad_hoc_feedback.created") ~
       get[Boolean]("ad_hoc_feedback.recipient_visible") map {
       case id~fromEmail~fromName~fromRole~toEmail~toName~toRole~message~created~candidateVisible =>
-        AdHocFeedback(id = id, fromEmail = fromEmail, fromName = fromName, fromRole = fromRole, toEmail = toEmail, toName = toName, toRole = toRole, created = created, message = new String(Base64.getDecoder.decode(message)), publish = candidateVisible)
+        AdHocFeedback(id = Some(id), fromEmail = fromEmail, fromName = fromName, fromRole = fromRole, toEmail = toEmail, toName = toName, toRole = toRole, created = created, message = new String(Base64.getDecoder.decode(message)), publish = candidateVisible)
     }
   }
 }

@@ -40,7 +40,7 @@ GET     /api/nominations            au.com.feedbacker.controllers.Nominations.ge
 POST    /api/nominations            au.com.feedbacker.controllers.Nominations.createNomination
 GET     /api/nominations/cancel/:id au.com.feedbacker.controllers.Nominations.cancelNomination(id: Long)
 GET     /api/cycle/active           au.com.feedbacker.controllers.Nominations.getActiveFeedbackCycles
-GET     /api/cycle/:id              au.com.feedbacker.controllers.Feedback.getCycleForFeedback(id: Long)
+GET     /api/cycle/:id              au.com.feedbacker.controllers.Feedback.getFeedbackCycleDetails(id: Long)
 GET     /api/cycle                  au.com.feedbacker.controllers.Nominations.getAllFeedbackCycles
 
 

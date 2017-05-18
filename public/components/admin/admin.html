@@ -109,7 +109,8 @@
       <div class="col-md-6">
         <select class="form-control"
                 data-ng-options="cycle as cycle.label for cycle in admin.reviewCycles"
-                data-ng-model="admin.selectedCycle">
+                data-ng-model="admin.selectedCycle"
+                data-ng-change="admin.getFeedbackCycle(admin.selectedCycle.id)">
         </select>
       </div>
       <div class="col-md-4"></div>
@@ -118,7 +119,7 @@
       <div class="col-md-2"><button class="btn btn-default" data-ng-click="admin.clearSelectedCycle()">Clear</button></div>
     </div>
     <div class="row top-buffer" data-ng-show="admin.selectedCycle">
-      <div class="col-md-4"><p>{{admin.selectedCycle}}</p></div>
+      <div class="col-md-4"><p>{{admin.selectedCycleDetails}}</p></div>
     </div>
     <div class="row top-buffer">
       <div class="col-md-12">

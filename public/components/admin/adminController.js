@@ -8,6 +8,7 @@ fbControllers.controller('AdminCtrl',  ['$scope', '$log', 'Model', function($sco
 
   ctrl.reviewCycles = [];
   ctrl.selectedCycle = undefined;
+  ctrl.selectedCycleDetails = undefined;
   ctrl.registeredUsers = [];
   ctrl.selectedUser = undefined;
   ctrl.error = undefined;
@@ -28,6 +29,12 @@ fbControllers.controller('AdminCtrl',  ['$scope', '$log', 'Model', function($sco
 
   ctrl.clearSelectedUser = function() {
     ctrl.selectedUser = undefined;
+  };
+
+  ctrl.getFeedbackCycle = function(cycleId) {
+    Model.getFeedbackCycle(cycleId).then(function(result) {
+      ctrl.selectedCycleDetails = result;
+    });
   };
 
   ctrl.createNewCycle = function() {
