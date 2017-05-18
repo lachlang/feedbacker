@@ -1,7 +1,7 @@
 /*
  * Controller for administrative operations
  */
-fbControllers.controller('AdminCtrl',  ['$scope', '$log', 'Model', function($scope, $log, Model) {
+fbControllers.controller('AdminCtrl',  ['$scope', '$log', 'Model', 'Account', function($scope, $log, Model, Account) {
 
 	var ctrl = this;
 
@@ -10,6 +10,7 @@ fbControllers.controller('AdminCtrl',  ['$scope', '$log', 'Model', function($sco
   ctrl.selectedCycleDetails = undefined;
   ctrl.registeredUsers = [];
   ctrl.selectedUser = undefined;
+  ctrl.showNewCycleView = false;
   ctrl.error = undefined;
 
   ctrl.startPopup = {
@@ -31,6 +32,7 @@ fbControllers.controller('AdminCtrl',  ['$scope', '$log', 'Model', function($sco
   });
 
   ctrl.clearSelectedCycle = function() {
+    ctrl.showNewCycleView = false;
     ctrl.selectedCycleDetails = undefined;
     ctrl.selectedCycle = undefined;
   };
@@ -46,6 +48,7 @@ fbControllers.controller('AdminCtrl',  ['$scope', '$log', 'Model', function($sco
   };
 
   ctrl.initialiseNewCycle = function() {
+    ctrl.showNewCycleView = true;
     ctrl.selectedCycleDetails = {
             "active": false,
             "hasForcedSharing": false,
@@ -56,16 +59,33 @@ fbControllers.controller('AdminCtrl',  ['$scope', '$log', 'Model', function($sco
             };
   };
 
-  ctrl.updateFeedbackCycle = function() {
+  ctrl.updateFeedbackCycle = function(cycle) {
     alert("Please contact your administrator to implement this exciting feature.");
   };
 
-  ctrl.createNewFeedbackCycle = function() {
+  ctrl.createNewFeedbackCycle = function(cycle) {
+    ctrl.showNewCycleView = false;
     alert("Please contact your administrator to implement this exciting feature.");
   };
 
-  ctrl.updateUser = function() {
-    alert("Please contact your administrator to implement this exciting feature.");
+  ctrl.updateUser = function(user) {
+    ctrl.error = undefined;
+    if (!user || !user.email || !user.name || !user.role || !user.managerEmail) {
+      $log.error("here")
+      $log.error(user)
+      ctrl.error = "";
+      return;
+    }
+    Account.updateUser(user.email, user.name, user.role, user.managerEmail, user.isAdmin, user.isEnabled).then(function(result){
+      // TODO: This is a bug and will put a full person object in the summary person search array.
+      // It will be fine for now.  LG 2017-05-18
+      ctrl.selectedUser = result.data.body;
+      ctrl.selectedUser.display = result.data.body.name + "(" + result.data.body.credentials.email + ")"
+      ctrl.selectedUser.isDisabled = result.data.body.credentials.status == 'Disabled';
+      ctrl.selectedUser.email = result.data.body.credentials.email;
+      $log.debug("[AdminCtrl.updateUser] Updated user...");
+      $log.debug(result.data.body);
+    })
   };
 
   ctrl.removeQuestion = function(index) {

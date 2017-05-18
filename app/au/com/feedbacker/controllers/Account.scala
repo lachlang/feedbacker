@@ -77,13 +77,13 @@ class Account @Inject() (person: PersonDao,
       case (_, None) => BadRequest(Json.obj("message" -> "Cannot update invalid user."))
       case (Some(uc), Some(targetPerson)) => {
         val status =
-          if (targetPerson.credentials.status == CredentialStatus.Active && uc.isEnabled == false) CredentialStatus.Disabled
+          if ((targetPerson.credentials.status == CredentialStatus.Active || targetPerson.credentials.status == CredentialStatus.Inactive) && uc.isEnabled == false) CredentialStatus.Disabled
           else if (targetPerson.credentials.status == CredentialStatus.Disabled && uc.isEnabled == true) CredentialStatus.Inactive
           else targetPerson.credentials.status
         person.update(Person(id = targetPerson.id,
                   name = uc.name,
                   role = uc.role,
-                  credentials = user.credentials.copy(status = status),
+                  credentials = targetPerson.credentials.copy(status = status),
                   managerEmail = uc.managerEmail.toLowerCase,
                   isLeader = targetPerson.isLeader,
                   isAdmin = uc.isAdmin)) match {

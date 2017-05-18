@@ -2,22 +2,25 @@
 
 describe('edit feedback detail controller [EditCtrl]', function() {
 
-	var scope, adminController, model, location;
+	var scope, adminController, model, account;
 	var deferred;
 
 	beforeEach(module('feedbacker'));
 
     // define the mock person and relationship services
-    beforeEach(inject(function($rootScope, $q, $controller, _Model_) {
+    beforeEach(inject(function($rootScope, $q, $controller, _Model_, _Account_) {
 		scope = $rootScope.$new();
 
 		deferred = $q.defer();
 
-    	model = _Model_;
-        spyOn(model, 'getRegisteredUsers').and.returnValue(deferred.promise);
-        spyOn(model, 'getAllFeedbackCycles').and.returnValue(deferred.promise);
+    model = _Model_;
+    spyOn(model, 'getRegisteredUsers').and.returnValue(deferred.promise);
+    spyOn(model, 'getAllFeedbackCycles').and.returnValue(deferred.promise);
 
-    		adminController = $controller('AdminCtrl',{$scope: scope });
+    account = _Account_;
+    spyOn(account, 'updateUser').and.returnValue(deferred.promise);
+
+    adminController = $controller('AdminCtrl',{$scope: scope });
 	}));
 
     describe('has valid initialisation values', function() {
@@ -46,6 +49,7 @@ describe('edit feedback detail controller [EditCtrl]', function() {
             expect(adminController.error).not.toBeDefined();
             expect(adminController.startPopup.opened).toBe(false);
             expect(adminController.endPopup.opened).toBe(false)
+            expect(adminController.showNewCycleView).toBe(false)
     	});
 
     	it('and calls the necessary services to pre-populate the model', function(){
@@ -94,16 +98,20 @@ describe('edit feedback detail controller [EditCtrl]', function() {
     });
 
     it('clear the selected cycle', function() {
+      adminController.showNewCycleView = true;
       adminController.selectedCycle = {"some":"thing"}
       adminController.selectedCycleDetails = {"some":"one"}
       adminController.clearSelectedCycle();
       expect(adminController.selectedCycle).toBeUndefined()
       expect(adminController.selectedCycleDetails).toBeUndefined()
+      expect(adminController.showNewCycleView).toBe(false);
     });
 
     it('should initialise a new cycle for creation', function() {
+      expect(adminController.showNewCycleView).toBe(false);
       expect(adminController.selectedCycleDetails).toBeUndefined();
       adminController.initialiseNewCycle();
+      expect(adminController.showNewCycleView).toBe(true);
       expect(adminController.selectedCycleDetails).toEqual({
         "active": false,
         "hasForcedSharing": false,
