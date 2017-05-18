@@ -56,12 +56,15 @@ trait ModelFixtures {
 
   implicit val arbFeedbackCycle: Arbitrary[FeedbackCycle] = Arbitrary(
     for {
-      id      <- arbitrary[Int]
+      id      <- arbitrary[Long]
       label   <- arbitrary[String]
       start   <- arbitrary[DateTime]
       end     <- arbitrary[DateTime]
       active  <- arbitrary[Boolean]
-    } yield FeedbackCycle(id = id, label = label, start_date = start, end_date = end, active = active)
+      hasForcedSharing <- arbitrary[Boolean]
+      hasOptionalSharing <- arbitrary[Boolean]
+    } yield FeedbackCycle(id = Some(id), label = label, startDate = start, endDate = end, active = active,
+      questions = Seq(), hasForcedSharing = hasForcedSharing, hasOptionalSharing = hasOptionalSharing)
   )
 
   implicit val arbFeedbackGroup: Arbitrary[FeedbackGroup] = Arbitrary(

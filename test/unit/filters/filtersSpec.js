@@ -55,15 +55,14 @@ describe('review cycle filter [reviewCycle]', function() {
             expect(result).toEqual(input);
         });
 
-		it('should match one input value', function() {
-            var result, input = [{"some": "thing", "cycleId": 12}, {"some": "other thing", "cycleId":13}];
+      it('should match one input value', function() {
+              var result, input = [{"some": "thing", "cycleId": 12}, {"some": "other thing", "cycleId":13}];
 
-			result = $filter('reviewCycle')(input, 12);
+        result = $filter('reviewCycle')(input, 12);
 
-			expect(result).toEqual([{"some": "thing", "cycleId": 12}]);
-		});
+        expect(result).toEqual([{"some": "thing", "cycleId": 12}]);
+      });
     });
-
 
 	describe('report display filter', function() {
 

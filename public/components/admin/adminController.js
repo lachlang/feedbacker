@@ -10,7 +10,6 @@ fbControllers.controller('AdminCtrl',  ['$scope', '$log', 'Model', 'Account', fu
   ctrl.selectedCycleDetails = undefined;
   ctrl.registeredUsers = [];
   ctrl.selectedUser = undefined;
-  ctrl.showNewCycleView = false;
   ctrl.error = undefined;
 
   ctrl.startPopup = {
@@ -32,7 +31,6 @@ fbControllers.controller('AdminCtrl',  ['$scope', '$log', 'Model', 'Account', fu
   });
 
   ctrl.clearSelectedCycle = function() {
-    ctrl.showNewCycleView = false;
     ctrl.selectedCycleDetails = undefined;
     ctrl.selectedCycle = undefined;
   };
@@ -48,7 +46,6 @@ fbControllers.controller('AdminCtrl',  ['$scope', '$log', 'Model', 'Account', fu
   };
 
   ctrl.initialiseNewCycle = function() {
-    ctrl.showNewCycleView = true;
     ctrl.selectedCycleDetails = {
             "active": false,
             "hasForcedSharing": false,
@@ -64,7 +61,6 @@ fbControllers.controller('AdminCtrl',  ['$scope', '$log', 'Model', 'Account', fu
   };
 
   ctrl.createNewFeedbackCycle = function(cycle) {
-    ctrl.showNewCycleView = false;
     alert("Please contact your administrator to implement this exciting feature.");
   };
 

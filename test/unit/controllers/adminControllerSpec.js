@@ -48,8 +48,7 @@ describe('edit feedback detail controller [EditCtrl]', function() {
             expect(adminController.selectedCycleDetails).not.toBeDefined();
             expect(adminController.error).not.toBeDefined();
             expect(adminController.startPopup.opened).toBe(false);
-            expect(adminController.endPopup.opened).toBe(false)
-            expect(adminController.showNewCycleView).toBe(false)
+            expect(adminController.endPopup.opened).toBe(false);
     	});
 
     	it('and calls the necessary services to pre-populate the model', function(){
@@ -98,20 +97,16 @@ describe('edit feedback detail controller [EditCtrl]', function() {
     });
 
     it('clear the selected cycle', function() {
-      adminController.showNewCycleView = true;
       adminController.selectedCycle = {"some":"thing"}
       adminController.selectedCycleDetails = {"some":"one"}
       adminController.clearSelectedCycle();
       expect(adminController.selectedCycle).toBeUndefined()
       expect(adminController.selectedCycleDetails).toBeUndefined()
-      expect(adminController.showNewCycleView).toBe(false);
     });
 
     it('should initialise a new cycle for creation', function() {
-      expect(adminController.showNewCycleView).toBe(false);
       expect(adminController.selectedCycleDetails).toBeUndefined();
       adminController.initialiseNewCycle();
-      expect(adminController.showNewCycleView).toBe(true);
       expect(adminController.selectedCycleDetails).toEqual({
         "active": false,
         "hasForcedSharing": false,

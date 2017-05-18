@@ -661,8 +661,8 @@ object FeedbackGroup {
 }
 
 case class FeedbackCycle(id: Option[Long], label: String, startDate: DateTime, endDate: DateTime, active: Boolean,
-                         questions: Seq[QuestionTemplate], isThreeSixtyReview: Boolean = false,
-                         hasOptionalSharing: Boolean = false, hasForcedSharing: Boolean = false)
+                         questions: Seq[QuestionTemplate], hasOptionalSharing: Boolean = false,
+                         hasForcedSharing: Boolean = false)
 
 object FeedbackCycle {
 
@@ -674,11 +674,10 @@ object FeedbackCycle {
       get[DateTime]("cycle.start_date") ~
       get[DateTime]("cycle.end_date") ~
       get[Boolean]("cycle.active") ~
-      get[Boolean]("cycle.three_sixty_review") ~
       get[Boolean]("cycle.optional_sharing") ~
       get[Boolean]("cycle.forced_sharing") map {
-      case id ~ label ~ start_date ~ end_date ~ active ~ isThreeSixty ~ forcedSharing ~ optionalSharing =>
-        FeedbackCycle(Some(id), label, start_date, end_date, active, Seq(), isThreeSixtyReview = isThreeSixty,
+      case id ~ label ~ start_date ~ end_date ~ active  ~ forcedSharing ~ optionalSharing =>
+        FeedbackCycle(Some(id), label, start_date, end_date, active, Seq(),
           hasForcedSharing = forcedSharing, hasOptionalSharing = optionalSharing)
     }
   }
@@ -689,12 +688,11 @@ object FeedbackCycle {
       get[DateTime]("cycle.start_date") ~
       get[DateTime]("cycle.end_date") ~
       get[Boolean]("cycle.active") ~
-      get[Boolean]("cycle.three_sixty_review") ~
       get[Boolean]("cycle.optional_sharing") ~
       get[Boolean]("cycle.forced_sharing") map {
-      case id ~ label ~ start_date ~ end_date ~ active ~ isThreeSixty ~ forcedSharing ~ optionalSharing =>
-        FeedbackCycle(Some(id), label, start_date, end_date, active, Seq(),//questionTemplate.findQuestionsForCycle(id),
-          isThreeSixtyReview = isThreeSixty, hasForcedSharing = forcedSharing, hasOptionalSharing = optionalSharing)
+      case id ~ label ~ start_date ~ end_date ~ active ~ forcedSharing ~ optionalSharing =>
+        FeedbackCycle(Some(id), label, start_date, end_date, active, Seq(),
+          hasForcedSharing = forcedSharing, hasOptionalSharing = optionalSharing)
     }
   }
 
