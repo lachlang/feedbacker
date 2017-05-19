@@ -15,8 +15,8 @@ class Emailer @Inject() (mailerClient: MailerClient, configuration: play.api.Con
   private val from = "Feedbacker <no-reply@feedbacker.com.au>"
   private def getServerPath: String = {
     val server = configuration.getString("feedbacker.server.path").getOrElse("localhost")
-    val port = configuration.getString("feedbacker.server.port").getOrElse("80")
-    s"""$server:$port"""
+    val port = configuration.getString("feedbacker.server.port").map(port => s":$port").getOrElse("")
+    s"""$server$port"""
   }
 
   def sendEmail(email: Email): Unit = {

@@ -57,6 +57,7 @@ fbControllers.controller('AdminCtrl',  ['$scope', '$log', 'Model', 'Account', fu
   };
 
   ctrl.updateFeedbackCycle = function(cycle) {
+    console.log("updating...")
     alert("Please contact your administrator to implement this exciting feature.");
   };
 

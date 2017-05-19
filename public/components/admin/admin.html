@@ -30,70 +30,73 @@
       <div class="col-sm-6">
       </div>
     </div>
-    <div class="row top-buffer" data-ng-show="admin.selectedUser.display">
-      <div class="col-md-12">
-        <p>Update user <strong>{{admin.selectedUser.display}}</strong> - {{admin.selectedUser.role}}</p>
-      </div>
-    </div>
+    <form data-ng-if="admin.selectedUser.display" class="form-group" data-ng-submit="admin.updateUser(admin.selectedUser)">
 
-    <div class="form-group" data-ng-show="admin.selectedUser.display">
-      <div class="row">
-        <div class="col-sm-1"><p>Name:</p></div>
-        <div class="col-sm-5">
-          <input type="text" class="form-control" placeholder="Name" data-ng-model="admin.selectedUser.name" required>
+      <div class="row top-buffer" data-ng-show="admin.selectedUser.display">
+        <div class="col-md-12">
+          <p>Update user <strong>{{admin.selectedUser.display}}</strong> - {{admin.selectedUser.role}}</p>
         </div>
       </div>
-      <div class="row top-buffer-small">
-        <div class="col-sm-1"><p>Role:</p></div>
-        <div class="col-sm-5">
-          <input type="text" class="form-control" placeholder="Your Role" data-ng-model="admin.selectedUser.role" required>
+
+      <div class="form-group" data-ng-show="admin.selectedUser.display">
+        <div class="row">
+          <div class="col-sm-1"><p>Name:</p></div>
+          <div class="col-sm-5">
+            <input type="text" class="form-control" placeholder="Name" data-ng-model="admin.selectedUser.name" required>
+          </div>
         </div>
-      </div>
-      <div class="row top-buffer-small">
-        <div class="col-sm-1"><p>Boss Email:</p></div>
-        <div class="col-sm-5">
-          <input type="email" class="form-control" placeholder="Boss's Email" data-ng-model="admin.selectedUser.managerEmail" required>
+        <div class="row top-buffer-small">
+          <div class="col-sm-1"><p>Role:</p></div>
+          <div class="col-sm-5">
+            <input type="text" class="form-control" placeholder="Your Role" data-ng-model="admin.selectedUser.role" required>
+          </div>
         </div>
-      </div>
-      <div class="row top-buffer-small">
-        <div class="col-sm-1"><p>Admin User: <span data-ng-show="admin.selectedUser.isAdmin">(Yes)</span>
-          <span data-ng-hide="admin.selectedUser.isAdmin">(No)</span></p></div>
-        <div class="col-sm-2">
-          <div class="btn-group" role="group" aria-label="Is admin user">
-            <button class="btn btn-info"
-                    for="true"
-                    data-ng-model="admin.selectedUser.isAdmin"
-                    uib-btn-radio="true">Yes</button>
-            <button class="btn btn-info"
-                    for="false"
-                    data-ng-model="admin.selectedUser.isAdmin"
-                    uib-btn-radio="false">No</button>
+        <div class="row top-buffer-small">
+          <div class="col-sm-1"><p>Boss Email:</p></div>
+          <div class="col-sm-5">
+            <input type="email" class="form-control" placeholder="Boss's Email" data-ng-model="admin.selectedUser.managerEmail" required>
+          </div>
         </div>
+        <div class="row top-buffer-small">
+          <div class="col-sm-1"><p>Admin User: <span data-ng-show="admin.selectedUser.isAdmin">(Yes)</span>
+            <span data-ng-hide="admin.selectedUser.isAdmin">(No)</span></p></div>
+          <div class="col-sm-2">
+            <div class="btn-group" role="group" aria-label="Is admin user">
+              <a class="btn btn-info"
+                      for="true"
+                      data-ng-model="admin.selectedUser.isAdmin"
+                      uib-btn-radio="true">Yes</a>
+              <a class="btn btn-info"
+                      for="false"
+                      data-ng-model="admin.selectedUser.isAdmin"
+                      uib-btn-radio="false">No</a>
+          </div>
+          </div>
+          <div class="col-sm-1"><p>User Disabled: <span data-ng-show="admin.selectedUser.isEnabled">(No)</span>
+            <span data-ng-hide="admin.selectedUser.isEnabled">(Yes)</span></p></div>
+          <div class="col-sm-2">
+            <div class="btn-group" role="group" aria-label="Is admin user">
+              <a class="btn btn-info"
+                      for="false"
+                      data-ng-model="admin.selectedUser.isEnabled"
+                      uib-btn-radio="false">Yes</a>
+              <a class="btn btn-info"
+                      for="true"
+                      data-ng-model="admin.selectedUser.isEnabled"
+                      uib-btn-radio="true">No</a>
+            </div>
+          </div>
         </div>
-        <div class="col-sm-1"><p>User Disabled: <span data-ng-show="admin.selectedUser.isEnabled">(No)</span>
-          <span data-ng-hide="admin.selectedUser.isEnabled">(Yes)</span></p></div>
-        <div class="col-sm-2">
-          <div class="btn-group" role="group" aria-label="Is admin user">
-            <button class="btn btn-info"
-                    for="false"
-                    data-ng-model="admin.selectedUser.isEnabled"
-                    uib-btn-radio="false">Yes</button>
-            <button class="btn btn-info"
-                    for="true"
-                    data-ng-model="admin.selectedUser.isEnabled"
-                    uib-btn-radio="true">No</button>
+        <div class="row top-buffer-small">
+          <div class="col-sm-5">
+            <button type="submit" class="btn btn-primary">Update user</button>
+          </div>
+          <div class="col-sm-1">
+            <a class="btn btn-default" data-ng-click="admin.clearSelectedUser()">Cancel</a>
           </div>
         </div>
       </div>
-      <div class="row top-buffer-small">
-        <div class="col-sm-5">
-          <button type="submit" class="btn btn-primary" data-ng-click="admin.updateUser(admin.selectedUser)">Update</button>
-        </div>
-        <div class="col-sm-1">
-          <button class="btn btn-default" data-ng-click="admin.clearSelectedUser()">Cancel</button>
-        </div>
-      </div>
-    </div>
+    </form>
     <hr />
     <div class="row top-buffer">
       <div class="col-md-12">
@@ -102,7 +105,7 @@
     </div>
     <div data-ng-hide="admin.selectedCycleDetails">
       <div class="row top-buffer">
-        <div class="col-md-2"><button class="btn btn-primary" data-ng-click="admin.initialiseNewCycle()">Create New</button></div>
+        <div class="col-md-2"><button type="button" class="btn btn-primary" data-ng-click="admin.initialiseNewCycle()">Create New</button></div>
       </div>
       <div class="row top-buffer">
         <div class="col-md-2">
@@ -118,11 +121,13 @@
         <div class="col-md-4"></div>
       </div>
     </div>
-    <div data-ng-show="admin.selectedCycleDetails">
+
+    <form data-ng-if="admin.selectedCycleDetails" class="form-group" data-ng-submit="admin.updateFeedbackCycle(admin.selectedCycleDetails)">
+    <!--<div data-ng-show="admin.selectedCycleDetails">-->
       <div class="row top-buffer">
-        <div class="col-md-2"><button class="btn btn-primary" data-ng-click="admin.updateFeedbackCycle(admin.selectedUserDetails)">Save changes</button></div>
-        <div class="col-md-2"><button class="btn btn-default" data-ng-click="admin.previewChanges()">Preview changes</button></div>
-        <div class="col-md-2"><button class="btn btn-default" data-ng-click="admin.clearSelectedCycle()">Cancel changes</button></div>
+        <div class="col-md-2"><button type="submit" class="btn btn-primary">Save changes</button></div>
+        <div class="col-md-2"><a class="btn btn-default" data-ng-click="admin.previewChanges()">Preview changes</a></div>
+        <div class="col-md-2"><a class="btn btn-default" data-ng-click="admin.clearSelectedCycle()">Cancel changes</a></div>
       </div>
       <!--<div ng-include="./feedbackCycleEditFragment.html"></div>-->
       <div class="row top-buffer">
@@ -146,7 +151,7 @@
                    ng-required="true" close-text="Close"
                    alt-input-formats="altInputFormats" />
             <span class="input-group-btn">
-            <button type="button" class="btn btn-default" data-ng-click="admin.openStart()"><i class="fa fa-calendar"></i></button>
+            <a class="btn btn-default" data-ng-click="admin.openStart()"><i class="fa fa-calendar"></i></a>
           </span>
           </p>
         </div>
@@ -161,7 +166,7 @@
                    ng-required="true" close-text="Close"
                    alt-input-formats="altInputFormats" />
             <span class="input-group-btn">
-            <button type="button" class="btn btn-default" data-ng-click="admin.endStart()"><i class="fa fa-calendar"></i></button>
+            <a class="btn btn-default" data-ng-click="admin.endStart()"><i class="fa fa-calendar"></i></a>
           </span>
           </p>
         </div>
@@ -198,42 +203,42 @@
           <span data-ng-hide="admin.selectedCycleDetails.active">(No)</span></p></div>
         <div class="col-sm-2">
           <div class="btn-group" role="group" aria-label="Is admin user">
-            <button class="btn btn-info"
+            <a class="btn btn-info"
                     for="true"
                     data-ng-model="admin.selectedCycleDetails.active"
-                    uib-btn-radio="true">Yes</button>
-            <button class="btn btn-info"
+                    uib-btn-radio="true">Yes</a>
+            <a class="btn btn-info"
                     for="false"
                     data-ng-model="admin.selectedCycleDetails.active"
-                    uib-btn-radio="false">No</button>
+                    uib-btn-radio="false">No</a>
           </div>
         </div>
         <div class="col-sm-2"><p>Automatic sharing with recipient: <span data-ng-show="admin.selectedCycleDetails.hasForcedSharing">(No)</span>
           <span data-ng-hide="admin.selectedCycleDetails.hasForcedSharing">(Yes)</span></p></div>
         <div class="col-sm-2">
           <div class="btn-group" role="group" aria-label="Is admin user">
-            <button class="btn btn-info"
+            <a class="btn btn-info"
                     for="true"
                     data-ng-model="admin.selectedCycleDetails.hasForcedSharing"
-                    uib-btn-radio="true">Yes</button>
-            <button class="btn btn-info"
+                    uib-btn-radio="true">Yes</a>
+            <a class="btn btn-info"
                     for="false"
                     data-ng-model="admin.selectedCycleDetails.hasForcedSharing"
-                    uib-btn-radio="false">No</button>
+                    uib-btn-radio="false">No</a>
           </div>
         </div>
         <div class="col-sm-2"><p>Hide option to share feedback with recipient: <span data-ng-show="admin.selectedCycleDetails.hasOptionalSharing">(No)</span>
           <span data-ng-hide="admin.selectedCycleDetails.hasOptionalSharing">(Yes)</span></p></div>
         <div class="col-sm-2">
           <div class="btn-group" role="group" aria-label="Is admin user">
-            <button class="btn btn-info"
+            <a class="btn btn-info"
                     for="false"
                     data-ng-model="admin.selectedCycleDetails.hasOptionalSharing"
-                    uib-btn-radio="false">Yes</button>
-            <button class="btn btn-info"
+                    uib-btn-radio="false">Yes</a>
+            <a class="btn btn-info"
                     for="true"
                     data-ng-model="admin.selectedCycleDetails.hasOptionalSharing"
-                    uib-btn-radio="true">No</button>
+                    uib-btn-radio="true">No</a>
           </div>
         </div>
       </div>
@@ -244,41 +249,41 @@
       </div>
       <div class="row top-buffer" data-ng-repeat="question in admin.selectedCycleDetails.questions">
         <div class="col-sm-2">
-          <button class="btn btn-warning" data-ng-click="admin.removeQuestion($index)">Remove question {{$index +1}}</button>
+          <a class="btn btn-warning" data-ng-click="admin.removeQuestion($index)">Remove question {{$index +1}}</a>
         </div>
         <div class="col-sm-3">
-          <textarea class="form-control" class="form-control" placeholder="Question text" data-ng-model="question.text"  rows="3"></textarea>
+          <textarea class="form-control" class="form-control" placeholder="Question text" data-ng-model="question.text"  rows="3" required></textarea>
         </div>
         <div class="col-sm-2">
           <textarea class="form-control" class="form-control" placeholder="Optional help text" data-ng-model="question.helpText"  rows="3"></textarea>
         </div>
         <div class="col-sm-3">
-          <textarea class="form-control" placeholder="Response options written in a comma separated list e.g. 'Yes,No' or '1 Strongly Agree,2,3,4,5 Strongly Disagree'" rows="3" data-ng-model="question.responseOptions" ></textarea>
+          <textarea class="form-control" placeholder="Response options written in a comma separated list e.g. 'Yes,No' or '1 Strongly Agree,2,3,4,5 Strongly Disagree'" rows="3" data-ng-model="question.responseOptions" required></textarea>
         </div>
         <div class="col-lg-2">
           <div class="btn-group" role="group" aria-label="question response display format">
-            <button class="btn btn-info"
+            <a class="btn btn-info"
                     for="SELECT"
                     data-ng-model="question.format"
-                    uib-btn-radio="'SELECT'">Drop-down</button>
-            <button class="btn btn-info"
+                    uib-btn-radio="'SELECT'">Drop-down</a>
+            <a class="btn btn-info"
                     for="RADIO"
                     data-ng-model="question.format"
-                    uib-btn-radio="'RADIO'">Radio Button</button>
+                    uib-btn-radio="'RADIO'">Radio Button</a>
           </div>
         </div>
       </div>
       <div class="row top-buffer">
         <div class="col-md-4">
-          <button class="btn btn-info" data-ng-click="admin.addQuestion()">Add question</button>
+          <a class="btn btn-info" data-ng-click="admin.addQuestion()">Add question</a>
         </div>
       </div>
       <div class="row top-buffer">
-        <div class="col-md-2"><button class="btn btn-primary" data-ng-click="admin.updateFeedbackCycle(admin.selectedUserDetails)">Save changes</button></div>
-        <div class="col-md-2"><button class="btn btn-default" data-ng-click="admin.previewChanges()">Preview changes</button></div>
-        <div class="col-md-2"><button class="btn btn-default" data-ng-click="admin.clearSelectedCycle()">Cancel changes</button></div>
+        <div class="col-md-2"><button type="submit" class="btn btn-primary" >Save changes</button></div>
+        <div class="col-md-2"><a class="btn btn-default" data-ng-click="admin.previewChanges()">Preview changes</a></div>
+        <div class="col-md-2"><a class="btn btn-default" data-ng-click="admin.clearSelectedCycle()">Cancel changes</a></div>
       </div>
-    </div>
+    </form>
     <hr />
     <div class="row top-buffer">
       <div class="col-md-12">

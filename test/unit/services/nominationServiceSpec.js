@@ -34,7 +34,7 @@ describe('service [Nomination]', function() {
         it('to retrieve the list of nominee candidates', function() {
             var result, promise = nomination.getNomineeCandidates();
 
-            $httpBackend.expectGET('/api/nominations/candidates').respond(200, dummyResult);
+            $httpBackend.expectGET('/api/user/active').respond(200, dummyResult);
             
             // set the response value
             promise.then(function(data) {

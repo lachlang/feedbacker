@@ -3,7 +3,7 @@ fbServices.service('Nomination', ['$log', '$http', function($log, $http) {
 	return {
 
 		getNomineeCandidates: function() {
-			return $http.get("/api/nominations/candidates");
+			return $http.get("/api/user/active");
 		},
 
 		getCurrentNominations: function() {
