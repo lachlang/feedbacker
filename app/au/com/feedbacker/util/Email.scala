@@ -80,7 +80,7 @@ class Emailer @Inject() (mailerClient: MailerClient, configuration: play.api.Con
     }
     val bossName: String = boss.map(m => s" ${m.name}").getOrElse("")
     val email = Email(
-      "Feedbacker Password Reset",
+      "Feedbacker - Somebody from your team has just received feedback",
       from,
       Seq(toAddress),
       None,
