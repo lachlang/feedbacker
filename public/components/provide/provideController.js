@@ -13,7 +13,7 @@ fbControllers.controller('ProvideCtrl',  ['$scope', '$log', 'Model', function($s
     ctrl.submittedAdHocFeedback = [];
 
 	// get the registered users
-	Model.getNomineeCandidates().then(function(response) {
+	Model.getActiveUsers().then(function(response) {
 		ctrl.recipientList = response;
 	});
 

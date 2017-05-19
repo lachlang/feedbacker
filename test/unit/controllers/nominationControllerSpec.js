@@ -15,7 +15,7 @@ describe('nomination controller [NominationCtrl]', function() {
 		deferredNom = $q.defer();
 
     	model = _Model_;
-        spyOn(model, 'getNomineeCandidates').and.returnValue(deferred.promise);
+        spyOn(model, 'getActiveUsers').and.returnValue(deferred.promise);
         spyOn(model, 'getCurrentNominations').and.returnValue(deferred.promise);
         spyOn(model, 'getActiveFeedbackCycles').and.returnValue(deferred.promise);
 
@@ -45,7 +45,7 @@ describe('nomination controller [NominationCtrl]', function() {
 
     	it('and calls the necessary services to pre-populate the model', function(){
             expect(model.getCurrentNominations).toHaveBeenCalled();
-            expect(model.getNomineeCandidates).toHaveBeenCalled();
+            expect(model.getActiveUsers).toHaveBeenCalled();
             expect(model.getActiveFeedbackCycles).toHaveBeenCalled();
     	});
 

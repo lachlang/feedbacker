@@ -14,7 +14,7 @@ fbControllers.controller('NominationCtrl',  ['$scope', '$log', 'Model', 'Nominat
 	ctrl.error = undefined;
 
 	// get the pending actions
-	Model.getNomineeCandidates().then(function(response) {
+	Model.getActiveUsers().then(function(response) {
 		ctrl.nomineeCandidates = response;
 	});
 

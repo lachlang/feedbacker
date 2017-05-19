@@ -24,6 +24,7 @@ describe('service [Account]', function() {
     it('has defined functions', function() {
         expect(angular.isFunction(account.register)).toBe(true);
         expect(angular.isFunction(account.getCurrentUser)).toBe(true);
+        expect(angular.isFunction(account.getActiveUsers)).toBe(true);
         expect(angular.isFunction(account.getRegisteredUsers)).toBe(true);
         expect(angular.isFunction(account.updateCurrentUser)).toBe(true);
         expect(angular.isFunction(account.activate)).toBe(true);
@@ -87,6 +88,22 @@ describe('service [Account]', function() {
           var result, promise = account.getCurrentUser();
 
           $httpBackend.expectGET('/api/user').respond(200, dummyResult);
+
+          // set the response value
+          promise.then(function(data) {
+              result = data.data;
+          });
+          expect(result).toBeUndefined(); // it really should at this point
+          $httpBackend.flush();
+
+          expect(result).toBeDefined();
+          expect(result).toEqual(dummyResult);
+      });
+
+      it('to retrieve active users', function() {
+          var result, promise = account.getActiveUsers();
+
+          $httpBackend.expectGET('/api/user/active').respond(200, dummyResult);
 
           // set the response value
           promise.then(function(data) {

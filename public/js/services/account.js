@@ -35,6 +35,10 @@ fbServices.service('Account', ['$log', '$http', '$q', function($log, $http, $q) 
 			return $http.get("/api/user/all")
 		},
 
+		getActiveUsers: function() {
+			return $http.get("/api/user/active");
+		},
+
 		updateCurrentUser: function(name, role, managerEmail) {
 			return $http({
 				method: "PUT",

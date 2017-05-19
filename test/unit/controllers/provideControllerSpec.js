@@ -15,7 +15,7 @@ describe('provide feedback controller [ProvideCtrl]', function() {
 
     model = _Model_;
     spyOn(model, 'createAdHocFeedback').and.returnValue(deferred.promise);
-    spyOn(model, 'getNomineeCandidates').and.returnValue(deferred.promise);
+    spyOn(model, 'getActiveUsers').and.returnValue(deferred.promise);
     spyOn(model, 'getSubmittedAdHocFeedback').and.returnValue(deferred.promise);
 
 		provideController = $controller('ProvideCtrl',{$scope: scope });
@@ -38,7 +38,7 @@ describe('provide feedback controller [ProvideCtrl]', function() {
     });
 
     it('and calls the necessary services to pre-populate the model', function(){
-      expect(model.getNomineeCandidates).toHaveBeenCalled();
+      expect(model.getActiveUsers).toHaveBeenCalled();
       expect(model.getSubmittedAdHocFeedback).toHaveBeenCalled();
     });
 
