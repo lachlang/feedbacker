@@ -70,7 +70,7 @@ class Account @Inject() (person: PersonDao,
     }
   }
 
-  def updateUserDetailsForAdmin(username: String) = AuthenticatedAdminRequestAction { (user, json) =>
+  def updateUserDetailsForAdmin(username: String) = AuthenticatedAdminRequestAction { json =>
     (json.validate[UpdateContentForAdmin].asOpt, person.findByEmail(username)) match {
       case (None, None) => BadRequest(Json.obj("message" -> "Invalid request."))
       case (None, _) => BadRequest(Json.obj("message" -> "Invalid Request."))

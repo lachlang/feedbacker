@@ -123,13 +123,11 @@
     </div>
 
     <form data-ng-if="admin.selectedCycleDetails" class="form-group" data-ng-submit="admin.updateFeedbackCycle(admin.selectedCycleDetails)">
-    <!--<div data-ng-show="admin.selectedCycleDetails">-->
       <div class="row top-buffer">
         <div class="col-md-2"><button type="submit" class="btn btn-primary">Save changes</button></div>
         <div class="col-md-2"><a class="btn btn-default" data-ng-click="admin.previewChanges()">Preview changes</a></div>
         <div class="col-md-2"><a class="btn btn-default" data-ng-click="admin.clearSelectedCycle()">Cancel changes</a></div>
       </div>
-      <!--<div ng-include="./feedbackCycleEditFragment.html"></div>-->
       <div class="row top-buffer">
         <div class="col-md-6">
           <p class="lead">Feedback cycle options</p>
@@ -199,8 +197,8 @@
         <!--</div>-->
       <!--</div>-->
       <div class="row top-buffer">
-        <div class="col-sm-2"><p>Feedback cycle is currently enabled: <span data-ng-show="admin.selectedCycleDetails.active">(Yes)</span>
-          <span data-ng-hide="admin.selectedCycleDetails.active">(No)</span></p></div>
+        <div class="col-sm-2"><p>Feedback cycle is currently active/enabled (Feedback may be edited: <span data-ng-show="admin.selectedCycleDetails.active">Yes)</span>
+          <span data-ng-hide="admin.selectedCycleDetails.active">No)</span></p></div>
         <div class="col-sm-2">
           <div class="btn-group" role="group" aria-label="Is admin user">
             <a class="btn btn-info"
@@ -213,7 +211,7 @@
                     uib-btn-radio="false">No</a>
           </div>
         </div>
-        <div class="col-sm-2"><p>Automatic sharing with recipient: <span data-ng-show="admin.selectedCycleDetails.hasForcedSharing">(No)</span>
+        <div class="col-sm-2"><p>Automatic sharing with feedback recipient: <span data-ng-show="admin.selectedCycleDetails.hasForcedSharing">(No)</span>
           <span data-ng-hide="admin.selectedCycleDetails.hasForcedSharing">(Yes)</span></p></div>
         <div class="col-sm-2">
           <div class="btn-group" role="group" aria-label="Is admin user">
@@ -227,7 +225,7 @@
                     uib-btn-radio="false">No</a>
           </div>
         </div>
-        <div class="col-sm-2"><p>Hide option to share feedback with recipient: <span data-ng-show="admin.selectedCycleDetails.hasOptionalSharing">(No)</span>
+        <div class="col-sm-2"><p>Hide option to share feedback with feedback recipient: <span data-ng-show="admin.selectedCycleDetails.hasOptionalSharing">(No)</span>
           <span data-ng-hide="admin.selectedCycleDetails.hasOptionalSharing">(Yes)</span></p></div>
         <div class="col-sm-2">
           <div class="btn-group" role="group" aria-label="Is admin user">
@@ -290,8 +288,6 @@
         <p class="lead">Stay tuned folks.  This exciting section is coming soon :)</p>
         <p>Features will include:</p>
         <ul>
-          <li>Set users as admin</li>
-          <li>Disable registered users</li>
           <li>Create new review cycles</li>
           <li>Update question text, response options and help text</li>
           <li>Disable existing review cycles</li>

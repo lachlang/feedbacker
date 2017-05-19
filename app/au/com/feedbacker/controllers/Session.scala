@@ -39,9 +39,9 @@ class AuthenticatedController(person: PersonDao, sessionManager: SessionManager)
     }
   }
 
-  def AuthenticatedAdminRequestAction(body: (Person, JsValue) => Result) = AuthenticatedRequestAction { (user, requestBody) =>
+  def AuthenticatedAdminRequestAction(body: JsValue => Result) = AuthenticatedRequestAction { (user, requestBody) =>
     if (!user.isAdmin) Forbidden(Json.obj("message" -> "Administrative access is required for this operation."))
-    else body(user, requestBody)
+    else body(requestBody)
   }
 
   private def getUser(request: RequestHeader): Option[Person] =

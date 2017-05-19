@@ -68,13 +68,6 @@ class Feedback @Inject() (person: PersonDao,
     ???
   }
 
-  def getFeedbackCycleDetails(cycleId: Long) = AuthenticatedAdminAction { user =>
-    feedbackCycle.findDetailsById(cycleId) match {
-      case Some(cycle) => Ok(Json.obj("body" -> Json.toJson(cycle)))
-      case None => BadRequest
-    }
-  }
-
   // TODO: suspect this is duplicate code with Account#ReportFile#isInReportingLine
   private val nominationWriteFilter: (Nomination, String) => Boolean = (n, email) => n.to.map(_.credentials.email == email).getOrElse(false)
 
@@ -224,12 +217,36 @@ class Nominations @Inject() (emailer: Emailer,
     }
   }
 
+}
+
+class FeedbackCycleController @Inject() (person: PersonDao,
+                               feedbackCycle: FeedbackCycleDao,
+                               sessionManager: SessionManager) extends AuthenticatedController(person, sessionManager) {
+
+  def getFeedbackCycleDetails(cycleId: Long) = AuthenticatedAdminAction { user =>
+    feedbackCycle.findDetailsById(cycleId) match {
+      case Some(cycle) => Ok(Json.obj("body" -> Json.toJson(cycle)))
+      case None => BadRequest
+    }
+  }
+
   def getActiveFeedbackCycles = AuthenticatedAction { person =>
     Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(feedbackCycle.findActiveCycles)))
   }
 
   def getAllFeedbackCycles = AuthenticatedAdminAction { person =>
     Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(feedbackCycle.findAllCycles)))
+  }
+
+  def createFeedbackCycle = AuthenticatedAdminRequestAction { request =>
+    ???
+  }
+  def updateFeedbackCycle(id: Long) = AuthenticatedAdminRequestAction { request =>
+    ???
+  }
+
+  def updateFeedbackCycle360Status(id: Long, enable: Boolean) = AuthenticatedAdminRequestAction { request =>
+    ???
   }
 }
 //case class Response[T : Writes](apiVersion: String, body: T)

@@ -39,9 +39,12 @@ GET 	  /api/feedback/adhoc/:email  au.com.feedbacker.controllers.Feedback.getAdH
 GET     /api/nominations            au.com.feedbacker.controllers.Nominations.getCurrentNominations
 POST    /api/nominations            au.com.feedbacker.controllers.Nominations.createNomination
 GET     /api/nominations/cancel/:id au.com.feedbacker.controllers.Nominations.cancelNomination(id: Long)
-GET     /api/cycle/active           au.com.feedbacker.controllers.Nominations.getActiveFeedbackCycles
-GET     /api/cycle/:id              au.com.feedbacker.controllers.Feedback.getFeedbackCycleDetails(id: Long)
-GET     /api/cycle                  au.com.feedbacker.controllers.Nominations.getAllFeedbackCycles
+GET     /api/cycle/active           au.com.feedbacker.controllers.FeedbackCycleController.getActiveFeedbackCycles
+GET     /api/cycle/:id              au.com.feedbacker.controllers.FeedbackCycleController.getFeedbackCycleDetails(id: Long)
+GET     /api/cycle                  au.com.feedbacker.controllers.FeedbackCycleController.getAllFeedbackCycles
+POST    /api/cycle                  au.com.feedbacker.controllers.FeedbackCycleController.createFeedbackCycle
+PUT     /api/cycle/:id              au.com.feedbacker.controllers.FeedbackCycleController.updateFeedbackCycle(id: Long)
+PUT     /api/cycle/:id/360/:enabled au.com.feedbacker.controllers.FeedbackCycleController.updateFeedbackCycle360Status(id: Long, enabled: Boolean)
 
 
 # Map static resources from the /public folder to the /assets URL path
