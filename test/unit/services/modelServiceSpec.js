@@ -31,6 +31,8 @@ describe('service [Model]', function() {
     spyOn(feedback, 'getAdHocFeedbackForUser').and.returnValue(deferred.promise);
     spyOn(feedback, 'getAdHocFeedbackForSelf').and.returnValue(deferred.promise);
     spyOn(feedback, 'getAdHocFeedbackFromSelf').and.returnValue(deferred.promise);
+    spyOn(feedback, 'createFeedbackCycle').and.returnValue(deferred.promise);
+    spyOn(feedback, 'updateFeedbackCycle').and.returnValue(deferred.promise);
 
     nomination = _Nomination_;
     spyOn(nomination, 'getCurrentNominations').and.returnValue(deferred.promise);
@@ -55,6 +57,8 @@ describe('service [Model]', function() {
       expect(angular.isFunction(model.getActiveFeedbackCycles)).toBe(true);
       expect(angular.isFunction(model.getAllFeedbackCycles)).toBe(true);
       expect(angular.isFunction(model.getFeedbackCycle)).toBe(true);
+      expect(angular.isFunction(model.createFeedbackCycle)).toBe(true);
+      expect(angular.isFunction(model.updateFeedbackCycle)).toBe(true);
       expect(angular.isFunction(model.createAdHocFeedback)).toBe(true);
       expect(angular.isFunction(model.getAdHocFeedbackForUser)).toBe(true);
       expect(angular.isFunction(model.getAdHocFeedbackForSelf)).toBe(true);
@@ -272,6 +276,44 @@ describe('service [Model]', function() {
         scope.$digest();
 
         expect(result).toEqual(["value"]);
+      });
+
+      it('should update the cache when feedback.createFeedbackCycle service is called', function() {
+        var result;
+        model.createFeedbackCycle({"some":"thing"}).then(function(response){
+          result = response;
+        });
+
+        deferred.resolve({ "data": {"body": { "id": "value" } } });
+        scope.$digest();
+
+        expect(result).toEqual({ "id": "value" });
+
+        model.getFeedbackCycle("value").then(function(response) {
+          result = response;
+        });
+        scope.$digest();
+
+        expect(result).toEqual({ "id": "value" });
+      });
+
+      it('should update the cache when feedback.updateFeedbackCycle service is called', function() {
+        var result;
+        model.updateFeedbackCycle({"some":"thing"}).then(function(response){
+          result = response;
+        });
+
+        deferred.resolve({ "data": {"body": { "id": "value" } } });
+        scope.$digest();
+
+        expect(result).toEqual({ "id": "value" });
+
+        model.getFeedbackCycle("value").then(function(response) {
+          result = response;
+        });
+        scope.$digest();
+
+        expect(result).toEqual({ "id": "value" });
       });
   });
 

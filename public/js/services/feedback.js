@@ -76,6 +76,42 @@ fbServices.service('Feedback', ['$log','$http', function($log, $http) {
 
 		getAdHocFeedbackFromSelf: function() {
 		  return $http.get("/api/feedback/adhoc/from")
+		},
+
+		createFeedbackCycle: function(cycle) {
+		  return $http({
+		    method: 'POST',
+		    url: "/api/cycle",
+		    data: {
+		      apiVersion: "1.0",
+          body:cycle
+		    }
+      });
+		},
+
+		updateFeedbackCycle: function(cycle) {
+		  return $http({
+		    method: 'PUT',
+		    url: "/api/cycle/" + cycle.id,
+		    data: {
+		      apiVersion: "1.0",
+          body: cycle
+		    }
+      });
+		},
+
+		updateFeedbackCycle360Status: function(cycleId, status, topLevelReviewUsername) {
+		  return $http({
+		    method: 'PUT',
+		    url: "/api/cycle/" + cycleId + "/360",
+		    data: {
+		      apiVersion: "1.0",
+		      body: {
+  		      topLevelReviewUsername: topLevelReviewUsername,
+	          status: status
+          }
+		    }
+      });
 		}
 	}
 }]);

@@ -32,10 +32,13 @@ describe('service [Feedback]', function() {
         expect(angular.isFunction(feedback.getActiveFeedbackCycles)).toBe(true);
         expect(angular.isFunction(feedback.getAllFeedbackCycles)).toBe(true);
         expect(angular.isFunction(feedback.getFeedbackCycle)).toBe(true);
+        expect(angular.isFunction(feedback.createFeedbackCycle)).toBe(true);
+        expect(angular.isFunction(feedback.updateFeedbackCycle)).toBe(true);
+        expect(angular.isFunction(feedback.updateFeedbackCycle360Status)).toBe(true);
     });
 
     describe("calls the appropriate server api", function() {
-        var dummyResult = "dummyResult";
+      var dummyResult = "dummyResult";
     	
     	it('to retrieve pending feedback list', function() {
     		var result, promise = feedback.getPendingFeedbackActions();
@@ -249,6 +252,54 @@ describe('service [Feedback]', function() {
             var result, promise = feedback.getAdHocFeedbackFromSelf();
 
             $httpBackend.expectGET('/api/feedback/adhoc/from').respond(200, dummyResult);
+
+            // set the response value
+            promise.then(function(data) {
+                result = data.data;
+            });
+            expect(result).toBeUndefined();
+            $httpBackend.flush();
+
+            expect(result).toBeDefined();
+            expect(result).toEqual(dummyResult);
+        });
+
+        it('to create a new feedback cycle', function() {
+            var result, promise = feedback.createFeedbackCycle({"some":"thing"});
+
+            $httpBackend.expectPOST('/api/cycle', '{"apiVersion":"1.0","body":{"some":"thing"}}').respond(200, dummyResult);
+
+            // set the response value
+            promise.then(function(data) {
+                result = data.data;
+            });
+            expect(result).toBeUndefined();
+            $httpBackend.flush();
+
+            expect(result).toBeDefined();
+            expect(result).toEqual(dummyResult);
+        });
+
+        it('to update an existing feedback cycle details', function() {
+            var result, promise = feedback.updateFeedbackCycle({"id":123, "some":"thing"});
+
+            $httpBackend.expectPUT('/api/cycle/123', '{"apiVersion":"1.0","body":{"id":123,"some":"thing"}}').respond(200, dummyResult);
+
+            // set the response value
+            promise.then(function(data) {
+                result = data.data;
+            });
+            expect(result).toBeUndefined();
+            $httpBackend.flush();
+
+            expect(result).toBeDefined();
+            expect(result).toEqual(dummyResult);
+        });
+
+        it('to update the 360 degree status for a feedback cycle', function() {
+            var result, promise = feedback.updateFeedbackCycle360Status(123, true, "username");
+
+            $httpBackend.expectPUT('/api/cycle/123/360', '{"apiVersion":"1.0","body":{"topLevelReviewUsername":"username","status":true}}').respond(200, dummyResult);
 
             // set the response value
             promise.then(function(data) {

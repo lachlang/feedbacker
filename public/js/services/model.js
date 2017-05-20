@@ -226,6 +226,43 @@ fbServices.service('Model', ['$log', '$q', 'Account', 'Feedback', 'Nomination', 
 									"Feedback.getAdHocFeedbackFromSelf");
 		},
 
+    createFeedbackCycle: function(cycle) {
+      var deferred = $q.defer();
+
+      $log.debug("[Feedback.createFeedbackCycle] Updating to server...");
+      Feedback.createFeedbackCycle(cycle).then(function(result){
+        $log.debug("[Feedback.createFeedbackCycle] Response from server...");
+        $log.debug(result)
+        feedbackCycle[result.data.body.id] = result.data.body;
+        deferred.resolve(feedbackCycle[result.data.body.id]);
+      }, function(result){
+        $log.error("[Feedback.createFeedbackCycle] Error from server:  [" + result + "]");
+        errorResult = result.data;
+        deferred.reject(errorResult);
+      });
+      return deferred.promise;
+    },
+
+
+		updateFeedbackCycle: function(cycle) {
+			var deferred = $q.defer();
+
+			$log.debug("[Feedback.updateFeedbackCycle] Updating to server...");
+			Feedback.updateFeedbackCycle(cycle).then(function(result){
+				$log.debug("[Feedback.updateFeedbackCycle] Response from server...");
+				$log.debug(result)
+				feedbackCycle[result.data.body.id] = result.data.body;
+				deferred.resolve(feedbackCycle[result.data.body.id]);
+			}, function(result){
+				$log.error("[Feedback.updateFeedbackCycle] Error from server:  [" + result + "]");
+				errorResult = result.data;
+				deferred.reject(errorResult);
+			});
+			return deferred.promise;
+		}
+
+
+
 	}
 	return model;
 }]);

@@ -44,7 +44,7 @@ GET     /api/cycle/:id              au.com.feedbacker.controllers.FeedbackCycleC
 GET     /api/cycle                  au.com.feedbacker.controllers.FeedbackCycleController.getAllFeedbackCycles
 POST    /api/cycle                  au.com.feedbacker.controllers.FeedbackCycleController.createFeedbackCycle
 PUT     /api/cycle/:id              au.com.feedbacker.controllers.FeedbackCycleController.updateFeedbackCycle(id: Long)
-PUT     /api/cycle/:id/360/:enabled au.com.feedbacker.controllers.FeedbackCycleController.updateFeedbackCycle360Status(id: Long, enabled: Boolean)
+PUT     /api/cycle/:id/360          au.com.feedbacker.controllers.FeedbackCycleController.updateFeedbackCycle360Status(id: Long)
 
 
 # Map static resources from the /public folder to the /assets URL path

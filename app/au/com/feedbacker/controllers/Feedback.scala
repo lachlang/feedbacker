@@ -245,7 +245,7 @@ class FeedbackCycleController @Inject() (person: PersonDao,
     ???
   }
 
-  def updateFeedbackCycle360Status(id: Long, enable: Boolean) = AuthenticatedAdminRequestAction { request =>
+  def updateFeedbackCycle360Status(id: Long) = AuthenticatedAdminRequestAction { request =>
     ???
   }
 }
