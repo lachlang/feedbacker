@@ -234,6 +234,7 @@ fbServices.service('Model', ['$log', '$q', 'Account', 'Feedback', 'Nomination', 
         $log.debug("[Feedback.createFeedbackCycle] Response from server...");
         $log.debug(result)
         feedbackCycle[result.data.body.id] = result.data.body;
+        allFeedbackCycles.push(feedbackCycle[result.data.body.id]);
         deferred.resolve(feedbackCycle[result.data.body.id]);
       }, function(result){
         $log.error("[Feedback.createFeedbackCycle] Error from server:  [" + result + "]");

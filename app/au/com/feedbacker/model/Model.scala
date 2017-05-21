@@ -457,8 +457,24 @@ object QuestionTemplate {
 
 class QuestionTemplateDao @Inject() (db: play.api.db.Database) {
 
-    def findQuestionsForCycle(cycleId: Long): Seq[QuestionTemplate] = db.withConnection { implicit connection =>
+  def findQuestionsForCycle(cycleId: Long): Seq[QuestionTemplate] = db.withConnection { implicit connection =>
     SQL("""select * from question_templates where cycle_id = {id} order by id asc""").on('id -> cycleId).as(QuestionTemplate.simple *)
+  }
+
+  def initialiseQuestionsForCycle(cycleId: Long, questions: Seq[QuestionTemplate]): Boolean = db.withConnection { implicit connection =>
+    questions.map{ q =>
+      SQL("""insert into question_templates (text, help_text, response_options, render_format, cycle_id)
+           values ({text}, {helpText}, {responseOptions}, {renderFormat}, {cycleId})""")
+        .on('text -> q.text, 'helpText -> q.helpText, 'responseOptions -> q.responseOptions, 'renderFormat -> q.format.toString, 'cycleId -> cycleId)
+        .executeInsert() match {
+        case Some(_) => true
+        case None => false
+      }
+    }.foldLeft(true)( _ && _)
+  }
+
+  def updateQuestionsForCycle(questions: Seq[QuestionTemplate]): Either[Throwable, Seq[QuestionTemplate]] = db.withConnection { connection =>
+    ???
   }
 }
 
@@ -662,11 +678,16 @@ object FeedbackGroup {
 
 case class FeedbackCycle(id: Option[Long], label: String, startDate: DateTime, endDate: DateTime, active: Boolean,
                          questions: Seq[QuestionTemplate], hasOptionalSharing: Boolean = false,
-                         hasForcedSharing: Boolean = false)
+                         hasForcedSharing: Boolean = false, isThreeSixtyReview: Boolean = false)
 
 object FeedbackCycle {
 
-  implicit val writes: Writes[FeedbackCycle] = Json.writes[FeedbackCycle]
+//  implicit val writes: Writes[FeedbackCycle] = Json.writes[FeedbackCycle]
+
+  val pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+  implicit val jodaDataTimeFormat = Format[DateTime](Reads.jodaDateReads(pattern), Writes.jodaDateWrites(pattern))
+
+  implicit val format: Format[FeedbackCycle] = Json.format[FeedbackCycle]
 
   val simple = {
     get[Long]("cycle.id") ~
@@ -675,10 +696,11 @@ object FeedbackCycle {
       get[DateTime]("cycle.end_date") ~
       get[Boolean]("cycle.active") ~
       get[Boolean]("cycle.optional_sharing") ~
-      get[Boolean]("cycle.forced_sharing") map {
-      case id ~ label ~ start_date ~ end_date ~ active  ~ forcedSharing ~ optionalSharing =>
+      get[Boolean]("cycle.forced_sharing") ~
+      get[Boolean]("cycle.three_sixty_review") map {
+      case id ~ label ~ start_date ~ end_date ~ active  ~ forcedSharing ~ optionalSharing ~ is360 =>
         FeedbackCycle(Some(id), label, start_date, end_date, active, Seq(),
-          hasForcedSharing = forcedSharing, hasOptionalSharing = optionalSharing)
+          hasForcedSharing = forcedSharing, hasOptionalSharing = optionalSharing, isThreeSixtyReview = is360)
     }
   }
 
@@ -721,6 +743,56 @@ class FeedbackCycleDao @Inject() (db: play.api.db.Database, questionTemplate: Qu
       .as(FeedbackCycle.simple.singleOpt) match {
       case Some(_) => true
       case None => false
+    }
+  }
+
+  def createCycle(cycle: FeedbackCycle): Either[Throwable, FeedbackCycle] = db.withConnection {implicit connection =>
+    try {
+      SQL(
+        """insert into cycle (label, start_date, end_date, active, optional_sharing, forced_sharing)
+           values ({label}, {startDate}, {endDate}, {active}, {optionalSharing}, {forcedSharing})
+          """).on(
+        'label -> cycle.label,
+        'startDate -> cycle.startDate,
+        'endDate -> cycle.endDate,
+        'active -> cycle.active,
+        'optionalSharing -> cycle.hasOptionalSharing,
+        'forcedSharing -> cycle.hasForcedSharing)
+        .executeInsert().flatMap{ findById(_) } match {
+          case None => Left( new Exception("Could not insert."))
+          case Some(newCycle) => {
+            Right(newCycle)
+        }
+      }
+    } catch {
+      case e:Exception => Left(e)
+    }
+  }
+
+  def updateCycle(cycle: FeedbackCycle): Either[Throwable, FeedbackCycle] = db.withConnection {implicit connection =>
+    try {
+      SQL(
+        """update cycle SET
+          label={label},
+          start_date={startDate},
+          end_date={endDate},
+          active={active},
+          optional_sharing={optionalSharing},
+          forced_sharing={forcedSharing}
+          where id={id}
+          """).on(
+        'label -> cycle.label,
+        'startDate -> cycle.startDate,
+        'endDate -> cycle.endDate,
+        'active -> cycle.active,
+        'optionalSharing -> cycle.hasOptionalSharing,
+        'forcedSharing -> cycle.hasForcedSharing)
+          .executeUpdate() match {
+        case 1 => Right(cycle)
+        case _ => Left(new Exception("Could not update."))
+      }
+    } catch {
+      case e:Exception => Left(e)
     }
   }
 }

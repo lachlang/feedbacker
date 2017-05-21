@@ -28,9 +28,7 @@ GET     /api/feedback/pending     	au.com.feedbacker.controllers.Feedback.getPen
 PUT		  /api/feedback/item/:id 		  au.com.feedbacker.controllers.Feedback.updateFeedbackItem(id: Long)
 GET   	/api/feedback/item/:id   	  au.com.feedbacker.controllers.Feedback.getFeedbackItem(id: Long)
 GET 	  /api/feedback/current/self 	au.com.feedbacker.controllers.Feedback.getCurrentFeedbackItemsForSelf
-GET  	  /api/feedback/current/:id 	au.com.feedbacker.controllers.Feedback.getCurrentFeedbackItemsForUser(id: Long)
 GET 	  /api/feedback/history/self 	au.com.feedbacker.controllers.Feedback.getFeedbackHistoryForSelf
-GET 	  /api/feedback/history/:id 	au.com.feedbacker.controllers.Feedback.getFeedbackHistoryForUser(id: Long)
 POST	  /api/feedback/adhoc 	      au.com.feedbacker.controllers.Feedback.createAdHocFeedback
 GET 	  /api/feedback/adhoc/self    au.com.feedbacker.controllers.Feedback.getAdHocFeedbackForSelf
 GET 	  /api/feedback/adhoc/from    au.com.feedbacker.controllers.Feedback.getAdHocFeedbackFromSelf

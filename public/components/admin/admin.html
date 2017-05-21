@@ -122,7 +122,7 @@
       </div>
     </div>
 
-    <form data-ng-if="admin.selectedCycleDetails" class="form-group" data-ng-submit="admin.updateFeedbackCycle(admin.selectedCycleDetails)">
+    <form data-ng-if="admin.selectedCycleDetails" class="form-group" data-ng-submit="admin.saveChanges(admin.selectedCycleDetails, admin.selectedCycle == undefined)">
       <div class="row top-buffer">
         <div class="col-md-2"><button type="submit" class="btn btn-primary">Save changes</button></div>
         <div class="col-md-2"><a class="btn btn-default" data-ng-click="admin.previewChanges()">Preview changes</a></div>
@@ -164,7 +164,7 @@
                    ng-required="true" close-text="Close"
                    alt-input-formats="altInputFormats" />
             <span class="input-group-btn">
-            <a class="btn btn-default" data-ng-click="admin.endStart()"><i class="fa fa-calendar"></i></a>
+            <a class="btn btn-default" data-ng-click="admin.openEnd()"><i class="fa fa-calendar"></i></a>
           </span>
           </p>
         </div>

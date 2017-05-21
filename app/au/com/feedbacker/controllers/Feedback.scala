@@ -60,14 +60,6 @@ class Feedback @Inject() (person: PersonDao,
     Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(nomination.getHistoryFeedbackForUser(user.credentials.email))))
   }
 
-  def getCurrentFeedbackItemsForUser(id: Long) = AuthenticatedAction { user =>
-    ???
-  }
-
-  def getFeedbackHistoryForUser(id: Long) = AuthenticatedAction { user =>
-    ???
-  }
-
   // TODO: suspect this is duplicate code with Account#ReportFile#isInReportingLine
   private val nominationWriteFilter: (Nomination, String) => Boolean = (n, email) => n.to.map(_.credentials.email == email).getOrElse(false)
 
@@ -117,10 +109,6 @@ class Feedback @Inject() (person: PersonDao,
   def getAdHocFeedbackFromSelf = AuthenticatedAction { user =>
     Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(adHocFeedback.getAdHocFeedbackFromSelf(user.credentials.email))))
   }
-}
-
-object Feedback {
-  def checkPermission(user: Person, targetId: Long) : Boolean = ??? //if (user.id.get == targetId) true else Person.findBy
 }
 
 case class SummaryItem(id: Option[Long], status: String, name: String, role: String, managerName: String, lastUpdated: Option[DateTime], shared: Boolean)
@@ -238,11 +226,24 @@ class FeedbackCycleController @Inject() (person: PersonDao,
     Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(feedbackCycle.findAllCycles)))
   }
 
-  def createFeedbackCycle = AuthenticatedAdminRequestAction { request =>
-    ???
+  def createFeedbackCycle = AuthenticatedAdminRequestAction { json =>
+    val result: JsResult[FeedbackCycle] = (json \ "body").validate[FeedbackCycle]
+    println(result)
+    (json \ "body").validate[FeedbackCycle].asOpt match {
+      case None => BadRequest
+      case Some(FeedbackCycle(Some(_),_,_,_,_,_,_,_,_)) => BadRequest
+      case Some(cycle) => feedbackCycle.createCycle(cycle) match {
+        case Right(newCycle) => Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(newCycle)))
+        case Left(e) => println(e.getMessage);e.printStackTrace;InternalServerError(Json.obj("message" -> "Could not create new feedback cycle."))
+      }
+    }
   }
-  def updateFeedbackCycle(id: Long) = AuthenticatedAdminRequestAction { request =>
-    ???
+  def updateFeedbackCycle(id: Long) = AuthenticatedAdminRequestAction { json =>
+    (json \ "body").validate[FeedbackCycle].asOpt match {
+      case None => BadRequest
+      case Some(FeedbackCycle(None,_,_,_,_,_,_,_,_)) => BadRequest
+      case Some(cycle) => ??? //feedbackCycle.updateFeedbackCycle
+    }
   }
 
   def updateFeedbackCycle360Status(id: Long) = AuthenticatedAdminRequestAction { request =>

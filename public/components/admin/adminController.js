@@ -56,13 +56,26 @@ fbControllers.controller('AdminCtrl',  ['$scope', '$log', 'Model', 'Account', fu
             };
   };
 
+  ctrl.saveChanges = function(cycle, createNew) {
+    ctrl.error = undefined;
+    if (createNew) {
+      ctrl.createNewFeedbackCycle(cycle);
+    } else {
+      ctrl.updateFeedbackCycle(cycle);
+    }
+  };
+
   ctrl.updateFeedbackCycle = function(cycle) {
     console.log("updating...")
     alert("Please contact your administrator to implement this exciting feature.");
   };
 
   ctrl.createNewFeedbackCycle = function(cycle) {
-    alert("Please contact your administrator to implement this exciting feature.");
+    Model.createFeedbackCycle(cycle).then(function(result) {
+      ctrl.selectedCycleDetails = result;
+      ctrl.reviewCycles.push(result);
+      ctrl.selectedCycle = result;
+    });
   };
 
   ctrl.updateUser = function(user) {
