@@ -41,7 +41,7 @@ fbControllers.controller('AdminCtrl',  ['$scope', '$log', 'Model', 'Account', fu
 
   ctrl.getFeedbackCycle = function(cycleId) {
     Model.getFeedbackCycle(cycleId).then(function(result) {
-      ctrl.selectedCycleDetails = result;
+      ctrl.setSelectedCycleDetails(result);
     });
   };
 
@@ -72,7 +72,7 @@ fbControllers.controller('AdminCtrl',  ['$scope', '$log', 'Model', 'Account', fu
 
   ctrl.createNewFeedbackCycle = function(cycle) {
     Model.createFeedbackCycle(cycle).then(function(result) {
-      ctrl.selectedCycleDetails = result;
+      ctrl.setSelectedCycleDetails(result)
       ctrl.reviewCycles.push(result);
       ctrl.selectedCycle = result;
     });
@@ -114,5 +114,11 @@ fbControllers.controller('AdminCtrl',  ['$scope', '$log', 'Model', 'Account', fu
 
   ctrl.openEnd = function() {
     ctrl.endPopup.opened = true;
+  };
+
+  ctrl.setSelectedCycleDetails = function(cycle) {
+    ctrl.selectedCycleDetails = cycle;
+    ctrl.selectedCycleDetails.startDate = new Date(ctrl.selectedCycleDetails.startDate);
+    ctrl.selectedCycleDetails.endDate = new Date(ctrl.selectedCycleDetails.endDate);
   };
 }]);
