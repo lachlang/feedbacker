@@ -161,14 +161,14 @@ describe('edit feedback detail controller [EditCtrl]', function() {
     });
 
     it('should update the selected cycle details and set date functions for the date pickers', function() {
-      var input = {"some": "thing", "startDate":"2017-05-22T00:00:00.000+1000", "endDate": "2017-05-26T00:00:00.000+1000"};
+      var input = {"some": "thing", "startDate":1495375200000, "endDate": 1495720800000};
       expect(adminController.selectedCycleDetails).toBeUndefined();
 
       adminController.setSelectedCycleDetails(input);
 
       expect(adminController.selectedCycleDetails.some).toEqual("thing");
-      expect(adminController.selectedCycleDetails.startDate).toEqual(new Date("2017-05-22T00:00:00.000+1000"))
-      expect(adminController.selectedCycleDetails.endDate).toEqual(new Date("2017-05-26T00:00:00.000+1000"))
+      expect(adminController.selectedCycleDetails.startDate).toEqual(new Date(1495375200000));
+      expect(adminController.selectedCycleDetails.endDate).toEqual(new Date(1495720800000));
     });
 
     it('should update the question response options when changed', function() {
