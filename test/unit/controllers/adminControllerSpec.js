@@ -77,7 +77,7 @@ describe('edit feedback detail controller [EditCtrl]', function() {
     it('add a blank question to the selected cycle question array', function() {
       adminController.selectedCycleDetails = { "questions": []};
       adminController.addQuestion();
-      expect(adminController.selectedCycleDetails.questions).toEqual([{ "format": "RADIO"}])
+      expect(adminController.selectedCycleDetails.questions).toEqual([{ "responseOptions": [], "format": "RADIO"}])
     });
 
     it('remove a question from the selected cycle question array', function() {

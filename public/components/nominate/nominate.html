@@ -49,6 +49,39 @@
 			<textarea class="form-control" placeholder="Optional personal message. This will be added to the email notification sent to your nominee and visible when they submit their feedback" rows="8" data-ng-model="nominate.message" ></textarea>
 		</div>
 	</div>
+	<div data-ng-if="nominate.selectedCycle">
+		<div class="row top-buffer">
+			<div class="col-md-6">
+				<p class="lead">Feedback cycle questions for {{nominate.selectedCycle.label}}</p>
+				<p>These are the questions to which your colleague will be ask to respond</p></p>
+			</div>
+		</div>
+		<div class="row top-buffer" data-ng-repeat="question in nominate.selectedCycle.questions">
+			<div class="col-sm-1">
+				<span>Q{{$index +1}}</span>
+				<span uib-tooltip="{{question.helpText}}" tooltip-placement="right" data-ng-show="question.helpText" class="fa fa-question-circle-o"></span>
+			</div>
+			<div class="col-md-4">
+				<span>{{question.text}}</span>
+			</div>
+			<div class="col-md-4">
+				<div data-ng-if="question.format== 'RADIO'">
+					<div class="btn-group" role="group" aria-label="Answer options">
+						<button type="button" class="btn btn-default"
+										data-ng-repeat="option in question.responseOptions"
+										for="{{option}}"
+										data-ng-model="question.response"
+										uib-btn-radio="'{{option}}'">{{option}}</button>
+					</div>
+				</div>
+				<div data-ng-if="question.format == 'SELECT'">
+					<select class="form-control" data-ng-model="question.response">
+						<option data-ng-repeat="option in question.responseOptions">{{option}}</option>
+					</select>
+				</div>
+			</div>
+		</div>
+	</div>
 	<div class="row top-buffer">
 		<div class="col-md-4">
 			<p class="lead">Nominate <strong data-ng-show="nominate.nominee.display" class="strong">{{nominate.nominee.display}}</strong><strong data-ng-hide="nominate.nominee.display" class="strong">{{nominate.nominee}}</strong><strong data-ng-hide="nominate.nominee">nobody</strong> to provide feedback for yourself as part of {{nominate.selectedCycle.label}}?</p>
@@ -61,6 +94,7 @@
 
 		</div>
 	</div>
+	<hr />
 	<div class="row top-buffer">
 		<div class="col-sm-12">
 			<div data-ng-hide="nominate.nominations.length > 0">

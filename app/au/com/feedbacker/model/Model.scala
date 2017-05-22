@@ -761,6 +761,7 @@ class FeedbackCycleDao @Inject() (db: play.api.db.Database, questionTemplate: Qu
 
   def findActiveCycles: Seq[FeedbackCycle] = db.withConnection { implicit connection =>
     SQL("""select * from cycle where active = true order by start_date desc""").as(FeedbackCycle.simple *)
+      .map{fc => fc.copy(questions = questionTemplate.findQuestionsForCycle(fc.id.getOrElse(-1)))}
   }
 
   def findAllCycles: Seq[FeedbackCycle] = db.withConnection { implicit connection =>
