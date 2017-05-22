@@ -125,175 +125,220 @@
     <form data-ng-if="admin.selectedCycleDetails" class="form-group" data-ng-submit="admin.saveChanges(admin.selectedCycleDetails, admin.selectedCycle == undefined)">
       <div class="row top-buffer">
         <div class="col-md-2"><button type="submit" class="btn btn-primary">Save changes</button></div>
-        <div class="col-md-2"><a class="btn btn-default" data-ng-click="admin.previewChanges()">Preview changes</a></div>
         <div class="col-md-2"><a class="btn btn-default" data-ng-click="admin.clearSelectedCycle()">Cancel changes</a></div>
       </div>
       <div class="row top-buffer">
-        <div class="col-md-6">
-          <p class="lead">Feedback cycle options</p>
-        </div>
-      </div>
-      <div class="row top-buffer">
-        <div class="col-md-1">Cycle name:</div>
-        <div class="col-md-3">
-          <input type="text" class="form-control" placeholder="Feedback cycle name" data-ng-model="admin.selectedCycleDetails.label" required>
-        </div>
-        <div class="col-md-1">Start date:</div>
-        <div class="col-md-3">
-          <p class="input-group">
-            <input type="text" class="form-control"
-                   uib-datepicker-popup="dd-MMMM-yyyy"
-                   data-ng-model="admin.selectedCycleDetails.startDate"
-                   is-open="admin.startPopup.opened"
-                   datepicker-options="dateOptions"
-                   ng-required="true" close-text="Close"
-                   alt-input-formats="altInputFormats" />
-            <span class="input-group-btn">
-            <a class="btn btn-default" data-ng-click="admin.openStart()"><i class="fa fa-calendar"></i></a>
-          </span>
-          </p>
-        </div>
-        <div class="col-md-1">End date:</div>
-        <div class="col-md-3">
-          <p class="input-group">
-            <input type="text" class="form-control"
-                   uib-datepicker-popup="dd-MMMM-yyyy"
-                   data-ng-model="admin.selectedCycleDetails.endDate"
-                   is-open="admin.endPopup.opened"
-                   datepicker-options="dateOptions"
-                   ng-required="true" close-text="Close"
-                   alt-input-formats="altInputFormats" />
-            <span class="input-group-btn">
-            <a class="btn btn-default" data-ng-click="admin.openEnd()"><i class="fa fa-calendar"></i></a>
-          </span>
-          </p>
-        </div>
-      </div>
-      <!--<div class="row top-buffer">-->
-        <!--<div class="col-md-2">-->
-          <!--<p class="lead">Create 360 review cycle</p><p>This will automatically register all reporting managers for feedback from their direct reports.</p>-->
-        <!--</div>-->
-        <!--<div class="col-md-2">-->
-          <!--<div class="btn-group" role="group" aria-label="create 360 degree review">-->
-            <!--<button class="btn btn-info"-->
-                    <!--for="true"-->
-                    <!--data-ng-model="admin.selectedCycleDetails.isThreeSixtyReview"-->
-                    <!--uib-btn-radio="true">Yes</button>-->
-            <!--<button class="btn btn-info"-->
-                    <!--for="false"-->
-                    <!--data-ng-model="admin.selectedCycleDetails.isThreeSixtyReview"-->
-                    <!--uib-btn-radio="false">No</button>-->
-          <!--</div>-->
-        <!--</div>-->
-        <!--<div class="col-md-2" data-ng-show="admin.selectedCycleDetails.isThreeSixtyReview">-->
-          <!--<p>Please provide the name of the top level manager for the 360 degree review.</p>-->
-        <!--</div>-->
-        <!--<div class="col-md-3" data-ng-show="admin.selectedCycleDetails.isThreeSixtyReview">-->
-          <!--<input class="form-control"-->
-                 <!--data-ng-model="admin.selectedCycleDetails.threeSixtyTop"-->
-                 <!--uib-typeahead="user as user.display for user in admin.registeredUsers | filter:{display:$viewValue} | limitTo:8"-->
-                 <!--placeholder="Name or Email"-->
-                 <!--typeahead-show-hint="true">-->
-        <!--</div>-->
-      <!--</div>-->
-      <div class="row top-buffer">
-        <div class="col-sm-2"><p>Feedback cycle is currently active/enabled (Feedback may be edited: <span data-ng-show="admin.selectedCycleDetails.active">Yes)</span>
-          <span data-ng-hide="admin.selectedCycleDetails.active">No)</span></p></div>
-        <div class="col-sm-2">
-          <div class="btn-group" role="group" aria-label="Is admin user">
-            <a class="btn btn-info"
-                    for="true"
-                    data-ng-model="admin.selectedCycleDetails.active"
-                    uib-btn-radio="true">Yes</a>
-            <a class="btn btn-info"
-                    for="false"
-                    data-ng-model="admin.selectedCycleDetails.active"
-                    uib-btn-radio="false">No</a>
-          </div>
-        </div>
-        <div class="col-sm-2"><p>Automatic sharing with feedback recipient: <span data-ng-show="admin.selectedCycleDetails.hasForcedSharing">(No)</span>
-          <span data-ng-hide="admin.selectedCycleDetails.hasForcedSharing">(Yes)</span></p></div>
-        <div class="col-sm-2">
-          <div class="btn-group" role="group" aria-label="Is admin user">
-            <a class="btn btn-info"
-                    for="true"
-                    data-ng-model="admin.selectedCycleDetails.hasForcedSharing"
-                    uib-btn-radio="true">Yes</a>
-            <a class="btn btn-info"
-                    for="false"
-                    data-ng-model="admin.selectedCycleDetails.hasForcedSharing"
-                    uib-btn-radio="false">No</a>
-          </div>
-        </div>
-        <div class="col-sm-2"><p>Hide option to share feedback with feedback recipient: <span data-ng-show="admin.selectedCycleDetails.hasOptionalSharing">(No)</span>
-          <span data-ng-hide="admin.selectedCycleDetails.hasOptionalSharing">(Yes)</span></p></div>
-        <div class="col-sm-2">
-          <div class="btn-group" role="group" aria-label="Is admin user">
-            <a class="btn btn-info"
-                    for="false"
-                    data-ng-model="admin.selectedCycleDetails.hasOptionalSharing"
-                    uib-btn-radio="false">Yes</a>
-            <a class="btn btn-info"
-                    for="true"
-                    data-ng-model="admin.selectedCycleDetails.hasOptionalSharing"
-                    uib-btn-radio="true">No</a>
-          </div>
-        </div>
-      </div>
-      <div class="row top-buffer">
-        <div class="col-md-6">
-          <p class="lead">Feedback cycle questions</p>
-        </div>
-      </div>
-      <div class="row top-buffer" data-ng-repeat="question in admin.selectedCycleDetails.questions">
-        <div class="col-sm-2">
-          <a class="btn btn-warning" data-ng-click="admin.removeQuestion($index)">Remove question {{$index +1}}</a>
-        </div>
-        <div class="col-sm-3">
-          <textarea class="form-control" class="form-control" placeholder="Question text" data-ng-model="question.text"  rows="3" required></textarea>
-        </div>
-        <div class="col-sm-2">
-          <textarea class="form-control" class="form-control" placeholder="Optional help text" data-ng-model="question.helpText"  rows="3"></textarea>
-        </div>
-        <div class="col-sm-3">
-          <textarea class="form-control" placeholder="Response options written in a comma separated list e.g. 'Yes,No' or '1 Strongly Agree,2,3,4,5 Strongly Disagree'" rows="3" data-ng-model="question.responseOptions" required></textarea>
-        </div>
-        <div class="col-lg-2">
-          <div class="btn-group" role="group" aria-label="question response display format">
-            <a class="btn btn-info"
-                    for="SELECT"
-                    data-ng-model="question.format"
-                    uib-btn-radio="'SELECT'">Drop-down</a>
-            <a class="btn btn-info"
-                    for="RADIO"
-                    data-ng-model="question.format"
-                    uib-btn-radio="'RADIO'">Radio Button</a>
-          </div>
-        </div>
-      </div>
-      <div class="row top-buffer">
-        <div class="col-md-4">
-          <a class="btn btn-info" data-ng-click="admin.addQuestion()">Add question</a>
-        </div>
-      </div>
+        <div class="col-md-12">
+          <uib-tabset active="active">
+            <uib-tab index="0" heading="Edit feedback cycle details">
+              <div class="row top-buffer">
+                <div class="col-md-6">
+                  <p class="lead">Feedback cycle configuration</p>
+                </div>
+              </div>
+              <div class="row top-buffer">
+                <div class="col-md-1">Cycle name:</div>
+                <div class="col-md-3">
+                  <input type="text" class="form-control" placeholder="Feedback cycle name" data-ng-model="admin.selectedCycleDetails.label" required>
+                </div>
+                <div class="col-md-1">Start date:</div>
+                <div class="col-md-3">
+                  <p class="input-group">
+                    <input type="text" class="form-control"
+                           uib-datepicker-popup="dd-MMMM-yyyy"
+                           data-ng-model="admin.selectedCycleDetails.startDate"
+                           is-open="admin.startPopup.opened"
+                           datepicker-options="dateOptions"
+                           ng-required="true" close-text="Close"
+                           alt-input-formats="altInputFormats" />
+                    <span class="input-group-btn">
+                    <a class="btn btn-default" data-ng-click="admin.openStart()"><i class="fa fa-calendar"></i></a>
+                  </span>
+                  </p>
+                </div>
+                <div class="col-md-1">End date:</div>
+                <div class="col-md-3">
+                  <p class="input-group">
+                    <input type="text" class="form-control"
+                           uib-datepicker-popup="dd-MMMM-yyyy"
+                           data-ng-model="admin.selectedCycleDetails.endDate"
+                           is-open="admin.endPopup.opened"
+                           datepicker-options="dateOptions"
+                           ng-required="true" close-text="Close"
+                           alt-input-formats="altInputFormats" />
+                    <span class="input-group-btn">
+                    <a class="btn btn-default" data-ng-click="admin.openEnd()"><i class="fa fa-calendar"></i></a>
+                  </span>
+                  </p>
+                </div>
+              </div>
+              <!--<div class="row top-buffer">-->
+                <!--<div class="col-md-2">-->
+                  <!--<p class="lead">Create 360 review cycle</p><p>This will automatically register all reporting managers for feedback from their direct reports.</p>-->
+                <!--</div>-->
+                <!--<div class="col-md-2">-->
+                  <!--<div class="btn-group" role="group" aria-label="create 360 degree review">-->
+                    <!--<button class="btn btn-info"-->
+                            <!--for="true"-->
+                            <!--data-ng-model="admin.selectedCycleDetails.isThreeSixtyReview"-->
+                            <!--uib-btn-radio="true">Yes</button>-->
+                    <!--<button class="btn btn-info"-->
+                            <!--for="false"-->
+                            <!--data-ng-model="admin.selectedCycleDetails.isThreeSixtyReview"-->
+                            <!--uib-btn-radio="false">No</button>-->
+                  <!--</div>-->
+                <!--</div>-->
+                <!--<div class="col-md-2" data-ng-show="admin.selectedCycleDetails.isThreeSixtyReview">-->
+                  <!--<p>Please provide the name of the top level manager for the 360 degree review.</p>-->
+                <!--</div>-->
+                <!--<div class="col-md-3" data-ng-show="admin.selectedCycleDetails.isThreeSixtyReview">-->
+                  <!--<input class="form-control"-->
+                         <!--data-ng-model="admin.selectedCycleDetails.threeSixtyTop"-->
+                         <!--uib-typeahead="user as user.display for user in admin.registeredUsers | filter:{display:$viewValue} | limitTo:8"-->
+                         <!--placeholder="Name or Email"-->
+                         <!--typeahead-show-hint="true">-->
+                <!--</div>-->
+              <!--</div>-->
+              <div class="row top-buffer">
+                <div class="col-sm-2"><p>Feedback cycle is currently active/enabled (Feedback may be edited: {{admin.selectedCycleDetails.active?'Yes':'No'}})</span></p></div>
+                <div class="col-sm-2">
+                  <div class="btn-group" role="group" aria-label="Is admin user">
+                    <a class="btn btn-info"
+                            for="true"
+                            data-ng-model="admin.selectedCycleDetails.active"
+                            uib-btn-radio="true">Yes</a>
+                    <a class="btn btn-info"
+                            for="false"
+                            data-ng-model="admin.selectedCycleDetails.active"
+                            uib-btn-radio="false">No</a>
+                  </div>
+                </div>
+                <div class="col-sm-2"><p>Automatic sharing with feedback recipient: {{admin.selectedCycleDetails.hasForcedSharing?'No':'Yes'}})</span></p></div>
+                <div class="col-sm-2">
+                  <div class="btn-group" role="group" aria-label="Is admin user">
+                    <a class="btn btn-info"
+                            for="true"
+                            data-ng-model="admin.selectedCycleDetails.hasForcedSharing"
+                            uib-btn-radio="true">Yes</a>
+                    <a class="btn btn-info"
+                            for="false"
+                            data-ng-model="admin.selectedCycleDetails.hasForcedSharing"
+                            uib-btn-radio="false">No</a>
+                  </div>
+                </div>
+                <div class="col-sm-2"><p>Hide option to share feedback with feedback recipient: {{admin.selectedCycleDetails.hasOptionalSharing?'No':'Yes'}}</span></p></div>
+                <div class="col-sm-2">
+                  <div class="btn-group" role="group" aria-label="Is admin user">
+                    <a class="btn btn-info"
+                            for="false"
+                            data-ng-model="admin.selectedCycleDetails.hasOptionalSharing"
+                            uib-btn-radio="false">Yes</a>
+                    <a class="btn btn-info"
+                            for="true"
+                            data-ng-model="admin.selectedCycleDetails.hasOptionalSharing"
+                            uib-btn-radio="true">No</a>
+                  </div>
+                </div>
+              </div>
+              <div class="row top-buffer">
+                <div class="col-md-6">
+                  <p class="lead">Feedback cycle questions</p>
+                </div>
+              </div>
+              <div class="row top-buffer" data-ng-repeat="question in admin.selectedCycleDetails.questions">
+                <div class="col-sm-2">
+                  <a class="btn btn-warning" data-ng-click="admin.removeQuestion($index)">Remove question {{$index +1}}</a>
+                </div>
+                <div class="col-sm-3">
+                  <textarea class="form-control" class="form-control" placeholder="Question text" data-ng-model="question.text"  rows="3" required></textarea>
+                </div>
+                <div class="col-sm-2">
+                  <textarea class="form-control" class="form-control" placeholder="Optional help text" data-ng-model="question.helpText"  rows="3"></textarea>
+                </div>
+                <div class="col-sm-3">
+                  <textarea class="form-control" placeholder="Response options written in a comma separated list e.g. 'Yes,No' or '1 Strongly Agree,2,3,4,5 Strongly Disagree'" rows="3" data-ng-model="question.responseOptions" required></textarea>
+                </div>
+                <div class="col-lg-2">
+                  <div class="btn-group" role="group" aria-label="question response display format">
+                    <a class="btn btn-info"
+                            for="SELECT"
+                            data-ng-model="question.format"
+                            uib-btn-radio="'SELECT'">Drop-down</a>
+                    <a class="btn btn-info"
+                            for="RADIO"
+                            data-ng-model="question.format"
+                            uib-btn-radio="'RADIO'">Radio Button</a>
+                  </div>
+                </div>
+              </div>
+              <div class="row top-buffer">
+                <div class="col-md-4">
+                  <a class="btn btn-info" data-ng-click="admin.addQuestion()">Add question</a>
+                </div>
+              </div>
+            </uib-tab>
+            <uib-tab index="1" heading="Preview changes">
+              <div class="row top-buffer">
+                <div class="col-md-6">
+                  <p class="lead">Feedback cycle configuration</p>
+                </div>
+              </div>
+              <div class="row top-buffer">
+                <div class="col-md-2"><strong>Cycle name:</strong></div>
+                <div class="col-md-2"><p><em>{{admin.selectedCycleDetails.label}}</em></p></div>
+                <div class="col-md-2"><strong>Start date:</strong></div>
+                <div class="col-md-2"><p><em>{{admin.selectedCycleDetails.startDate | date: 'fullDate'}}</em></p></div>
+                <div class="col-md-2"><strong>End date:</strong></div>
+                <div class="col-md-2"><p><em>{{admin.selectedCycleDetails.endDate | date: 'fullDate'}}</em></p></div>
+              </div>
+
+              <div class="row top-buffer">
+                <div class="col-md-2"><strong>Currently active:</strong></div>
+                <div class="col-md-2"><p><em>{{admin.selectedCycleDetails.active?'Yes':'No'}}</em></p></div>
+                <div class="col-md-2"><strong>Force sharing with feedback recipient:</strong></div>
+                <div class="col-md-2"><p><em>{{admin.selectedCycleDetails.hasForcedSharing?'Yes':'No'}}</em></p></div>
+                <div class="col-md-2" data-ng-hide="admin.selectedCycleDetails.hasForcedSharing"><strong>Allow optional sharing with feedback recipient:</strong></div>
+                <div class="col-md-2"><p><em>{{admin.selectedCycleDetails.hasOptionalSharing?'Yes':'No'}}</em></p></div>
+              </div>
+
+              <div class="row top-buffer">
+                <div class="col-md-6">
+                  <p class="lead">Feedback cycle questions</p>
+                </div>
+              </div>
+              <div class="row top-buffer" data-ng-repeat="question in admin.selectedCycleDetails.questions">
+                <div class="col-sm-1">
+                  <span>Q{{$index +1}}</span>
+                  <span uib-tooltip="{{question.helpText}}" tooltip-placement="right" data-ng-show="question.helpText" class="fa fa-question-circle-o"></span>
+                </div>
+                <div class="col-md-4">
+                  <span>{{question.text}}</span>
+                </div>
+                <div class="col-md-4">
+                  <div data-ng-if="question.format== 'RADIO'">
+                    <div class="btn-group" role="group" aria-label="Answer options">
+                      <button class="btn btn-default"
+                              data-ng-repeat="option in question.responseOptions"
+                              for="{{option}}"
+                              data-ng-model="question.response"
+                              uib-btn-radio="'{{option}}'">{{option}}</button>
+                    </div>
+                  </div>
+                  <div data-ng-if="question.format == 'SELECT'">
+                    <select class="form-control" data-ng-model="question.response">
+                      <option data-ng-repeat="option in question.responseOptions">{{option}}</option>
+                    </select>
+                  </div>
+                </div>
+
+            </uib-tab>
+          </uib-tabset>
+        </div> <!-- end col 12 -->
+      </div> <!-- end tab row -->
       <div class="row top-buffer">
         <div class="col-md-2"><button type="submit" class="btn btn-primary" >Save changes</button></div>
-        <div class="col-md-2"><a class="btn btn-default" data-ng-click="admin.previewChanges()">Preview changes</a></div>
         <div class="col-md-2"><a class="btn btn-default" data-ng-click="admin.clearSelectedCycle()">Cancel changes</a></div>
       </div>
     </form>
-    <hr />
-    <div class="row top-buffer">
-      <div class="col-md-12">
-        <p class="lead">Stay tuned folks.  This exciting section is coming soon :)</p>
-        <p>Features will include:</p>
-        <ul>
-          <li>Create new review cycles</li>
-          <li>Update question text, response options and help text</li>
-          <li>Disable existing review cycles</li>
-          <li>Create a 360 degree review</li>
-        </ul>
-      </div>
-    </div> <!-- end row -->
   </div> <!-- end controller -->
 </div>
