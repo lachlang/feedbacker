@@ -10,6 +10,7 @@ fbControllers.controller('AdminCtrl',  ['$scope', '$log', 'Model', 'Account', fu
   ctrl.selectedCycleDetails = undefined;
   ctrl.registeredUsers = [];
   ctrl.selectedUser = undefined;
+  ctrl.flattenedQuestionResponse = {};
   ctrl.error = undefined;
 
   ctrl.startPopup = {
@@ -33,6 +34,7 @@ fbControllers.controller('AdminCtrl',  ['$scope', '$log', 'Model', 'Account', fu
   ctrl.clearSelectedCycle = function() {
     ctrl.selectedCycleDetails = undefined;
     ctrl.selectedCycle = undefined;
+    ctrl.flattenedQuestionResponse = {};
   };
 
   ctrl.clearSelectedUser = function() {
@@ -42,8 +44,16 @@ fbControllers.controller('AdminCtrl',  ['$scope', '$log', 'Model', 'Account', fu
   ctrl.getFeedbackCycle = function(cycleId) {
     Model.getFeedbackCycle(cycleId).then(function(result) {
       ctrl.setSelectedCycleDetails(result);
+      ctrl.initialiseQuestionResponse(result.questions);
     });
   };
+
+  ctrl.initialiseQuestionResponse = function(questions) {
+    ctrl.flattenedQuestionResponse = {};
+    questions.forEach(function(element, index) {
+      return ctrl.flattenedQuestionResponse[index] = element.responseOptions.join('\n');
+    });
+  }
 
   ctrl.initialiseNewCycle = function() {
     ctrl.selectedCycleDetails = {
@@ -52,8 +62,13 @@ fbControllers.controller('AdminCtrl',  ['$scope', '$log', 'Model', 'Account', fu
             "hasOptionalSharing": true,
             "isThreeSixtyReview": false,
             "questions":
-            [ {"format": "RADIO"}, {"format": "RADIO"}, {"format": "RADIO"}, {"format": "RADIO"}, {"format": "RADIO"}]
+            [ {"responseOptions":[],"format": "RADIO"},
+              {"responseOptions":[],"format": "RADIO"},
+              {"responseOptions":[],"format": "RADIO"},
+              {"responseOptions":[],"format": "RADIO"},
+              {"responseOptions":[],"format": "RADIO"}]
             };
+    ctrl.flattenedQuestionResponse = {"0":[],"1":[],"2":[],"3":[],"4":[]}
   };
 
   ctrl.saveChanges = function(cycle, createNew) {
@@ -66,8 +81,16 @@ fbControllers.controller('AdminCtrl',  ['$scope', '$log', 'Model', 'Account', fu
   };
 
   ctrl.updateFeedbackCycle = function(cycle) {
-    console.log("updating...")
-    alert("Please contact your administrator to implement this exciting feature.");
+    Model.updateFeedbackCycle(cycle).then(function(result) {
+      ctrl.setSelectedCycleDetails(result)
+      ctrl.selectedCycle.label = result.label;
+      ctrl.selectedCycle.startDate = result.startDate;
+      ctrl.selectedCycle.endDate = result.endDate;
+      ctrl.selectedCycle.active = result.active;
+      ctrl.selectedCycle.hasForcedSharing = result.hasForcedSharing;
+      ctrl.selectedCycle.hasOptionalSharing = result.hasOptionalSharing;
+      ctrl.initialiseQuestionResponse(result.questions)
+    });
   };
 
   ctrl.createNewFeedbackCycle = function(cycle) {
@@ -120,5 +143,9 @@ fbControllers.controller('AdminCtrl',  ['$scope', '$log', 'Model', 'Account', fu
     ctrl.selectedCycleDetails = cycle;
     ctrl.selectedCycleDetails.startDate = new Date(ctrl.selectedCycleDetails.startDate);
     ctrl.selectedCycleDetails.endDate = new Date(ctrl.selectedCycleDetails.endDate);
+  };
+
+  ctrl.updateQuestionResponse = function(question, responses) {
+    question.responseOptions = responses.trim().split('\n');
   };
 }]);

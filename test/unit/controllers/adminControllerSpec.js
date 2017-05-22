@@ -37,6 +37,7 @@ describe('edit feedback detail controller [EditCtrl]', function() {
             expect(angular.isFunction(adminController.addQuestion)).toBe(true);
             expect(angular.isFunction(adminController.openStart)).toBe(true);
             expect(angular.isFunction(adminController.openEnd)).toBe(true);
+            expect(angular.isFunction(adminController.updateQuestionResponse)).toBe(true);
     	});
 
     	it('for global controller variables', function() {
@@ -46,6 +47,7 @@ describe('edit feedback detail controller [EditCtrl]', function() {
             expect(adminController.selectedUser).not.toBeDefined();
             expect(adminController.selectedCycle).not.toBeDefined();
             expect(adminController.selectedCycleDetails).not.toBeDefined();
+            expect(adminController.flattenedQuestionResponse).toEqual({});
             expect(adminController.error).not.toBeDefined();
             expect(adminController.startPopup.opened).toBe(false);
             expect(adminController.endPopup.opened).toBe(false);
@@ -97,11 +99,14 @@ describe('edit feedback detail controller [EditCtrl]', function() {
     });
 
     it('clear the selected cycle', function() {
-      adminController.selectedCycle = {"some":"thing"}
-      adminController.selectedCycleDetails = {"some":"one"}
+      adminController.selectedCycle = {"some":"thing"};
+      adminController.selectedCycleDetails = {"some":"one"};
+      adminController.flattenedQuestionResponse = {"some":"things"};
       adminController.clearSelectedCycle();
+
       expect(adminController.selectedCycle).toBeUndefined()
       expect(adminController.selectedCycleDetails).toBeUndefined()
+      expect(adminController.flattenedQuestionResponse).toEqual({});
     });
 
     it('should initialise a new cycle for creation', function() {
@@ -112,9 +117,22 @@ describe('edit feedback detail controller [EditCtrl]', function() {
         "hasForcedSharing": false,
         "hasOptionalSharing": true,
         "isThreeSixtyReview": false,
-        "questions": [ {"format": "RADIO"}, {"format": "RADIO"}, {"format": "RADIO"}, {"format": "RADIO"}, {"format": "RADIO"}]
+        "questions": [ {"responseOptions":[], "format": "RADIO"},
+                       {"responseOptions":[], "format": "RADIO"},
+                       {"responseOptions":[], "format": "RADIO"},
+                       {"responseOptions":[], "format": "RADIO"},
+                       {"responseOptions":[], "format": "RADIO"}]
       });
+      expect(adminController.flattenedQuestionResponse).toEqual({"0":[],"1":[],"2":[],"3":[],"4":[]});
     });
+
+    it('should update the question response options when changed', function() {
+      var question = {"responseOptions": []};
+
+      adminController.updateQuestionResponse(question, "1\n3\n5")
+
+      expect(question).toEqual({"responseOptions":['1','3','5']});
+    })
 	});
 
 });

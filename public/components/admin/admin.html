@@ -62,11 +62,11 @@
             <span data-ng-hide="admin.selectedUser.isAdmin">(No)</span></p></div>
           <div class="col-sm-2">
             <div class="btn-group" role="group" aria-label="Is admin user">
-              <a class="btn btn-info"
+              <a class="btn btn-default"
                       for="true"
                       data-ng-model="admin.selectedUser.isAdmin"
                       uib-btn-radio="true">Yes</a>
-              <a class="btn btn-info"
+              <a class="btn btn-default"
                       for="false"
                       data-ng-model="admin.selectedUser.isAdmin"
                       uib-btn-radio="false">No</a>
@@ -203,24 +203,24 @@
                 <div class="col-sm-2"><p>Feedback cycle is currently active/enabled (Feedback may be edited: {{admin.selectedCycleDetails.active?'Yes':'No'}})</span></p></div>
                 <div class="col-sm-2">
                   <div class="btn-group" role="group" aria-label="Is admin user">
-                    <a class="btn btn-info"
+                    <a class="btn btn-default"
                             for="true"
                             data-ng-model="admin.selectedCycleDetails.active"
                             uib-btn-radio="true">Yes</a>
-                    <a class="btn btn-info"
+                    <a class="btn btn-default"
                             for="false"
                             data-ng-model="admin.selectedCycleDetails.active"
                             uib-btn-radio="false">No</a>
                   </div>
                 </div>
-                <div class="col-sm-2"><p>Automatic sharing with feedback recipient: {{admin.selectedCycleDetails.hasForcedSharing?'No':'Yes'}})</span></p></div>
+                <div class="col-sm-2"><p>Automatic sharing with feedback recipient: {{admin.selectedCycleDetails.hasForcedSharing?'Yes':'No'}})</span></p></div>
                 <div class="col-sm-2">
                   <div class="btn-group" role="group" aria-label="Is admin user">
-                    <a class="btn btn-info"
+                    <a class="btn btn-default"
                             for="true"
                             data-ng-model="admin.selectedCycleDetails.hasForcedSharing"
                             uib-btn-radio="true">Yes</a>
-                    <a class="btn btn-info"
+                    <a class="btn btn-default"
                             for="false"
                             data-ng-model="admin.selectedCycleDetails.hasForcedSharing"
                             uib-btn-radio="false">No</a>
@@ -229,11 +229,11 @@
                 <div class="col-sm-2"><p>Hide option to share feedback with feedback recipient: {{admin.selectedCycleDetails.hasOptionalSharing?'No':'Yes'}}</span></p></div>
                 <div class="col-sm-2">
                   <div class="btn-group" role="group" aria-label="Is admin user">
-                    <a class="btn btn-info"
+                    <a class="btn btn-default"
                             for="false"
                             data-ng-model="admin.selectedCycleDetails.hasOptionalSharing"
                             uib-btn-radio="false">Yes</a>
-                    <a class="btn btn-info"
+                    <a class="btn btn-default"
                             for="true"
                             data-ng-model="admin.selectedCycleDetails.hasOptionalSharing"
                             uib-btn-radio="true">No</a>
@@ -256,15 +256,20 @@
                   <textarea class="form-control" class="form-control" placeholder="Optional help text" data-ng-model="question.helpText"  rows="3"></textarea>
                 </div>
                 <div class="col-sm-3">
-                  <textarea class="form-control" placeholder="Response options written in a comma separated list e.g. 'Yes,No' or '1 Strongly Agree,2,3,4,5 Strongly Disagree'" rows="3" data-ng-model="question.responseOptions" required></textarea>
+                  <textarea class="form-control"
+                            placeholder="Response options with each option written on a new line"
+                            rows="5"
+                            data-ng-model="admin.flattenedQuestionResponse[$index]"
+                            data-ng-change="admin.updateQuestionResponse(question, admin.flattenedQuestionResponse[$index])"
+                            required></textarea>
                 </div>
                 <div class="col-lg-2">
                   <div class="btn-group" role="group" aria-label="question response display format">
-                    <a class="btn btn-info"
+                    <a class="btn btn-default"
                             for="SELECT"
                             data-ng-model="question.format"
                             uib-btn-radio="'SELECT'">Drop-down</a>
-                    <a class="btn btn-info"
+                    <a class="btn btn-default"
                             for="RADIO"
                             data-ng-model="question.format"
                             uib-btn-radio="'RADIO'">Radio Button</a>
@@ -317,7 +322,7 @@
                 <div class="col-md-4">
                   <div data-ng-if="question.format== 'RADIO'">
                     <div class="btn-group" role="group" aria-label="Answer options">
-                      <button class="btn btn-default"
+                      <button type="button" class="btn btn-default"
                               data-ng-repeat="option in question.responseOptions"
                               for="{{option}}"
                               data-ng-model="question.response"
@@ -330,7 +335,7 @@
                     </select>
                   </div>
                 </div>
-
+              </div>
             </uib-tab>
           </uib-tabset>
         </div> <!-- end col 12 -->
