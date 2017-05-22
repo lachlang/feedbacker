@@ -465,7 +465,7 @@ class QuestionTemplateDao @Inject() (db: play.api.db.Database) {
     questions.map{ q =>
       SQL("""insert into question_templates (text, help_text, response_options, render_format, cycle_id)
            values ({text}, {helpText}, {responseOptions}, {renderFormat}, {cycleId})""")
-        .on('text -> q.text, 'helpText -> q.helpText, 'responseOptions -> q.responseOptions, 'renderFormat -> q.format.toString, 'cycleId -> cycleId)
+        .on('text -> q.text, 'helpText -> q.helpText, 'responseOptions -> q.responseOptions.mkString(","), 'renderFormat -> q.format.toString, 'cycleId -> cycleId)
         .executeInsert() match {
         case Some(_) => true
         case None => false
@@ -758,18 +758,22 @@ class FeedbackCycleDao @Inject() (db: play.api.db.Database, questionTemplate: Qu
         'active -> cycle.active,
         'optionalSharing -> cycle.hasOptionalSharing,
         'forcedSharing -> cycle.hasForcedSharing)
-        .executeInsert().flatMap{ findById(_) } match {
-          case None => Left( new Exception("Could not insert."))
-          case Some(newCycle) => {
-            Right(newCycle)
+        .executeInsert().flatMap { id: Long =>
+        findById(id).flatMap { newCycle =>
+          if (questionTemplate.initialiseQuestionsForCycle(id, cycle.questions))
+            Some(newCycle.copy(questions = questionTemplate.findQuestionsForCycle(id)))
+          else None
         }
+      } match {
+          case None => Left(new Exception("Could not create new feedback cycle."))
+          case Some(newCycle: FeedbackCycle) => Right(newCycle)
       }
     } catch {
       case e:Exception => Left(e)
     }
   }
 
-  def updateCycle(cycle: FeedbackCycle): Either[Throwable, FeedbackCycle] = db.withConnection {implicit connection =>
+  def updateCycle(cycleId: Long, cycle: FeedbackCycle): Either[Throwable, FeedbackCycle] = db.withConnection {implicit connection =>
     try {
       SQL(
         """update cycle SET
@@ -789,6 +793,11 @@ class FeedbackCycleDao @Inject() (db: play.api.db.Database, questionTemplate: Qu
         'forcedSharing -> cycle.hasForcedSharing)
           .executeUpdate() match {
         case 1 => Right(cycle)
+//          questionTemplate.updateQuestionsForCycle(cycle.questions). flatMap { updatedQuestions =>
+//            cycle.copy(questions = updatedQuestions)
+//          }
+//          else
+//            Left(new Exception("Could not update questions."))
         case _ => Left(new Exception("Could not update."))
       }
     } catch {

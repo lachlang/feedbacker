@@ -238,11 +238,17 @@ class FeedbackCycleController @Inject() (person: PersonDao,
       }
     }
   }
+
   def updateFeedbackCycle(id: Long) = AuthenticatedAdminRequestAction { json =>
     (json \ "body").validate[FeedbackCycle].asOpt match {
       case None => BadRequest
       case Some(FeedbackCycle(None,_,_,_,_,_,_,_,_)) => BadRequest
-      case Some(cycle) => ??? //feedbackCycle.updateFeedbackCycle
+      case Some(cycle) => feedbackCycle.findById(id) map { _ =>
+        feedbackCycle.updateCycle(id, cycle) match {
+          case Left(e) => println(e.getMessage);e.printStackTrace;InternalServerError(Json.obj("message" -> s"Could not update feedback cycle with id='$id'."))
+          case Right(newCycle) => Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(newCycle)))
+        }
+      } getOrElse(BadRequest(Json.obj("message" -> s"Cannot update feedback cycle with id='$id'.  It does not exist.")))
     }
   }
 
