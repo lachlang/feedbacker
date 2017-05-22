@@ -712,10 +712,9 @@ case class FeedbackCycle(id: Option[Long], label: String, startDate: DateTime, e
 
 object FeedbackCycle {
 
-//  implicit val writes: Writes[FeedbackCycle] = Json.writes[FeedbackCycle]
-
   val pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
-  implicit val jodaDataTimeFormat = Format[DateTime](Reads.jodaDateReads(pattern), Writes.jodaDateWrites(pattern))
+
+  implicit val jodaDataTimeReads = Reads.jodaDateReads(pattern)
 
   implicit val format: Format[FeedbackCycle] = Json.format[FeedbackCycle]
 
