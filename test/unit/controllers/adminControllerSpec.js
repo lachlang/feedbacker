@@ -37,6 +37,7 @@ describe('edit feedback detail controller [EditCtrl]', function() {
             expect(angular.isFunction(adminController.addQuestion)).toBe(true);
             expect(angular.isFunction(adminController.openStart)).toBe(true);
             expect(angular.isFunction(adminController.openEnd)).toBe(true);
+            expect(angular.isFunction(adminController.setSelectedCycleDetails)).toBe(true);
             expect(angular.isFunction(adminController.updateQuestionResponse)).toBe(true);
     	});
 
@@ -74,10 +75,43 @@ describe('edit feedback detail controller [EditCtrl]', function() {
       expect(adminController.endPopup.opened).toBe(true)
     });
 
+    it('remove a question from selected details', function() {
+      adminController.selectedCycleDetails = {"questions": ["one", "two", "three", "four", "five"]};
+      adminController.flattenedQuestionResponse = {0: "one", 1: "two", 2: "three", 3: "four", 4: "five"};
+
+      adminController.removeQuestion(2);
+      expect(adminController.selectedCycleDetails.questions).toEqual(["one", "two", "four", "five"]);
+      expect(adminController.flattenedQuestionResponse).toEqual({0: "one", 1: "two", 2: "four", 3: "five", 4: undefined});
+
+      adminController.removeQuestion(3);
+      expect(adminController.selectedCycleDetails.questions).toEqual(["one", "two", "four"]);
+      expect(adminController.flattenedQuestionResponse).toEqual({0: "one", 1: "two", 2: "four", 3: undefined, 4: undefined});
+
+      adminController.removeQuestion(0);
+      expect(adminController.selectedCycleDetails.questions).toEqual(["two", "four"]);
+      expect(adminController.flattenedQuestionResponse).toEqual({0: "two", 1: "four", 2: undefined, 3: undefined, 4: undefined});
+
+    });
+
     it('add a blank question to the selected cycle question array', function() {
       adminController.selectedCycleDetails = { "questions": []};
       adminController.addQuestion();
       expect(adminController.selectedCycleDetails.questions).toEqual([{ "responseOptions": [], "format": "RADIO"}])
+      expect(adminController.flattenedQuestionResponse[0]).toEqual([]);
+
+      adminController.addQuestion();
+      expect(adminController.selectedCycleDetails.questions).toEqual([{ "responseOptions": [], "format": "RADIO"},{ "responseOptions": [], "format": "RADIO"}])
+      expect(adminController.flattenedQuestionResponse[1]).toEqual([]);
+    });
+
+    it('should not add a question when the selected cycle details are undefined', function() {
+      adminController.selectedCycleDetails = undefined;
+      adminController.addQuestion();
+      expect(adminController.selectedCycleDetails).toBeUndefined();
+
+      adminController.selectedCycleDetails = {"questions": undefined};
+      adminController.addQuestion();
+      expect(adminController.selectedCycleDetails.questions).toBeUndefined();
     });
 
     it('remove a question from the selected cycle question array', function() {
@@ -126,6 +160,17 @@ describe('edit feedback detail controller [EditCtrl]', function() {
       expect(adminController.flattenedQuestionResponse).toEqual({"0":[],"1":[],"2":[],"3":[],"4":[]});
     });
 
+    it('should update the selected cycle details and set date functions for the date pickers', function() {
+      var input = {"some": "thing", "startDate":"2017-05-22T00:00:00.000+1000", "endDate": "2017-05-26T00:00:00.000+1000"};
+      expect(adminController.selectedCycleDetails).toBeUndefined();
+
+      adminController.setSelectedCycleDetails(input);
+
+      expect(adminController.selectedCycleDetails.some).toEqual("thing");
+      expect(adminController.selectedCycleDetails.startDate).toEqual(new Date("2017-05-22T00:00:00.000+1000"))
+      expect(adminController.selectedCycleDetails.endDate).toEqual(new Date("2017-05-26T00:00:00.000+1000"))
+    });
+
     it('should update the question response options when changed', function() {
       var question = {"responseOptions": []};
 
@@ -135,4 +180,18 @@ describe('edit feedback detail controller [EditCtrl]', function() {
     })
 	});
 
+  describe('wraps server call functions', function() {
+
+    it('should route the update to the correct update function', function() {
+      spyOn(adminController, 'createNewFeedbackCycle');
+      spyOn(adminController, 'updateFeedbackCycle');
+      var input = {"some": "thing"};
+
+      adminController.saveChanges(input, true);
+      expect(adminController.createNewFeedbackCycle).toHaveBeenCalledWith(input);
+
+      adminController.saveChanges(input, false);
+      expect(adminController.updateFeedbackCycle).toHaveBeenCalledWith(input);
+    });
+  });
 });

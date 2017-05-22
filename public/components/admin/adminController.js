@@ -104,9 +104,7 @@ fbControllers.controller('AdminCtrl',  ['$scope', '$log', 'Model', 'Account', fu
   ctrl.updateUser = function(user) {
     ctrl.error = undefined;
     if (!user || !user.email || !user.name || !user.role || !user.managerEmail) {
-      $log.error("here")
-      $log.error(user)
-      ctrl.error = "";
+      ctrl.error = "Invalid request parameters passed.";
       return;
     }
     Account.updateUser(user.email, user.name, user.role, user.managerEmail, user.isAdmin, user.isEnabled).then(function(result){
@@ -132,7 +130,7 @@ fbControllers.controller('AdminCtrl',  ['$scope', '$log', 'Model', 'Account', fu
   ctrl.addQuestion = function() {
     if (ctrl.selectedCycleDetails && ctrl.selectedCycleDetails.questions) {
       ctrl.selectedCycleDetails.questions.push({ "responseOptions":[], "format": "RADIO" });
-      ctrl.flattenedQuestionResponse[ctrl.selectedCycleDetails.questions.length] = [];
+      ctrl.flattenedQuestionResponse[ctrl.selectedCycleDetails.questions.length -1] = [];
     }
   };
 
