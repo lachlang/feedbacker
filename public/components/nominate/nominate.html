@@ -11,7 +11,7 @@
 		</div>
 	</div>
 	<div class="row top-buffer">
-		<div class="col-sm-2">
+		<div class="col-sm-3">
 			<span>Search for colleagues:</span>
 		</div>
 		<div class="col-sm-4">
@@ -25,7 +25,7 @@
 		</div>
 	</div>
 	<div class="row top-buffer" data-ng-hide="nominate.cycles.length==1">
-		<div class="col-sm-2">
+		<div class="col-sm-3">
 			<span>Select feedback cycle:</span>
 		</div>
 		<div class="col-sm-4">
@@ -37,10 +37,16 @@
 		<div class="col-sm-6"></div>
 	</div>
 	<div class="row top-buffer">
-		<div class="col-md-2">
+		<div class="col-md-3">
+			<p>
+				<small>Feedback is most constructive when there are specific questions asked of the feedback provider. We recommend you
+					personalise the message e.g. <em>Hi Bob, I'd really value your feedback on the role I played on project X - I'm keen
+					to understand whether I turned around timely high quality work and whether my behaviors created a strong team culture
+					to drive the outcome on this project.
+					Your feedback is important so I can learn and grow.</em></small></p>
 		</div>
 		<div class="col-md-4">
-			<textarea class="form-control" placeholder="Optional personal message. This will be added to the email notification sent to your nominee and visible when they submit their feedback" rows="3" data-ng-model="nominate.message" ></textarea>
+			<textarea class="form-control" placeholder="Optional personal message. This will be added to the email notification sent to your nominee and visible when they submit their feedback" rows="8" data-ng-model="nominate.message" ></textarea>
 		</div>
 	</div>
 	<div class="row top-buffer">

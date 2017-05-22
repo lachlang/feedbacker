@@ -10,6 +10,8 @@ alter table person drop constraint if exists ch_person_status;
 update person set user_status = 'Disabled' where user_status = 'Restricted';
 alter table person add constraint ch_person_status check (user_status in ('Active', 'Nominated', 'Inactive', 'Disabled'));
 
+GRANT DELETE ON TABLE question_templates TO "feedback-service";
+
 # --- !Downs
 
 alter table cycle drop column if exists three_sixty_review;

@@ -457,6 +457,10 @@ object QuestionTemplate {
 
 class QuestionTemplateDao @Inject() (db: play.api.db.Database) {
 
+  def findById(id: Long): Option[QuestionTemplate] = db.withConnection { implicit connection =>
+    SQL("""select * from question_templates where id = {id}""").on('id -> id).as(QuestionTemplate.simple.singleOpt)
+  }
+
   def findQuestionsForCycle(cycleId: Long): Seq[QuestionTemplate] = db.withConnection { implicit connection =>
     SQL("""select * from question_templates where cycle_id = {id} order by id asc""").on('id -> cycleId).as(QuestionTemplate.simple *)
   }
@@ -473,9 +477,34 @@ class QuestionTemplateDao @Inject() (db: play.api.db.Database) {
     }.foldLeft(true)( _ && _)
   }
 
-  def updateQuestionsForCycle(questions: Seq[QuestionTemplate]): Either[Throwable, Seq[QuestionTemplate]] = db.withConnection { connection =>
-    ???
+  private def cleanRemovedQuestions(cycleId: Long, targetIds: Seq[Long]): Boolean = db.withConnection { implicit connection =>
+    if (targetIds.length == 0) false
+    else {
+      // TODO: This is busted somehow. It return false instead of true when based on all evidence it works.
+      SQL("""delete from question_templates where cycle_id = {cycleId} and id not in ({targetIds})""")
+        .on('cycleId -> cycleId, 'targetIds -> targetIds).execute()
+    }
   }
+
+  private def updateExistingQuestion(questionId: Long, q: QuestionTemplate): Boolean = db.withConnection { implicit connection =>
+    SQL("""update question_templates SET text = {text}, render_format = {renderFormat}, help_text = {helpText}, response_options = {responseOptions} where id = {id}""")
+      .on('id -> questionId, 'text -> q.text, 'helpText -> q.helpText, 'renderFormat -> q.format.toString, 'responseOptions -> q.responseOptions.mkString(","))
+      .executeUpdate() == 1
+  }
+
+  def updateQuestionsForCycle(cycleId: Long, questions: Seq[QuestionTemplate]): Boolean = db.withConnection { connection =>
+    cleanRemovedQuestions(cycleId, questions.flatMap{q => q.id.map{ id => id}}) &&
+    questions.map { q =>
+      q.id match {
+        case None => initialiseQuestionsForCycle(cycleId, Seq(q))
+        case Some(id) => findById(id) match {
+          case None => initialiseQuestionsForCycle(cycleId, Seq(q))
+          case Some(_) => updateExistingQuestion(id, q)
+        }
+      }
+    }.foldLeft(true)(_ && _)
+  }
+
 }
 
 case class Nomination (id: Option[Long], from: Option[Person], to: Option[Person], status: FeedbackStatus, lastUpdated: Option[DateTime], questions: Seq[QuestionResponse], shared: Boolean, cycleId: Long, message: Option[String])
@@ -790,14 +819,14 @@ class FeedbackCycleDao @Inject() (db: play.api.db.Database, questionTemplate: Qu
         'endDate -> cycle.endDate,
         'active -> cycle.active,
         'optionalSharing -> cycle.hasOptionalSharing,
-        'forcedSharing -> cycle.hasForcedSharing)
+        'forcedSharing -> cycle.hasForcedSharing,
+        'id -> cycleId)
           .executeUpdate() match {
-        case 1 => Right(cycle)
-//          questionTemplate.updateQuestionsForCycle(cycle.questions). flatMap { updatedQuestions =>
-//            cycle.copy(questions = updatedQuestions)
-//          }
-//          else
-//            Left(new Exception("Could not update questions."))
+        case 1 =>
+          if (questionTemplate.updateQuestionsForCycle(cycleId, cycle.questions))
+            Right(cycle.copy(questions = questionTemplate.findQuestionsForCycle(cycleId)))
+          else
+            Left(new Exception("Could not update questions."))
         case _ => Left(new Exception("Could not update."))
       }
     } catch {

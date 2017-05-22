@@ -227,8 +227,6 @@ class FeedbackCycleController @Inject() (person: PersonDao,
   }
 
   def createFeedbackCycle = AuthenticatedAdminRequestAction { json =>
-    val result: JsResult[FeedbackCycle] = (json \ "body").validate[FeedbackCycle]
-    println(result)
     (json \ "body").validate[FeedbackCycle].asOpt match {
       case None => BadRequest
       case Some(FeedbackCycle(Some(_),_,_,_,_,_,_,_,_)) => BadRequest

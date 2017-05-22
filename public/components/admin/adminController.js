@@ -127,7 +127,8 @@ fbControllers.controller('AdminCtrl',  ['$scope', '$log', 'Model', 'Account', fu
 
   ctrl.addQuestion = function() {
     if (ctrl.selectedCycleDetails && ctrl.selectedCycleDetails.questions) {
-      ctrl.selectedCycleDetails.questions.push({ "format": "RADIO" });
+      ctrl.selectedCycleDetails.questions.push({ "responseOptions":[], "format": "RADIO" });
+      ctrl.flattenedQuestionResponse[ctrl.selectedCycleDetails.questions.length] = [];
     }
   };
 
