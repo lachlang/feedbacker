@@ -83,6 +83,9 @@ fbControllers.controller('AdminCtrl',  ['$scope', '$log', 'Model', 'Account', fu
   ctrl.updateFeedbackCycle = function(cycle) {
     Model.updateFeedbackCycle(cycle).then(function(result) {
       ctrl.setSelectedCycleDetails(result)
+      if (!ctrl.selectedCycle) {
+        ctrl.selectedCycle = {};
+      }
       ctrl.selectedCycle.label = result.label;
       ctrl.selectedCycle.startDate = result.startDate;
       ctrl.selectedCycle.endDate = result.endDate;

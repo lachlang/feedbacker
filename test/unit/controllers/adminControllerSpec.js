@@ -3,7 +3,7 @@
 describe('edit feedback detail controller [EditCtrl]', function() {
 
 	var scope, adminController, model, account;
-	var deferred;
+	var deferred, deferredInit;
 
 	beforeEach(module('feedbacker'));
 
@@ -12,10 +12,13 @@ describe('edit feedback detail controller [EditCtrl]', function() {
 		scope = $rootScope.$new();
 
 		deferred = $q.defer();
+		deferredInit = $q.defer();
 
     model = _Model_;
-    spyOn(model, 'getRegisteredUsers').and.returnValue(deferred.promise);
-    spyOn(model, 'getAllFeedbackCycles').and.returnValue(deferred.promise);
+    spyOn(model, 'getRegisteredUsers').and.returnValue(deferredInit.promise);
+    spyOn(model, 'getAllFeedbackCycles').and.returnValue(deferredInit.promise);
+    spyOn(model, 'createFeedbackCycle').and.returnValue(deferred.promise);
+    spyOn(model, 'updateFeedbackCycle').and.returnValue(deferred.promise);
 
     account = _Account_;
     spyOn(account, 'updateUser').and.returnValue(deferred.promise);
@@ -57,6 +60,12 @@ describe('edit feedback detail controller [EditCtrl]', function() {
     	it('and calls the necessary services to pre-populate the model', function(){
             expect(model.getRegisteredUsers).toHaveBeenCalled();
             expect(model.getAllFeedbackCycles).toHaveBeenCalled();
+
+            deferredInit.resolve("result");
+            scope.$digest();
+
+            expect(adminController.registeredUsers).toEqual("result");
+            expect(adminController.reviewCycles).toEqual("result");
     	});
 
 	});
@@ -180,7 +189,7 @@ describe('edit feedback detail controller [EditCtrl]', function() {
     })
 	});
 
-  describe('wraps server call functions', function() {
+  describe('wraps server call functions when manipulating users and feedback cycles', function() {
 
     it('should route the update to the correct update function', function() {
       spyOn(adminController, 'createNewFeedbackCycle');
@@ -194,4 +203,88 @@ describe('edit feedback detail controller [EditCtrl]', function() {
       expect(adminController.updateFeedbackCycle).toHaveBeenCalledWith(input);
     });
   });
+
+  it('should create a new feedback cycle', function() {
+    var input = {"some": "thing"};
+    expect(adminController.reviewCycles).toEqual([]);
+    spyOn(adminController, 'setSelectedCycleDetails');
+
+    adminController.createNewFeedbackCycle(input);
+    expect(model.createFeedbackCycle).toHaveBeenCalledWith(input);
+
+    deferred.resolve("result");
+    scope.$digest();
+
+    expect(adminController.reviewCycles).toEqual(["result"]);
+    expect(adminController.setSelectedCycleDetails).toHaveBeenCalledWith("result");
+    expect(adminController.selectedCycle).toEqual("result");
+  });
+
+  it('should update an existing feedback cycle', function() {
+    var input = {"some": "thing"};
+    expect(adminController.reviewCycles).toEqual([]);
+    spyOn(adminController, 'setSelectedCycleDetails');
+    spyOn(adminController, 'initialiseQuestionResponse');
+
+    adminController.updateFeedbackCycle(input);
+    expect(model.updateFeedbackCycle).toHaveBeenCalledWith(input);
+
+    var result = {
+      "label":"label",
+      "startDate":"startDate",
+      "endDate":"endDate",
+      "active":"active",
+      "hasForcedSharing":"hasForcedSharing",
+      "hasOptionalSharing":"hasOptionalSharing",
+      "questions":["one","two","three"]};
+    deferred.resolve(result);
+    scope.$digest();
+
+    expect(adminController.setSelectedCycleDetails).toHaveBeenCalledWith(result);
+    expect(adminController.initialiseQuestionResponse).toHaveBeenCalledWith(["one","two","three"]);
+    expect(adminController.selectedCycle).toEqual({"label":"label", "startDate":"startDate", "endDate":"endDate", "active":"active",
+                                                   "hasForcedSharing":"hasForcedSharing", "hasOptionalSharing":"hasOptionalSharing"});
+  });
+
+  xit('should update the attributes of a user', function() {
+    var input = {"email":"email", "name":"name","role":"role","managerEmail":"managerEmail","isAdmin":true,"isEnabled":false};
+    adminController.updateUser(input);
+    expect(account.updateUser).toHaveBeenCalledWith(input.email,input.name,input.role,input.managerEmail, input.isAdmin, input.isEnabled);
+
+    var result = { "data": { "body": {"name":"name", "role":"role", "isAdmin":true, credentials: {"status":"pants"}}}}
+    deferred.resolve("result");
+    scope.$digest();
+
+    var result = { "data": { "body": {"name":"name", "role":"role", "isAdmin":true, credentials: {"status":"Disabled"}}}}
+    deferred.resolve("result");
+    scope.$digest();
+
+    expect(adminController.selectedUser.isDisabled)
+  });
+
+  it('should set an error message when given invalid user details to update', function() {
+    var input = {"email":"email", "name":"name","role":"role","managerEmail":"managerEmail"};
+    adminController.updateUser();
+    expect(account.updateUser).not.toHaveBeenCalled();
+
+    input.email = undefined;
+    adminController.updateUser(input);
+    expect(account.updateUser).not.toHaveBeenCalled();
+
+    input.email = "email";
+    input.name = undefined;
+    adminController.updateUser(input);
+    expect(account.updateUser).not.toHaveBeenCalled();
+
+    input.name = "name";
+    input.role = undefined;
+    adminController.updateUser(input);
+    expect(account.updateUser).not.toHaveBeenCalled();
+
+    input.role = "role";
+    input.managerEmail = undefined;
+    adminController.updateUser(input);
+    expect(account.updateUser).not.toHaveBeenCalled();
+  });
+
 });
