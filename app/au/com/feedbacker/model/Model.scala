@@ -400,7 +400,7 @@ object QuestionResponse {
       get[Option[String]]("question_response.response") ~
       get[Option[String]]("question_response.comments") ~
       get[Option[String]]("question_response.help_text") map {
-      case id ~ text ~ format ~ responseOptions ~ response ~ comments ~ helpText => QuestionResponse(id, text, ResponseFormat.withName(format), responseOptions.split(","), response, comments, helpText)
+      case id ~ text ~ format ~ responseOptions ~ response ~ comments ~ helpText => QuestionResponse(id, text, ResponseFormat.withName(format), responseOptions.split('|'), response, comments, helpText)
     }
   }
 
@@ -430,7 +430,7 @@ class QuestionResponseDao @Inject() (db: play.api.db.Database) {
   def initialiseResponses(nominationId :Long, questions: Seq[QuestionTemplate]): Boolean = db.withConnection { implicit connection =>
     questions.map { q =>
     SQL("""insert into question_response (nomination_id, text, render_format, response_options, help_text) values ({nominationId}, {text}, {format}, {responseOptions}, {helpText})""")
-      .on('nominationId -> nominationId, 'text -> q.text, 'format -> q.format.toString, 'responseOptions -> q.responseOptions.mkString(","), 'helpText -> q.helpText).executeInsert() match {
+      .on('nominationId -> nominationId, 'text -> q.text, 'format -> q.format.toString, 'responseOptions -> q.responseOptions.mkString("|"), 'helpText -> q.helpText).executeInsert() match {
         case Some(_) => true
         case None => false
       }
@@ -448,7 +448,7 @@ object QuestionTemplate {
       get[String]("question_templates.render_format") ~
       get[String]("question_templates.response_options") ~
       get[Option[String]]("question_templates.help_text") map {
-      case id ~ text ~ format ~ responseOptions ~ helpText => QuestionTemplate(id, text, ResponseFormat.withName(format), responseOptions.split(","), helpText)
+      case id ~ text ~ format ~ responseOptions ~ helpText => QuestionTemplate(id, text, ResponseFormat.withName(format), responseOptions.split('|'), helpText)
     }
   }
 
@@ -469,7 +469,7 @@ class QuestionTemplateDao @Inject() (db: play.api.db.Database) {
     questions.map{ q =>
       SQL("""insert into question_templates (text, help_text, response_options, render_format, cycle_id)
            values ({text}, {helpText}, {responseOptions}, {renderFormat}, {cycleId})""")
-        .on('text -> q.text, 'helpText -> q.helpText, 'responseOptions -> q.responseOptions.mkString(","), 'renderFormat -> q.format.toString, 'cycleId -> cycleId)
+        .on('text -> q.text, 'helpText -> q.helpText, 'responseOptions -> q.responseOptions.mkString("|"), 'renderFormat -> q.format.toString, 'cycleId -> cycleId)
         .executeInsert() match {
         case Some(_) => true
         case None => false
@@ -480,15 +480,16 @@ class QuestionTemplateDao @Inject() (db: play.api.db.Database) {
   private def cleanRemovedQuestions(cycleId: Long, targetIds: Seq[Long]): Boolean = db.withConnection { implicit connection =>
     if (targetIds.length == 0) false
     else {
-      // TODO: This is busted somehow. It return false instead of true when based on all evidence it works.
+      val expectedRowCount = SQL("""select count(*) from question_templates where cycle_id = {cycleId} and id not in ({targetIds})""")
+        .on('cycleId -> cycleId, 'targetIds -> targetIds).as(scalar[Long].single)
       SQL("""delete from question_templates where cycle_id = {cycleId} and id not in ({targetIds})""")
-        .on('cycleId -> cycleId, 'targetIds -> targetIds).execute()
+        .on('cycleId -> cycleId, 'targetIds -> targetIds).executeUpdate() == expectedRowCount
     }
   }
 
   private def updateExistingQuestion(questionId: Long, q: QuestionTemplate): Boolean = db.withConnection { implicit connection =>
     SQL("""update question_templates SET text = {text}, render_format = {renderFormat}, help_text = {helpText}, response_options = {responseOptions} where id = {id}""")
-      .on('id -> questionId, 'text -> q.text, 'helpText -> q.helpText, 'renderFormat -> q.format.toString, 'responseOptions -> q.responseOptions.mkString(","))
+      .on('id -> questionId, 'text -> q.text, 'helpText -> q.helpText, 'renderFormat -> q.format.toString, 'responseOptions -> q.responseOptions.mkString("|"))
       .executeUpdate() == 1
   }
 

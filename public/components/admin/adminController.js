@@ -123,6 +123,10 @@ fbControllers.controller('AdminCtrl',  ['$scope', '$log', 'Model', 'Account', fu
 
   ctrl.removeQuestion = function(index) {
     ctrl.selectedCycleDetails.questions.splice(index, 1);
+    for (var i = index; i < ctrl.selectedCycleDetails.questions.length; i++) {
+      ctrl.flattenedQuestionResponse[i] = ctrl.flattenedQuestionResponse[i+1];
+    }
+    ctrl.flattenedQuestionResponse[ctrl.selectedCycleDetails.questions.length] = undefined;
   };
 
   ctrl.addQuestion = function() {
@@ -147,6 +151,8 @@ fbControllers.controller('AdminCtrl',  ['$scope', '$log', 'Model', 'Account', fu
   };
 
   ctrl.updateQuestionResponse = function(question, responses) {
-    question.responseOptions = responses.trim().split('\n');
+    if (responses) {
+      question.responseOptions = responses.trim().split('\n');
+    }
   };
 }]);
