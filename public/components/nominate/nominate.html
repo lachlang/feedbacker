@@ -63,20 +63,16 @@
 			<div class="col-md-4">
 				<span>{{question.text}}</span>
 			</div>
-			<div class="col-md-4">
+			<div class="col-md-7">
 				<div data-ng-if="question.format== 'RADIO'">
 					<div class="btn-group" role="group" aria-label="Answer options">
 						<button type="button" class="btn btn-default"
 										data-ng-repeat="option in question.responseOptions"
-										for="{{option}}"
-										data-ng-model="question.response"
-										uib-btn-radio="'{{option}}'">{{option}}</button>
+										disabled>{{option}}</button>
 					</div>
 				</div>
 				<div data-ng-if="question.format == 'SELECT'">
-					<select class="form-control" data-ng-model="question.response">
-						<option data-ng-repeat="option in question.responseOptions">{{option}}</option>
-					</select>
+					<p data-ng-repeat="option in question.responseOptions"><em>{{option}}</em><br /></p>
 				</div>
 			</div>
 		</div>
