@@ -111,13 +111,16 @@ fbControllers.controller('AdminCtrl',  ['$scope', '$log', 'Model', 'Account', fu
       return;
     }
     Account.updateUser(user.email, user.name, user.role, user.managerEmail, user.isAdmin, user.isEnabled).then(function(result){
-      ctrl.selectedUser.display = result.data.body.name + "(" + result.data.body.credentials.email + ")";
-      ctrl.selectedUser.role = result.data.body.role;
+      if (!ctrl.selectedUser) {
+        ctrl.selectedUser = {};
+      }
+      ctrl.selectedUser.display = result.data.body.name + " (" + result.data.body.credentials.email + ")";
       ctrl.selectedUser.name = result.data.body.name;
-      ctrl.selectedUser.isDisabled = (result.data.body.credentials.status === 'Disabled');
+      ctrl.selectedUser.role = result.data.body.role;
+      ctrl.selectedUser.managerEmail = result.data.body.managerEmail;
+      ctrl.selectedUser.isEnabled = (result.data.body.credentials.status != 'Disabled');
       ctrl.selectedUser.isAdmin = result.data.body.isAdmin;
       $log.debug("[AdminCtrl.updateUser] Updated user...");
-      $log.debug(result.data.body);
       $log.debug(ctrl.selectedUser);
     })
   };

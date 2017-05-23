@@ -246,21 +246,26 @@ describe('edit feedback detail controller [EditCtrl]', function() {
                                                    "hasForcedSharing":"hasForcedSharing", "hasOptionalSharing":"hasOptionalSharing"});
   });
 
-  xit('should update the attributes of a user', function() {
+  it('should update the attributes of a user', inject(function($q) {
     var input = {"email":"email", "name":"name","role":"role","managerEmail":"managerEmail","isAdmin":true,"isEnabled":false};
     adminController.updateUser(input);
     expect(account.updateUser).toHaveBeenCalledWith(input.email,input.name,input.role,input.managerEmail, input.isAdmin, input.isEnabled);
 
-    var result = { "data": { "body": {"name":"name", "role":"role", "isAdmin":true, credentials: {"status":"pants"}}}}
-    deferred.resolve("result");
+    var result = { "data": { "body": {"name":"name", "role":"role", "managerEmail":"managerEmail", "isAdmin":true, credentials: {"email":"email", "status":"pants"}}}}
+    deferred.resolve(result);
     scope.$digest();
+    expect(adminController.selectedUser.isEnabled).toBe(true);
+    expect(adminController.selectedUser).toEqual({"display":"name (email)", "name":"name", "role":"role", "managerEmail": "managerEmail", "isAdmin":true, "isEnabled": true});
 
-    var result = { "data": { "body": {"name":"name", "role":"role", "isAdmin":true, credentials: {"status":"Disabled"}}}}
-    deferred.resolve("result");
+    result = { "data": { "body": {"name":"name", "role":"role", "managerEmail":"managerEmail", "isAdmin":false, credentials: {"email":"email", "status":"Disabled"}}}}
+    deferred = $q.defer();
+    account.updateUser.and.returnValue(deferred.promise);
+    adminController.updateUser(input);
+    deferred.resolve(result);
     scope.$digest();
-
-    expect(adminController.selectedUser.isDisabled)
-  });
+    expect(adminController.selectedUser).toEqual({"name":"name", "role":"role", "managerEmail":"managerEmail", "display":"name (email)", "isAdmin":false, "isEnabled": false});
+    expect(adminController.selectedUser.isEnabled).toBe(false);
+  }));
 
   it('should set an error message when given invalid user details to update', function() {
     var input = {"email":"email", "name":"name","role":"role","managerEmail":"managerEmail"};
