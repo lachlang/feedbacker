@@ -6,78 +6,97 @@
   </div>
   <div data-ng-controller="ProvideCtrl as provide">
     <div class="row">
-      <div class="col-md-12">
-        <p class="lead">Provide ad-hoc feedback for a colleague</p>
+      <div class="col-md-6">
+        <div class="row">
+          <div class="col-md-12">
+            <p class="lead">Provide ad-hoc feedback for a colleague</p>
+          </div>
+        </div> <!-- end row -->
+        <div data-ng-if="provide.error" class="row top-buffer">
+          <div class="col-md-12">
+            <div class="alert alert-danger" role="alert">{{provide.error}}</div>
+          </div>
+        </div>
+        <div class="row top-buffer">
+          <div class="col-sm-4">
+            <span>Search for colleagues:</span>
+          </div>
+          <div class="col-sm-8">
+            <input class="form-control"
+                   data-ng-model="provide.feedbackRecipient"
+                   uib-typeahead="recipient as recipient.display for recipient in provide.recipientList | filter:{display:$viewValue} | limitTo:8"
+                   placeholder="Name or email of colleague"
+                   typeahead-show-hint="true">
+          </div>
+        </div> <!-- end row -->
+        <div class="row top-buffer">
+          <div class="col-sm-4">
+            <span>Publish to recipient:</span>
+          </div>
+          <div class="col-sm-8">
+            <div class="btn-group" role="group" aria-label="Publish feedback to recipient">
+              <button class="btn btn-primary"
+                      for="true"
+                      data-ng-model="provide.publishToRecipient"
+                      uib-btn-radio="true">Yes</button>
+              <button class="btn btn-primary"
+                      for="false"
+                      data-ng-model="provide.publishToRecipient"
+                      uib-btn-radio="false">No</button>
+            </div>
+          </div>
+        </div> <!-- end row -->
+        <div class="row top-buffer">
+          <div class="col-md-4">
+          </div>
+          <div class="col-md-8">
+            <textarea class="form-control"
+                      placeholder="Providing ad-hoc feedback to a colleague in a clear and constructive way enables them to play to their strengths and develop throughout the year. Enter your feedback here."
+                      rows="8" data-ng-model="provide.message" ></textarea>
+          </div>
+        </div>
+        <div class="row top-buffer">
+          <div class="col-md-8">
+            <p class="lead">
+              Provide feedback for
+              <strong data-ng-show="provide.feedbackRecipient" class="strong">{{provide.feedbackRecipient.display}}</strong>
+              <strong data-ng-hide="provide.feedbackRecipient">nobody</strong>
+              .  Feedback will be published to
+              <span data-ng-show="provide.feedbackRecipient">{{provide.feedbackRecipient.managerEmail}}</span>
+              <span data-ng-hide="provide.feedbackRecipient">nobody</span>
+              and
+              <strong data-ng-show="provide.publishToRecipient">will</strong>
+              <span data-ng-hide="provide.publishToRecipient">will <strong>not</strong></span>
+              be sent to
+              <span data-ng-show="provide.feedbackRecipient" class="strong">{{provide.feedbackRecipient.display}}</span>
+              <span data-ng-hide="provide.feedbackRecipient">anybody</span>.
+            </p>
+          </div>
+          <div class="col-md-2">
+            <a class="btn btn-primary" data-ng-click="provide.submitAdHocFeedback(provide.feedbackRecipient.email, provide.message, provide.publishToRecipient)">Submit Feedback</a>
+          </div>
+          <div class="col-sm-6">
+          </div>
+        </div> <!-- end row -->
       </div>
-    </div> <!-- end row -->
-    <div data-ng-if="provide.error" class="row top-buffer">
-      <div class="col-md-12">
-        <div class="alert alert-danger" role="alert">{{provide.error}}</div>
-      </div>
-    </div>
-    <div class="row top-buffer">
-      <div class="col-sm-2">
-        <span>Search for colleagues:</span>
-      </div>
-      <div class="col-sm-4">
-        <input class="form-control"
-               data-ng-model="provide.feedbackRecipient"
-               uib-typeahead="recipient as recipient.display for recipient in provide.recipientList | filter:{display:$viewValue} | limitTo:8"
-               placeholder="Name or email of colleague"
-               typeahead-show-hint="true">
-      </div>
-      <div class="col-sm-6">
-      </div>
-    </div> <!-- end row -->
-    <div class="row top-buffer">
-      <div class="col-sm-2">
-        <span>Publish to recipient:</span>
-      </div>
-      <div class="col-sm-4">
-        <div class="btn-group" role="group" aria-label="Publish feedback to recipient">
-          <button class="btn btn-primary"
-                  for="true"
-                  data-ng-model="provide.publishToRecipient"
-                  uib-btn-radio="true">Yes</button>
-          <button class="btn btn-primary"
-                  for="false"
-                  data-ng-model="provide.publishToRecipient"
-                  uib-btn-radio="false">No</button>
+      <div class="col-md-6">
+        <div class="row">
+          <div class="col-md-12">
+            <p class="lead">Use of the <strong>AID</strong> model for providing feedback in encourages</p>
+            <p><strong>Actions (A)</strong></p>
+            <p>Describe actions clearly in behavioural terms using examples where possible. Use "I" language rather than
+              "You" language. e.g. I heard, I saw, I experienced</p>
+            <p><strong>Impact (I)</strong></p>
+            <p>Describe the impact of the actions on others - including customers, businesses and communities - whilst
+              recognising the value they can add.  When providing positive feedback be specific about why the action or
+              impact was good or what made the difference this time compared to previous occasions.</p>
+            <p><strong>Desired Outcome (D)</strong></p>
+            <p>Describe what you'd like to see happen - what would make it better next time or what you would like to see
+              happen again.  e.g. "this could be further improved by ..." or "a different way to approach this situation could be ..."</p>
+          </div>
         </div>
       </div>
-      <div class="col-sm-6">
-      </div>
-    </div> <!-- end row -->
-    <div class="row top-buffer">
-      <div class="col-md-2">
-      </div>
-      <div class="col-md-4">
-        <textarea class="form-control" placeholder="Enter feedback here.  Please be both clear and constructive." rows="3" data-ng-model="provide.message" ></textarea>
-      </div>
-    </div>
-    <div class="row top-buffer">
-      <div class="col-md-4">
-        <p class="lead">
-          Provide feedback for
-          <strong data-ng-show="provide.feedbackRecipient" class="strong">{{provide.feedbackRecipient.display}}</strong>
-          <strong data-ng-hide="provide.feedbackRecipient">nobody</strong>
-          .  Feedback will be published to
-          <span data-ng-show="provide.feedbackRecipient">{{provide.feedbackRecipient.managerEmail}}</span>
-          <span data-ng-hide="provide.feedbackRecipient">nobody</span>
-          and
-          <strong data-ng-show="provide.publishToRecipient">will</strong>
-          <span data-ng-hide="provide.publishToRecipient">will <strong>not</strong></span>
-          be sent to
-          <span data-ng-show="provide.feedbackRecipient" class="strong">{{provide.feedbackRecipient.display}}</span>
-          <span data-ng-hide="provide.feedbackRecipient">anybody</span>.
-        </p>
-      </div>
-      <div class="col-md-2">
-        <a class="btn btn-primary" data-ng-click="provide.submitAdHocFeedback(provide.feedbackRecipient.email, provide.message, provide.publishToRecipient)">Submit Feedback</a>
-      </div>
-      <div class="col-sm-6">
-      </div>
-    </div> <!-- end row -->
+    </div> <!-- end out row -->
     <div class="row" data-ng-if="provide.submittedAdHocFeedback && provide.submittedAdHocFeedback.length > 0">
       <div class="col-md-12">
         <div class="table-responsive">
