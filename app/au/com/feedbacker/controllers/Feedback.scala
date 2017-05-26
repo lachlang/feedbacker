@@ -35,10 +35,11 @@ class Feedback @Inject() (person: PersonDao,
       case None => Forbidden
       case Some(n) => {
         val submittedJson: JsResult[Boolean] = json.validate[Boolean]((JsPath \ "body" \ "submit").read[Boolean])
+        val shareFeedbackJson: JsResult[Boolean] = json.validate[Boolean]((JsPath \ "body" \ "shareFeedback").read[Boolean])
         val questionsJson: JsResult[Seq[QuestionResponse]] = json.validate[Seq[QuestionResponse]]((JsPath \ "body" \ "questions").read[Seq[QuestionResponse]])
-        (questionsJson, submittedJson) match {
-          case (JsSuccess(questions,_), JsSuccess(submitted,_)) =>
-            if (nomination.submitFeedback(nominationId, questions, submitted)) Ok else BadRequest
+        (questionsJson, submittedJson, shareFeedbackJson) match {
+          case (JsSuccess(questions,_), JsSuccess(submitted,_), JsSuccess(shareFeedback,_)) =>
+            if (nomination.submitFeedback(nominationId, questions, submitted, feedbackCycle.getSharingSettingsForNomination(nominationId,shareFeedback))) Ok else BadRequest
           case _ => BadRequest
         }
       }
@@ -128,15 +129,22 @@ case class DetailItem(id: Long,
                       message: Option[String],
                       questions: Seq[QuestionResponse],
                       shareFeedback: Boolean,
-                      cycleLabel: Option[String],
-                      cycleEndDate: Option[DateTime])
+                      cycleLabel: String,
+                      cycleEndDate: DateTime,
+                      hasForcedSharing: Boolean = false,
+                      hasOptionalSharing: Boolean = true,
+                      helpLinkText: Option[String] = None,
+                      helpLinkUrl: Option[String] = None)
 
 object DetailItem {
   implicit val format: Format[DetailItem] = Json.format[DetailItem]
 
-  def detailFromNomination(nomination: Nomination, cycle: Option[FeedbackCycle]): Option[DetailItem] = nomination match {
-    case Nomination(Some(id), Some(fromPerson), Some(toPerson), status, _, questions, shared, _, message) =>
-      Some(DetailItem(id, status, fromPerson.name, toPerson.name, None, fromPerson.managerEmail, message, questions, shared, cycle.map(_.label), cycle.map(_.endDate)))
+  def detailFromNomination(nomination: Nomination, cycle: Option[FeedbackCycle]): Option[DetailItem] = (nomination, cycle) match {
+    case (Nomination(Some(id), Some(fromPerson), Some(toPerson), status, _, questions, shared, _, message),
+          Some(FeedbackCycle(_, label, _, endDate, _, _, hasOptionalSharing, hasForcedSharing, _, helpLinkText, helpLinkUrl))) =>
+      Some(DetailItem(id, status, fromPerson.name, toPerson.name, None, fromPerson.managerEmail, message, questions,
+        shared, label, endDate, hasForcedSharing = hasForcedSharing, hasOptionalSharing = hasOptionalSharing,
+        helpLinkText = helpLinkText, helpLinkUrl = helpLinkUrl))
     case _ => None
   }
 }
@@ -229,7 +237,7 @@ class FeedbackCycleController @Inject() (person: PersonDao,
   def createFeedbackCycle = AuthenticatedAdminRequestAction { json =>
     (json \ "body").validate[FeedbackCycle].asOpt match {
       case None => BadRequest
-      case Some(FeedbackCycle(Some(_),_,_,_,_,_,_,_,_)) => BadRequest
+      case Some(FeedbackCycle(Some(_),_,_,_,_,_,_,_,_,_,_)) => BadRequest
       case Some(cycle) => feedbackCycle.createCycle(cycle) match {
         case Right(newCycle) => Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(newCycle)))
         case Left(e) => println(e.getMessage);e.printStackTrace;InternalServerError(Json.obj("message" -> "Could not create new feedback cycle."))
@@ -240,7 +248,7 @@ class FeedbackCycleController @Inject() (person: PersonDao,
   def updateFeedbackCycle(id: Long) = AuthenticatedAdminRequestAction { json =>
     (json \ "body").validate[FeedbackCycle].asOpt match {
       case None => BadRequest
-      case Some(FeedbackCycle(None,_,_,_,_,_,_,_,_)) => BadRequest
+      case Some(FeedbackCycle(None,_,_,_,_,_,_,_,_,_,_)) => BadRequest
       case Some(cycle) => feedbackCycle.findById(id) map { _ =>
         feedbackCycle.updateCycle(id, cycle) match {
           case Left(e) => println(e.getMessage);e.printStackTrace;InternalServerError(Json.obj("message" -> s"Could not update feedback cycle with id='$id'."))

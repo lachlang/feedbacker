@@ -38,7 +38,7 @@ fbControllers.controller('EditCtrl',  ['$scope', '$log', 'Model','Feedback', 'ui
 
 			return;
 		}
-		Feedback.updateFeedback(feedbackItem.id, feedbackItem.questions, !!submit).then(function(response) {
+		Feedback.updateFeedback(feedbackItem.id, feedbackItem.questions, feedbackItem.shareFeedback, !!submit).then(function(response) {
 			if (!!submit) {
 				// update the summary view and return to the list view
 				Model.getPendingFeedbackActions(true).then(function() {

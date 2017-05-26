@@ -5,7 +5,7 @@ fbServices.service('Feedback', ['$log','$http', function($log, $http) {
 			return $http.get("/api/feedback/pending");
 		},
 
-		updateFeedback: function(feedbackId, feedbackResponses, submit) {
+		updateFeedback: function(feedbackId, feedbackResponses, shareFeedback, submit) {
 			return $http({
 				method:"PUT",
 				url:"/api/feedback/item/" + feedbackId,
@@ -13,6 +13,7 @@ fbServices.service('Feedback', ['$log','$http', function($log, $http) {
 					apiVersion: "1.0",
 					body: {
 						questions: feedbackResponses,
+						shareFeedback: shareFeedback,
 						submit: submit
 					}
 				}

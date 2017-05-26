@@ -57,9 +57,9 @@ describe('service [Feedback]', function() {
     	});
 
         it('to update a feedback item', function() {
-            var result, promise = feedback.updateFeedback(9, [{stuff: "here"}, {stuff: "mo stuff"}], true);
+            var result, promise = feedback.updateFeedback(9, [{stuff: "here"}, {stuff: "mo stuff"}], true, true);
 
-            $httpBackend.expectPUT('/api/feedback/item/9', '{"apiVersion":"1.0","body":{"questions":[{"stuff":"here"},{"stuff":"mo stuff"}],"submit":true}}').respond(200, dummyResult);
+            $httpBackend.expectPUT('/api/feedback/item/9', '{"apiVersion":"1.0","body":{"questions":[{"stuff":"here"},{"stuff":"mo stuff"}],"shareFeedback":true,"submit":true}}').respond(200, dummyResult);
             
             // set the response value
             promise.then(function(data) {

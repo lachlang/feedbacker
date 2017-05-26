@@ -16,17 +16,34 @@
   </div>
     <div class="row top-buffer">
         <div class="col-md-12">
-            <p class="lead">Feedback for <strong>{{edit.feedback.fromName}}</strong> from <strong>{{edit.feedback.toName}}</strong>.  When <strong>published</strong>, Feedback will be visible by <em>{{edit.feedback.bossEmail}}</em> <data-ng-show if="edit.feedback.shareFeedback">and <em>{{edit.feedback.fromName}}</em> </data-ng-show>once submitted.</p>
+            <p class="lead">Feedback for <strong>{{edit.feedback.fromName}}</strong> from <strong>{{edit.feedback.toName}}</strong>.  When <strong>published</strong>, Feedback will be visible by <em>{{edit.feedback.bossEmail}}</em><span data-ng-show="edit.feedback.shareFeedback"> and <em>{{edit.feedback.fromName}}</em></span>.</p>
         </div>
     </div>
+  <div class="row top-buffer" data-ng-show="!edit.feedback.hasForceSharing && edit.feedback.hasOptionalSharing">
+    <div class="col-md-3">
+      <p>Share your feedback with <em>{{edit.feedback.fromName}}</em></p>
+    </div>
+    <div class="col-md-2">
+      <div type="button" class="btn-group" role="group" aria-label="Publish feedback to recipient">
+        <button class="btn btn-default"
+                for="true"
+                data-ng-model="edit.feedback.shareFeedback"
+                uib-btn-radio="true">Yes</button>
+        <button class="btn btn-default"
+                for="false"
+                data-ng-model="edit.feedback.shareFeedback"
+                uib-btn-radio="false">No</button>
+      </div>
+    </div>
+  </div>
     <div class="row top-buffer" data-ng-show="edit.feedback.message">
-        <div class="col-md-12">
-            <blockquote>
-                <p>
-                  <em>{{edit.feedback.message}}</em>
-                </p>
-            </blockquote>
-        </div>
+      <div class="col-md-12">
+        <blockquote>
+          <p>
+            <em>{{edit.feedback.message}}</em>
+          </p>
+        </blockquote>
+      </div>
     </div>
     <div class="row top-buffer" data-ng-show="edit.feedback.cycleLabel">
         <div class="col-md-12">

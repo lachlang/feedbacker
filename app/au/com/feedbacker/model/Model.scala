@@ -683,13 +683,13 @@ class NominationDao @Inject() (db: play.api.db.Database,
     }
   }
 
-  def submitFeedback(nominationId: Long, questions: Seq[QuestionResponse], submitted: Boolean) : Boolean = db.withConnection { implicit connection =>
+  def submitFeedback(nominationId: Long, questions: Seq[QuestionResponse], submitted: Boolean, shareFeedback: Boolean) : Boolean = db.withConnection { implicit connection =>
 
     val status: FeedbackStatus = if (submitted) FeedbackStatus.Submitted else FeedbackStatus.Pending
     questionResponse.updateResponses(questions) match {
       case true =>
-        SQL("update nominations SET status={status}, last_updated = {lastUpdated} where id={id}")
-          .on('status -> status.toString, 'lastUpdated -> DateTime.now, 'id->nominationId)
+        SQL("update nominations SET status={status}, last_updated = {lastUpdated}, shared = {shared} where id={id}")
+          .on('status -> status.toString, 'lastUpdated -> DateTime.now, 'shared -> shareFeedback, 'id->nominationId)
           .executeUpdate == 1
       case _ => false
     }
@@ -708,7 +708,8 @@ object FeedbackGroup {
 
 case class FeedbackCycle(id: Option[Long], label: String, startDate: DateTime, endDate: DateTime, active: Boolean,
                          questions: Seq[QuestionTemplate], hasOptionalSharing: Boolean = false,
-                         hasForcedSharing: Boolean = false, isThreeSixtyReview: Boolean = false)
+                         hasForcedSharing: Boolean = false, isThreeSixtyReview: Boolean = false,
+                         helpLinkText: Option[String] = None, helpLinkUrl: Option[String] = None)
 
 object FeedbackCycle {
 
@@ -726,10 +727,13 @@ object FeedbackCycle {
       get[Boolean]("cycle.active") ~
       get[Boolean]("cycle.optional_sharing") ~
       get[Boolean]("cycle.forced_sharing") ~
-      get[Boolean]("cycle.three_sixty_review") map {
-      case id ~ label ~ start_date ~ end_date ~ active  ~ forcedSharing ~ optionalSharing ~ is360 =>
+      get[Boolean]("cycle.three_sixty_review") ~
+      get[Option[String]]("cycle.help_link_text") ~
+      get[Option[String]]("cycle.help_link_url") map {
+      case id ~ label ~ start_date ~ end_date ~ active  ~ optionalSharing ~ forcedSharing ~ is360 ~ helpLinkText ~ helpLinkUrl =>
         FeedbackCycle(Some(id), label, start_date, end_date, active, Seq(),
-          hasForcedSharing = forcedSharing, hasOptionalSharing = optionalSharing, isThreeSixtyReview = is360)
+          hasForcedSharing = forcedSharing, hasOptionalSharing = optionalSharing, isThreeSixtyReview = is360,
+          helpLinkText = helpLinkText, helpLinkUrl = helpLinkUrl)
     }
   }
 
@@ -740,10 +744,14 @@ object FeedbackCycle {
       get[DateTime]("cycle.end_date") ~
       get[Boolean]("cycle.active") ~
       get[Boolean]("cycle.optional_sharing") ~
-      get[Boolean]("cycle.forced_sharing") map {
-      case id ~ label ~ start_date ~ end_date ~ active ~ forcedSharing ~ optionalSharing =>
+      get[Boolean]("cycle.forced_sharing") ~
+      get[Boolean]("cycle.three_sixty_review") ~
+      get[Option[String]]("cycle.help_link_text") ~
+      get[Option[String]]("cycle.help_link_url") map {
+      case id ~ label ~ start_date ~ end_date ~ active ~ optionalSharing ~ forcedSharing ~ is360 ~ helpLinkText ~ helpLinkUrl =>
         FeedbackCycle(Some(id), label, start_date, end_date, active, Seq(),
-          hasForcedSharing = forcedSharing, hasOptionalSharing = optionalSharing)
+          hasForcedSharing = forcedSharing, hasOptionalSharing = optionalSharing, isThreeSixtyReview = is360,
+          helpLinkText = helpLinkText, helpLinkUrl = helpLinkUrl)
     }
   }
 
@@ -773,6 +781,15 @@ class FeedbackCycleDao @Inject() (db: play.api.db.Database, questionTemplate: Qu
       .as(FeedbackCycle.simple.singleOpt) match {
       case Some(_) => true
       case None => false
+    }
+  }
+
+  def getSharingSettingsForNomination(nominationId: Long, sharingPreference: Boolean): Boolean = db.withConnection {implicit connection =>
+    SQL("""select forced_sharing, optional_sharing from cycle where id = (select cycle_id from nominations where id = {id})""")
+      .on('id -> nominationId).as((bool("forced_sharing") ~ bool("optional_sharing")).singleOpt)
+      match {
+      case None => false
+      case Some(forcedSharing ~ optionalSharing) => forcedSharing || (optionalSharing && sharingPreference)
     }
   }
 
