@@ -2,67 +2,67 @@
 
 describe('review cycle filter [reviewCycle]', function() {
 
-	var $filter;
+  var $filter;
 
-	beforeEach(module('feedbacker.filters'));
+  beforeEach(module('feedbacker'));
 
-	beforeEach(inject(function(_$filter_){
-		$filter = _$filter_;
-	}));
+  beforeEach(inject(function(_$filter_){
+    $filter = _$filter_;
+  }));
 
-	describe('review cycle filter', function() {
+  describe('review cycle filter', function() {
 
-        it('should return an empty list when not provided an array as an input', function() {
-            var result = $filter('reviewCycle')({"some":"thing"})
-            expect(result).toEqual([]);
-        });
-
-        it('should return the input when given an undefined cycle id', function() {
-            var result, input = [{"some": "thing"}, {"some": "other thing"}];
-            result = $filter('reviewCycle')(input);
-            expect(result).toBe(input);
-            result = $filter('reviewCycle')(input, {"some": "thing"});
-            expect(result).toBe(input);
-        });
-
-        it('should return the input not given an object cycle id', function() {
-            var result, input = [{"some": "thing"}, {"some": "other thing"}];
-            result = $filter('reviewCycle')(input);
-            expect(result).toBe(input);
-        });
-
-        it('should return the input when not given a floating point cycle id', function() {
-            var result, input = [{"some": "thing"}, 12.3];
-            result = $filter('reviewCycle')(input);
-            expect(result).toBe(input);
-        });
-
-        it('should filter all input values when they do not contain a cycle id', function() {
-            var result, input = [{"some": "thing"}, {"some": "other thing"}];
-            result = $filter('reviewCycle')(input, 12);
-            expect(result).toEqual([]);
-        });
-
-        it('should filter all input values', function() {
-            var result, input = [{"some": "thing", 'cycleId':11},{"some": "other thing",'cycleId':13}];
-            result = $filter('reviewCycle')(input, 12);
-            expect(result).toEqual([]);
-        });
-
-        it('should match all input values', function() {
-            var result, input = [{"some": "thing", "cycleId": 12}, {"some": "other thing", "cycleId":12}];
-            result = $filter('reviewCycle')(input, 12);
-            expect(result).toEqual(input);
-        });
-
-      it('should match one input value', function() {
-              var result, input = [{"some": "thing", "cycleId": 12}, {"some": "other thing", "cycleId":13}];
-
-        result = $filter('reviewCycle')(input, 12);
-
-        expect(result).toEqual([{"some": "thing", "cycleId": 12}]);
-      });
+    it('should return an empty list when not provided an array as an input', function() {
+      var result = $filter('reviewCycle')({"some":"thing"})
+      expect(result).toEqual([]);
     });
+
+    it('should return the input when given an undefined cycle id', function() {
+      var result, input = [{"some": "thing"}, {"some": "other thing"}];
+      result = $filter('reviewCycle')(input);
+      expect(result).toBe(input);
+      result = $filter('reviewCycle')(input, {"some": "thing"});
+      expect(result).toBe(input);
+    });
+
+    it('should return the input not given an object cycle id', function() {
+      var result, input = [{"some": "thing"}, {"some": "other thing"}];
+      result = $filter('reviewCycle')(input);
+      expect(result).toBe(input);
+    });
+
+    it('should return the input when not given a floating point cycle id', function() {
+      var result, input = [{"some": "thing"}, 12.3];
+      result = $filter('reviewCycle')(input);
+      expect(result).toBe(input);
+    });
+
+    it('should filter all input values when they do not contain a cycle id', function() {
+      var result, input = [{"some": "thing"}, {"some": "other thing"}];
+      result = $filter('reviewCycle')(input, 12);
+      expect(result).toEqual([]);
+    });
+
+    it('should filter all input values', function() {
+      var result, input = [{"some": "thing", 'cycleId':11},{"some": "other thing",'cycleId':13}];
+      result = $filter('reviewCycle')(input, 12);
+      expect(result).toEqual([]);
+    });
+
+    it('should match all input values', function() {
+      var result, input = [{"some": "thing", "cycleId": 12}, {"some": "other thing", "cycleId":12}];
+      result = $filter('reviewCycle')(input, 12);
+      expect(result).toEqual(input);
+    });
+
+    it('should match one input value', function() {
+      var result, input = [{"some": "thing", "cycleId": 12}, {"some": "other thing", "cycleId":13}];
+
+      result = $filter('reviewCycle')(input, 12);
+
+      expect(result).toEqual([{"some": "thing", "cycleId": 12}]);
+    });
+  });
 
 	describe('report display filter', function() {
 

@@ -1,15 +1,9 @@
-fbFilters.filter('reviewCycle', function() {
-
-    function isInteger(value) {
-       return typeof value === 'number' &&
-         isFinite(value) &&
-         Math.floor(value) === value;
-    };
+fbFilters.filter('reviewCycle', ['Util', function(Util) {
 
     return function(input, reviewCycleId) {
         if (!Array.isArray(input)) {
             return [];
-        } else if (!reviewCycleId || !isInteger(reviewCycleId)) {
+        } else if (!reviewCycleId || !Util.isInteger(reviewCycleId)) {
             return input;
         } else {
             return input.filter(function (item) {
@@ -17,7 +11,7 @@ fbFilters.filter('reviewCycle', function() {
             });
         }
     };
-});
+}]);
 
 fbFilters.filter('reportDisplay', function() {
     return function(input, filterToggle) {

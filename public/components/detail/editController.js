@@ -1,9 +1,7 @@
 /*
  * Controller for feedback action
  */
-fbControllers.controller('EditCtrl',  ['$scope', '$log', 'Model','Feedback', 'uibButtonConfig', '$location', function($scope, $log, Model, Feedback, btnConfig, $location) {
-
-	btnConfig.activeClass = 'btn-primary';
+fbControllers.controller('EditCtrl',  ['$scope', '$log', 'Model','Feedback', '$location', 'Util', function($scope, $log, Model, Feedback, $location, Util) {
 
 	var ctrl = this;
 
@@ -14,9 +12,7 @@ fbControllers.controller('EditCtrl',  ['$scope', '$log', 'Model','Feedback', 'ui
 	ctrl.initialiseController = function() {
 		var feedbackId = $location.search()["id"];
 
-		// TODO: fix this when I'm not on the plane
-        //if (feedbackId && Number.isInteger(feedbackId)) {
-		if (feedbackId) {
+    if (feedbackId ){//&& Util.isInteger(feedbackId)) {
 			Model.getFeedbackDetail(feedbackId).then(function(response) {
 				ctrl.feedback = response;
 				if (!ctrl.feedback.shareFeedback) {

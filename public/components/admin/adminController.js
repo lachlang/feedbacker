@@ -1,7 +1,7 @@
 /*
  * Controller for administrative operations
  */
-fbControllers.controller('AdminCtrl',  ['$scope', '$log', 'Model', 'Account', function($scope, $log, Model, Account) {
+fbControllers.controller('AdminCtrl',  ['$scope', '$log', 'Model', 'Account', 'Util', function($scope, $log, Model, Account, Util) {
 
 	var ctrl = this;
 
@@ -109,6 +109,10 @@ fbControllers.controller('AdminCtrl',  ['$scope', '$log', 'Model', 'Account', fu
     if (!user || !user.email || !user.name || !user.role || !user.managerEmail) {
       ctrl.error = "Invalid request parameters passed.";
       return;
+    }
+    if (!Util.isValidEmail(user.managerEmail)) {
+      ctrl.error = "Manager email must be a valid email format."
+      return
     }
     Account.updateUser(user.email, user.name, user.role, user.managerEmail, user.isAdmin, user.isEnabled).then(function(result){
       if (!ctrl.selectedUser) {

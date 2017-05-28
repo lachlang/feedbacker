@@ -3,24 +3,24 @@
  */
 fbControllers.controller('ProvideCtrl',  ['$scope', '$log', 'Model', function($scope, $log, Model) {
 
-	var ctrl = this;
+  var ctrl = this;
 
-    ctrl.recipientList = [];
-    ctrl.feedbackRecipient = undefined;
-    ctrl.message = undefined;
-    ctrl.publishToRecipient = false;
-    ctrl.error = undefined;
-    ctrl.submittedAdHocFeedback = [];
+  ctrl.recipientList = [];
+  ctrl.feedbackRecipient = undefined;
+  ctrl.message = undefined;
+  ctrl.publishToRecipient = false;
+  ctrl.error = undefined;
+  ctrl.submittedAdHocFeedback = [];
 
 	// get the registered users
-	Model.getActiveUsers().then(function(response) {
-		ctrl.recipientList = response;
-	});
+  Model.getActiveUsers().then(function(response) {
+    ctrl.recipientList = response;
+  });
 
 	// get the users ad-hoc feedback history
-	Model.getSubmittedAdHocFeedback().then(function(response) {
-		ctrl.submittedAdHocFeedback = response;
-	});
+  Model.getSubmittedAdHocFeedback().then(function(response) {
+    ctrl.submittedAdHocFeedback = response;
+  });
 
   ctrl.submitAdHocFeedback = function(recipientEmail, message, publishToRecipient) {
     ctrl.error = undefined;

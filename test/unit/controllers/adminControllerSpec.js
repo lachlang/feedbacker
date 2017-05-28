@@ -247,7 +247,7 @@ describe('edit feedback detail controller [EditCtrl]', function() {
   });
 
   it('should update the attributes of a user', inject(function($q) {
-    var input = {"email":"email", "name":"name","role":"role","managerEmail":"managerEmail","isAdmin":true,"isEnabled":false};
+    var input = {"email":"email", "name":"name","role":"role","managerEmail":"manager@email.com","isAdmin":true,"isEnabled":false};
     adminController.updateUser(input);
     expect(account.updateUser).toHaveBeenCalledWith(input.email,input.name,input.role,input.managerEmail, input.isAdmin, input.isEnabled);
 
@@ -275,21 +275,30 @@ describe('edit feedback detail controller [EditCtrl]', function() {
     input.email = undefined;
     adminController.updateUser(input);
     expect(account.updateUser).not.toHaveBeenCalled();
+    expect(adminController.error).toEqual("Invalid request parameters passed.");
 
     input.email = "email";
     input.name = undefined;
     adminController.updateUser(input);
     expect(account.updateUser).not.toHaveBeenCalled();
+    expect(adminController.error).toEqual("Invalid request parameters passed.");
 
     input.name = "name";
     input.role = undefined;
     adminController.updateUser(input);
     expect(account.updateUser).not.toHaveBeenCalled();
+    expect(adminController.error).toEqual("Invalid request parameters passed.");
 
     input.role = "role";
     input.managerEmail = undefined;
     adminController.updateUser(input);
     expect(account.updateUser).not.toHaveBeenCalled();
+    expect(adminController.error).toEqual("Invalid request parameters passed.");
+
+    input.managerEmail = "managerEmail";
+    adminController.updateUser(input);
+    expect(account.updateUser).not.toHaveBeenCalled();
+    expect(adminController.error).toEqual("Manager email must be a valid email format.");
   });
 
 });

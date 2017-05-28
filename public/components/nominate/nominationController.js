@@ -1,9 +1,9 @@
 /*
  * Controller for feedback action
  */
-fbControllers.controller('NominationCtrl',  ['$scope', '$log', 'Model', 'Nomination', function($scope, $log, Model, Nomination) {
+fbControllers.controller('NominationCtrl',  ['$scope', '$log', 'Model', 'Nomination', 'Util', function($scope, $log, Model, Nomination, Util) {
 
-	var ctrl = this;
+  var ctrl = this;
 
 	ctrl.nomineeCandidates = [];
 	ctrl.nominations = [];
@@ -29,17 +29,11 @@ fbControllers.controller('NominationCtrl',  ['$scope', '$log', 'Model', 'Nominat
 		}
 	});
 
-	// TODO: pull this out into a utils service
-	var validateEmail = function(word) {
-		var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-		return re.test(word);
-	}
-
 	ctrl.addNomination = function(emailAddress, cycleId, personalMessage) {
 		ctrl.error = undefined;
 
 		// validate email
-		if (!emailAddress || !validateEmail(emailAddress)) {
+		if (!emailAddress || !Util.isValidEmail(emailAddress)) {
 			ctrl.error = "Must send a nomination to a valid email address.";
 			return;
 		} else if (!cycleId) {

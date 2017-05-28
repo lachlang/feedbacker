@@ -1,7 +1,9 @@
 /*
  * Controller search for connection, uploading bulk connections and for sending connection/invitation requests
  */
-fbControllers.controller('MenuCtrl', ['$rootScope', '$log', '$location', 'Session', 'Model', function($rootScope, $log, $location, Session, Model) {
+fbControllers.controller('MenuCtrl', ['$rootScope', '$log', '$location', 'Session', 'Model', 'uibButtonConfig', function($rootScope, $log, $location, Session, Model, btnConfig) {
+
+	btnConfig.activeClass = 'btn-primary';
 
 	var ctrl = this;
 

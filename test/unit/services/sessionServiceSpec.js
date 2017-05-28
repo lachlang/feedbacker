@@ -20,22 +20,22 @@ describe('service [Session]', function() {
     }));
     
     afterEach(function() {
-        $httpBackend.verifyNoOutstandingExpectation();
-        $httpBackend.verifyNoOutstandingRequest();
-      });
+      $httpBackend.verifyNoOutstandingExpectation();
+      $httpBackend.verifyNoOutstandingRequest();
+    });
     
-    it('can get an instantce of itself', function(){
+    it('can get an instance of itself', function(){
     	expect(session).toBeDefined();
     });
     
     it('has defined functions', function() {
-        expect(angular.isFunction(session.login)).toBe(true);
-        expect(angular.isFunction(session.logout)).toBe(true);
-        expect(angular.isFunction(session.validSession)).toBe(true);
+      expect(angular.isFunction(session.login)).toBe(true);
+      expect(angular.isFunction(session.logout)).toBe(true);
+      expect(angular.isFunction(session.validSession)).toBe(true);
     });
 
     describe("calls the appropriate server api", function() {
-        var dummyResult = "dummyResult";
+      var dummyResult = "dummyResult";
     	
     	it('to login a user', function() {
     		var result, promise = session.login("user","pass");
