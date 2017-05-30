@@ -14,10 +14,10 @@ describe('nomination controller [NominationCtrl]', function() {
 		deferred = $q.defer();
 		deferredNom = $q.defer();
 
-    	model = _Model_;
-        spyOn(model, 'getActiveUsers').and.returnValue(deferred.promise);
-        spyOn(model, 'getCurrentNominations').and.returnValue(deferred.promise);
-        spyOn(model, 'getActiveFeedbackCycles').and.returnValue(deferred.promise);
+    model = _Model_;
+    spyOn(model, 'getActiveUsers').and.returnValue(deferred.promise);
+    spyOn(model, 'getCurrentNominations').and.returnValue(deferred.promise);
+    spyOn(model, 'getActiveFeedbackCycles').and.returnValue(deferred.promise);
 
 		nomination = _Nomination_;
 		spyOn(nomination, 'addNomination').and.returnValue(deferredNom.promise);
@@ -26,28 +26,28 @@ describe('nomination controller [NominationCtrl]', function() {
 		nominationController = $controller('NominationCtrl',{$scope: scope });
 	}));
 
-    describe('has valid initialisation values', function() {
+  describe('has valid initialisation values', function() {
 
-    	it('should define functions', function() {
-            expect(angular.isFunction(nominationController.addNomination)).toBe(true);
-            expect(angular.isFunction(nominationController.cancelNomination)).toBe(true);
-    	});
+    it('should define functions', function() {
+      expect(angular.isFunction(nominationController.addNomination)).toBe(true);
+      expect(angular.isFunction(nominationController.cancelNomination)).toBe(true);
+    });
 
-    	it('for global controller variables', function() {
-            expect(nominationController).toBeDefined();
-            expect(nominationController.nominations).toEqual([]);
-            expect(nominationController.nomineeCandidates).toEqual([]);
-            expect(nominationController.nominee).toBeUndefined();
-            expect(nominationController.message).toBeUndefined();
-            expect(nominationController.cycles).toEqual([]);
-            expect(nominationController.selectedCycle).toBeUndefined();
-    	});
+    it('for global controller variables', function() {
+      expect(nominationController).toBeDefined();
+      expect(nominationController.nominations).toEqual([]);
+      expect(nominationController.nomineeCandidates).toEqual([]);
+      expect(nominationController.nominee).toBeUndefined();
+      expect(nominationController.message).toBeUndefined();
+      expect(nominationController.cycles).toEqual([]);
+      expect(nominationController.selectedCycle).toBeUndefined();
+    });
 
-    	it('and calls the necessary services to pre-populate the model', function(){
-            expect(model.getCurrentNominations).toHaveBeenCalled();
-            expect(model.getActiveUsers).toHaveBeenCalled();
-            expect(model.getActiveFeedbackCycles).toHaveBeenCalled();
-    	});
+    it('and calls the necessary services to pre-populate the model', function(){
+        expect(model.getCurrentNominations).toHaveBeenCalled();
+        expect(model.getActiveUsers).toHaveBeenCalled();
+        expect(model.getActiveFeedbackCycles).toHaveBeenCalled();
+    });
 
 	});
 

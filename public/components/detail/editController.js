@@ -12,7 +12,7 @@ fbControllers.controller('EditCtrl',  ['$scope', '$log', 'Model','Feedback', '$l
 	ctrl.initialiseController = function() {
 		var feedbackId = $location.search()["id"];
 
-    if (feedbackId ){//&& Util.isInteger(feedbackId)) {
+    if (feedbackId && Util.isInteger(feedbackId, true)) {
 			Model.getFeedbackDetail(feedbackId).then(function(response) {
 				ctrl.feedback = response;
 				if (!ctrl.feedback.shareFeedback) {
@@ -23,7 +23,7 @@ fbControllers.controller('EditCtrl',  ['$scope', '$log', 'Model','Feedback', '$l
 				ctrl.error = "Could not load feedback.  Please try again later.";
 			});
 		} else {
-			ctrl.error = "Couldn't load feedback."
+			ctrl.error = "Could not load feedback."
 		}
 	}
 
@@ -31,15 +31,14 @@ fbControllers.controller('EditCtrl',  ['$scope', '$log', 'Model','Feedback', '$l
 		ctrl.resetError();
 
 		if (!feedbackItem || !feedbackItem.id || !feedbackItem.questions) {
-
 			return;
 		}
-		Feedback.updateFeedback(feedbackItem.id, feedbackItem.questions, feedbackItem.shareFeedback, !!submit).then(function(response) {
+		Feedback.updateFeedback(feedbackItem.id, feedbackItem.questions, !!feedbackItem.shareFeedback, !!submit).then(function(response) {
+			Model.getPendingFeedbackActions(true);
+
 			if (!!submit) {
 				// update the summary view and return to the list view
-				Model.getPendingFeedbackActions(true).then(function() {
-					ctrl.navigateToList();
-				});
+        ctrl.navigateToList();
 			} else {
 				ctrl.message = "Saved feedback."
 			}

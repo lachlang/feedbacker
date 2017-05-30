@@ -1,10 +1,11 @@
 fbServices.service('Util', function() {
   return {
 
-    isInteger: function(value) {
-       return typeof value === 'number' &&
-         isFinite(value) &&
-         Math.floor(value) === value;
+    isInteger: function(inputValue, parseString) {
+      var value = parseString ? parseFloat(inputValue) : inputValue;
+      return typeof (parseString || value === 'number') &&
+        isFinite(value) &&
+        Math.floor(value) === value;
     },
 
     isValidEmail: function(word) {

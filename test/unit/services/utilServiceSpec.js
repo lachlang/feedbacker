@@ -41,7 +41,24 @@ describe('service [Util]', function() {
 
     });
 
+
+    it('should parse strings', function() {
+      expect(util.isInteger(undefined, true)).toBe(false);
+      expect(util.isInteger('1', true)).toBe(true);
+      expect(util.isInteger("12", true)).toBe(true);
+      expect(util.isInteger("1.0", true)).toBe(true);
+      expect(util.isInteger("1.1", true)).toBe(false);
+      expect(util.isInteger("this", true)).toBe(false);
+      expect(util.isInteger("pants", true)).toBe(false);
+      expect(util.isInteger("1.123", true)).toBe(false);
+      expect(util.isInteger("-1", true)).toBe(true);
+      expect(util.isInteger(true, true)).toBe(false);
+      expect(util.isInteger(false, true)).toBe(false);
+
+    });
+
     it('should reject non-integers', function() {
+      expect(util.isInteger()).toBe(false);
       expect(util.isInteger(true)).toBe(false);
       expect(util.isInteger(false)).toBe(false);
       expect(util.isInteger('a')).toBe(false);
@@ -51,6 +68,7 @@ describe('service [Util]', function() {
       expect(util.isInteger("not")).toBe(false);
       expect(util.isInteger("an")).toBe(false);
       expect(util.isInteger("Integer")).toBe(false);
+      expect(util.isInteger("pants")).toBe(false);
       expect(util.isInteger("0")).toBe(false);
       expect(util.isInteger("1")).toBe(false);
       expect(util.isInteger('1')).toBe(false);

@@ -2,64 +2,67 @@
 
 describe('menu controller [MenuCtrl]', function() {
 
-	var scope, menuController, model, session, $location;
-	var deferred;
+  var scope, menuController, model, session, $location, btnConfig;
+  var deferred;
 
-	beforeEach(module('feedbacker'));
+  beforeEach(module('feedbacker'));
 
     // define the mock person and relationship services
-    beforeEach(inject(function($rootScope, $q, $controller, _Model_, _Session_, _$location_) {
-		scope = $rootScope.$new();
+    beforeEach(inject(function($rootScope, $q, $controller, _Model_, _Session_, _$location_, _uibButtonConfig_) {
+    scope = $rootScope.$new();
 
-		deferred = $q.defer();
+    deferred = $q.defer();
 
-		$location = _$location_;
-		spyOn($location, 'path');
+    $location = _$location_;
+    spyOn($location, 'path');
 
-    	model = _Model_;
-        spyOn(model, 'getCurrentUser').and.returnValue(deferred.promise);
-        spyOn(model, 'flush');
+    model = _Model_;
+    spyOn(model, 'getCurrentUser').and.returnValue(deferred.promise);
+    spyOn(model, 'flush');
 
-		session = _Session_;
-		spyOn(session, 'login').and.returnValue(deferred.promise);
-		spyOn(session, 'logout').and.returnValue(deferred.promise);
-		spyOn(session, 'validSession');
+    btnConfig = _uibButtonConfig_;
 
-		menuController = $controller('MenuCtrl',{$scope: scope });
-	}));
+    session = _Session_;
+    spyOn(session, 'login').and.returnValue(deferred.promise);
+    spyOn(session, 'logout').and.returnValue(deferred.promise);
+    spyOn(session, 'validSession');
 
-    describe('has valid initialisation values', function() {
+    menuController = $controller('MenuCtrl',{$scope: scope, uibButtonConfig: btnConfig });
+  }));
 
-    	it('should define functions', function() {
-            expect(angular.isFunction(menuController.logout)).toBe(true);
-            expect(angular.isFunction(menuController.logout)).toBe(true);
-            expect(angular.isFunction(menuController.initialiseAuthenticatedContent)).toBe(true);
-            expect(angular.isFunction(menuController.isLoggedIn)).toBe(true);
-            expect(angular.isFunction(menuController.isLoggedInLeader)).toBe(true);
-            expect(angular.isFunction(menuController.isLoggedInAdmin)).toBe(true);
-            expect(angular.isFunction(menuController.isActive)).toBe(true);
-    	});
+  describe('has valid initialisation values', function() {
 
-    	it('for global controller variables', function() {
-            expect(menuController).toBeDefined();
-            expect(menuController.errors).toBeUndefined();
-            expect(menuController.isLeader).toBe(false);
-            expect(menuController.isAdmin).toBe(false);
-            expect(menuController.password).toBeUndefined();
-            expect(menuController.username).toBeUndefined();
-    	});
+    it('should define functions', function() {
+      expect(angular.isFunction(menuController.logout)).toBe(true);
+      expect(angular.isFunction(menuController.logout)).toBe(true);
+      expect(angular.isFunction(menuController.initialiseAuthenticatedContent)).toBe(true);
+      expect(angular.isFunction(menuController.isLoggedIn)).toBe(true);
+      expect(angular.isFunction(menuController.isLoggedInLeader)).toBe(true);
+      expect(angular.isFunction(menuController.isLoggedInAdmin)).toBe(true);
+      expect(angular.isFunction(menuController.isActive)).toBe(true);
+    });
 
-    	it('and calls the necessary services to pre-populate the model', function(){
-            expect(model.getCurrentUser).not.toHaveBeenCalled();
-    	});
+    it('for global controller variables', function() {
+      expect(menuController).toBeDefined();
+      expect(menuController.errors).toBeUndefined();
+      expect(menuController.isLeader).toBe(false);
+      expect(menuController.isAdmin).toBe(false);
+      expect(menuController.password).toBeUndefined();
+      expect(menuController.username).toBeUndefined();
+      expect(btnConfig.activeClass).toEqual('btn-primary');
+    });
 
-    	it('calls initialises the scope for a valid session on page load', inject(function($controller) {
-    		session.validSession.and.returnValue(true);
-    		menuController = $controller('MenuCtrl',{$scope: scope });
-            expect(model.getCurrentUser).toHaveBeenCalled();
-    	}));
+    it('and calls the necessary services to pre-populate the model', function(){
+      expect(model.getCurrentUser).not.toHaveBeenCalled();
+    });
 
-	});
+    it('calls initialises the scope for a valid session on page load', inject(function($controller) {
+      session.validSession.and.returnValue(true);
+      menuController = $controller('MenuCtrl',{$scope: scope });
+      expect(model.getCurrentUser).toHaveBeenCalled();
+    }));
+
+  });
 
 	describe('when logging in', function() {
 
