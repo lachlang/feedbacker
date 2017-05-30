@@ -27,10 +27,12 @@ describe('service [Account]', function() {
         expect(angular.isFunction(account.getActiveUsers)).toBe(true);
         expect(angular.isFunction(account.getRegisteredUsers)).toBe(true);
         expect(angular.isFunction(account.updateCurrentUser)).toBe(true);
+        expect(angular.isFunction(account.updateUser)).toBe(true);
         expect(angular.isFunction(account.activate)).toBe(true);
         expect(angular.isFunction(account.sendActivationEmail)).toBe(true);
         expect(angular.isFunction(account.resetPassword)).toBe(true);
         expect(angular.isFunction(account.sendPasswordResetEmail)).toBe(true);
+        expect(angular.isFunction(account.getReports)).toBe(true);
     });
 
     describe("calls the appropriate server api", function() {

@@ -1,7 +1,7 @@
 /*
  * Controller for feedback action
  */
-fbControllers.controller('RegistrationCtrl',  ['$rootScope', '$log', '$location', 'Account', function($rootScope, $log, $location, Account) {
+fbControllers.controller('RegistrationCtrl',  ['$rootScope', '$log', 'Account', function($rootScope, $log, Account) {
 
 	var ctrl = this;
 	ctrl.error = undefined;
@@ -22,8 +22,7 @@ fbControllers.controller('RegistrationCtrl',  ['$rootScope', '$log', '$location'
 			ctrl.managerEmail = undefined
 		}, function(response) {
 			ctrl.update = undefined
-			ctrl.error = "We could not register you at this time."
-			$log.error("it failed")
+			ctrl.error = response.data.message;
 			$log.error(response)
 		});
 	};

@@ -38,7 +38,7 @@ class RegistrationSpec extends PlaySpec with MockitoSugar with AllFixtures with 
 
       // verify
       status(result) mustBe 400
-      contentAsJson(result) mustBe Json.obj("body" -> Json.obj("message" -> "Could not parse request."))
+      contentAsJson(result) mustBe Json.obj("message" -> "Your request was invalid.  Please submit all the required fields.")
       verifyZeroInteractions(f.mockEmailer)
       verifyZeroInteractions(f.mockPersonDao)
       verifyZeroInteractions(f.mockCredentialsDao)
@@ -51,20 +51,44 @@ class RegistrationSpec extends PlaySpec with MockitoSugar with AllFixtures with 
 
       // verify
       status(result) mustBe 400
-      contentAsJson(result) mustEqual Json.obj("body" -> Json.obj("message" -> "Could not parse request."))
+      contentAsJson(result) mustBe Json.obj("message" -> "Your request was invalid.  Please submit all the required fields.")
 
     }
-    "reject duplicate user names" in {
-      forAll() { reg: RegistrationContent =>
+    "reject duplicate user names for active users" in {
+      forAll() { (reg: RegistrationContent, id: Long) =>
         val f = fixture
-        when(f.mockCredentialsDao.findStatusByEmail(reg.email.toLowerCase)).thenReturn(Some(1L, CredentialStatus.Active))
+        when(f.mockCredentialsDao.findStatusByEmail(reg.email.toLowerCase)).thenReturn(Some(id, CredentialStatus.Active))
         val body: JsValue = Json.toJson(reg)
         val result: Future[Result] = f.controller.register().apply(FakeRequest().withBody(body))
 
         // verify
         verify(f.mockCredentialsDao).findStatusByEmail(reg.email.toLowerCase)
         status(result) mustBe 409
-        contentAsJson(result) mustBe Json.obj("body" -> Json.obj("message" -> "User is already registered."))
+        contentAsJson(result) mustBe Json.obj("message" -> "This email address is already registered.  Please try using the password reset link to update your password.")
+      }
+    }
+    "reject duplicate user names for inactive users" in {
+      forAll() { (reg: RegistrationContent, id: Long) =>
+        val f = fixture
+        when(f.mockCredentialsDao.findStatusByEmail(reg.email.toLowerCase)).thenReturn(Some(id, CredentialStatus.Inactive))
+        val body: JsValue = Json.toJson(reg)
+        val result: Future[Result] = f.controller.register().apply(FakeRequest().withBody(body))
+
+        // verify
+        verify(f.mockCredentialsDao).findStatusByEmail(reg.email.toLowerCase)
+        status(result) mustBe 409
+        contentAsJson(result) mustBe Json.obj("message" -> "This account is already registered but awaiting activation.  Please click the link in your activation email or click the link below to request a new activation email.")
+      }
+    }
+    "reject same email for user and manager" in {
+      forAll() { reg: RegistrationContent =>
+        val f = fixture
+
+        val body: JsValue = Json.toJson(reg.copy(managerEmail = reg.email))
+        val result: Future[Result] = f.controller.register().apply(FakeRequest().withBody(body))
+        // verify
+        status(result) mustBe 400
+        contentAsJson(result) mustEqual Json.obj("message" -> "Your email and manager's email must be different.")
       }
     }
     "return bad request when failing to send email" in {

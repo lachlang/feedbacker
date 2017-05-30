@@ -32,11 +32,16 @@ class Registration @Inject() (emailer: Emailer,
 
     request.body.validate[RegistrationContent].asOpt
       .map(rc => RegistrationContent(rc.name,rc.role,rc.email.toLowerCase.toLowerCase,rc.password,rc.managerEmail.toLowerCase)) match {
-      case None => BadRequest("{ \"body\": { \"message\": \"Could not parse request.\"}} ")
-      case Some(body) => credentials.findStatusByEmail(body.email.toLowerCase) match {
-        case Some((id, CredentialStatus.Nominated)) => translateResultAndActivate(person.update(Person(Some(id), body.name, body.role, Credentials(body.email, sessionManager.hash(body.password), CredentialStatus.Inactive), body.managerEmail)))
-        case Some((_, _)) => Conflict("{ \"body\": { \"message\": \"User is already registered.\"}} ")
-        case None => translateResultAndActivate(person.create(Person(None, body.name, body.role, Credentials(body.email, sessionManager.hash(body.password), CredentialStatus.Inactive), body.managerEmail)))
+      case None => BadRequest(Json.obj("message" -> "Your request was invalid.  Please submit all the required fields."))
+      case Some(body) => if (body.managerEmail == body.email) {
+        BadRequest(Json.obj("message" -> "Your email and manager's email must be different."))
+      } else {
+        credentials.findStatusByEmail(body.email.toLowerCase) match {
+          case Some((id, CredentialStatus.Nominated)) => translateResultAndActivate(person.update(Person(Some(id), body.name, body.role, Credentials(body.email, sessionManager.hash(body.password), CredentialStatus.Inactive), body.managerEmail)))
+          case Some((_, CredentialStatus.Inactive)) => Conflict(Json.obj("message" -> "This account is already registered but awaiting activation.  Please click the link in your activation email or click the link below to request a new activation email."))
+          case Some((_, _)) => Conflict(Json.obj("message" -> "This email address is already registered.  Please try using the password reset link to update your password."))
+          case None => translateResultAndActivate(person.create(Person(None, body.name, body.role, Credentials(body.email, sessionManager.hash(body.password), CredentialStatus.Inactive), body.managerEmail)))
+        }
       }
     }
   }

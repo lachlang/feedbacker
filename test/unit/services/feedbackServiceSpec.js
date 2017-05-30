@@ -32,6 +32,10 @@ describe('service [Feedback]', function() {
         expect(angular.isFunction(feedback.getActiveFeedbackCycles)).toBe(true);
         expect(angular.isFunction(feedback.getAllFeedbackCycles)).toBe(true);
         expect(angular.isFunction(feedback.getFeedbackCycle)).toBe(true);
+        expect(angular.isFunction(feedback.createAdHocFeedback)).toBe(true);
+        expect(angular.isFunction(feedback.getAdHocFeedbackForSelf)).toBe(true);
+        expect(angular.isFunction(feedback.getAdHocFeedbackFromSelf)).toBe(true);
+        expect(angular.isFunction(feedback.getAdHocFeedbackForUser)).toBe(true);
         expect(angular.isFunction(feedback.createFeedbackCycle)).toBe(true);
         expect(angular.isFunction(feedback.updateFeedbackCycle)).toBe(true);
         expect(angular.isFunction(feedback.updateFeedbackCycle360Status)).toBe(true);
