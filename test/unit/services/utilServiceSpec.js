@@ -27,8 +27,8 @@ describe('service [Util]', function() {
       expect(util.isInteger(-1)).toBe(true);
       expect(util.isInteger(100000000000)).toBe(true);
       expect(util.isInteger(-100000000000)).toBe(true);
-      expect(util.isInteger(Number.MAX_SAFE_INTEGER)).toBe(true);
-      expect(util.isInteger(Number.MIN_SAFE_INTEGER)).toBe(true);
+      expect(util.isInteger(9007199254740991)).toBe(true); // Number.MAX_SAFE_INTEGER does NOT work in IE
+      expect(util.isInteger(-9007199254740991)).toBe(true); // Number.MIN_SAFE_INTEGER does NOT work in IE
     });
 
     it('should parse floating points', function() {
