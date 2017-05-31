@@ -236,14 +236,17 @@ describe('edit feedback detail controller [EditCtrl]', function() {
       "active":"active",
       "hasForcedSharing":"hasForcedSharing",
       "hasOptionalSharing":"hasOptionalSharing",
-      "questions":["one","two","three"]};
+      "questions":["one","two","three"],
+      "helpLinkText":"link label",
+      "helpLinkUrl":"http://link.to.help/here"};
     deferred.resolve(result);
     scope.$digest();
 
     expect(adminController.setSelectedCycleDetails).toHaveBeenCalledWith(result);
     expect(adminController.initialiseQuestionResponse).toHaveBeenCalledWith(["one","two","three"]);
     expect(adminController.selectedCycle).toEqual({"label":"label", "startDate":"startDate", "endDate":"endDate", "active":"active",
-                                                   "hasForcedSharing":"hasForcedSharing", "hasOptionalSharing":"hasOptionalSharing"});
+                                                   "hasForcedSharing":"hasForcedSharing", "hasOptionalSharing":"hasOptionalSharing",
+                                                   "helpLinkText":"link label", "helpLinkUrl":"http://link.to.help/here"});
   });
 
   it('should update the attributes of a user', inject(function($q) {

@@ -796,15 +796,18 @@ class FeedbackCycleDao @Inject() (db: play.api.db.Database, questionTemplate: Qu
   def createCycle(cycle: FeedbackCycle): Either[Throwable, FeedbackCycle] = db.withConnection {implicit connection =>
     try {
       SQL(
-        """insert into cycle (label, start_date, end_date, active, optional_sharing, forced_sharing)
-           values ({label}, {startDate}, {endDate}, {active}, {optionalSharing}, {forcedSharing})
+        """insert into cycle (label, start_date, end_date, active, optional_sharing, forced_sharing, help_link_text, help_link_url)
+           values ({label}, {startDate}, {endDate}, {active}, {optionalSharing}, {forcedSharing},
+           {helpLinkText}, {helpLinkUrl})
           """).on(
         'label -> cycle.label,
         'startDate -> cycle.startDate,
         'endDate -> cycle.endDate,
         'active -> cycle.active,
         'optionalSharing -> cycle.hasOptionalSharing,
-        'forcedSharing -> cycle.hasForcedSharing)
+        'forcedSharing -> cycle.hasForcedSharing,
+        'helpLinkText -> cycle.helpLinkText,
+        'helpLinkUrl -> cycle.helpLinkUrl)
         .executeInsert().flatMap { id: Long =>
         findById(id).flatMap { newCycle =>
           if (questionTemplate.initialiseQuestionsForCycle(id, cycle.questions))
@@ -829,7 +832,9 @@ class FeedbackCycleDao @Inject() (db: play.api.db.Database, questionTemplate: Qu
           end_date={endDate},
           active={active},
           optional_sharing={optionalSharing},
-          forced_sharing={forcedSharing}
+          forced_sharing={forcedSharing},
+          help_link_text={helpLinkText},
+          help_link_url={helpLinkUrl}
           where id={id}
           """).on(
         'label -> cycle.label,
@@ -838,6 +843,8 @@ class FeedbackCycleDao @Inject() (db: play.api.db.Database, questionTemplate: Qu
         'active -> cycle.active,
         'optionalSharing -> cycle.hasOptionalSharing,
         'forcedSharing -> cycle.hasForcedSharing,
+        'helpLinkText -> cycle.helpLinkText,
+        'helpLinkUrl -> cycle.helpLinkUrl,
         'id -> cycleId)
           .executeUpdate() match {
         case 1 =>

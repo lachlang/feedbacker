@@ -92,6 +92,8 @@ fbControllers.controller('AdminCtrl',  ['$scope', '$log', 'Model', 'Account', 'U
       ctrl.selectedCycle.active = result.active;
       ctrl.selectedCycle.hasForcedSharing = result.hasForcedSharing;
       ctrl.selectedCycle.hasOptionalSharing = result.hasOptionalSharing;
+      ctrl.selectedCycle.helpLinkText = result.helpLinkText;
+      ctrl.selectedCycle.helpLinkUrl = result.helpLinkUrl;
       ctrl.initialiseQuestionResponse(result.questions)
     });
   };

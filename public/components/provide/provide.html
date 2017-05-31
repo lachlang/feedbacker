@@ -62,13 +62,13 @@
               <strong data-ng-show="provide.feedbackRecipient" class="strong">{{provide.feedbackRecipient.display}}</strong>
               <strong data-ng-hide="provide.feedbackRecipient">nobody</strong>
               .  Feedback will be published to
-              <span data-ng-show="provide.feedbackRecipient">{{provide.feedbackRecipient.managerEmail}}</span>
+              <span data-ng-show="provide.feedbackRecipient"><em>{{provide.feedbackRecipient.managerEmail}}</em></span>
               <span data-ng-hide="provide.feedbackRecipient">nobody</span>
               and
               <strong data-ng-show="provide.publishToRecipient">will</strong>
               <span data-ng-hide="provide.publishToRecipient">will <strong>not</strong></span>
               be sent to
-              <span data-ng-show="provide.feedbackRecipient" class="strong">{{provide.feedbackRecipient.display}}</span>
+              <span data-ng-show="provide.feedbackRecipient"><em>{{provide.feedbackRecipient.display}}</em></span>
               <span data-ng-hide="provide.feedbackRecipient">anybody</span>.
             </p>
           </div>

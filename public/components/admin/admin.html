@@ -172,33 +172,6 @@
                   </p>
                 </div>
               </div>
-              <!--<div class="row top-buffer">-->
-                <!--<div class="col-md-2">-->
-                  <!--<p class="lead">Create 360 review cycle</p><p>This will automatically register all reporting managers for feedback from their direct reports.</p>-->
-                <!--</div>-->
-                <!--<div class="col-md-2">-->
-                  <!--<div class="btn-group" role="group" aria-label="create 360 degree review">-->
-                    <!--<button class="btn btn-info"-->
-                            <!--for="true"-->
-                            <!--data-ng-model="admin.selectedCycleDetails.isThreeSixtyReview"-->
-                            <!--uib-btn-radio="true">Yes</button>-->
-                    <!--<button class="btn btn-info"-->
-                            <!--for="false"-->
-                            <!--data-ng-model="admin.selectedCycleDetails.isThreeSixtyReview"-->
-                            <!--uib-btn-radio="false">No</button>-->
-                  <!--</div>-->
-                <!--</div>-->
-                <!--<div class="col-md-2" data-ng-show="admin.selectedCycleDetails.isThreeSixtyReview">-->
-                  <!--<p>Please provide the name of the top level manager for the 360 degree review.</p>-->
-                <!--</div>-->
-                <!--<div class="col-md-3" data-ng-show="admin.selectedCycleDetails.isThreeSixtyReview">-->
-                  <!--<input class="form-control"-->
-                         <!--data-ng-model="admin.selectedCycleDetails.threeSixtyTop"-->
-                         <!--uib-typeahead="user as user.display for user in admin.registeredUsers | filter:{display:$viewValue} | limitTo:8"-->
-                         <!--placeholder="Name or Email"-->
-                         <!--typeahead-show-hint="true">-->
-                <!--</div>-->
-              <!--</div>-->
               <div class="row top-buffer">
                 <div class="col-sm-2"><p>Feedback cycle is currently active/enabled (Feedback may be edited: {{admin.selectedCycleDetails.active?'Yes':'No'}})</span></p></div>
                 <div class="col-sm-2">
@@ -238,6 +211,20 @@
                             data-ng-model="admin.selectedCycleDetails.hasOptionalSharing"
                             uib-btn-radio="true">No</a>
                   </div>
+                </div>
+              </div>
+              <div class="row top-buffer">
+                <div class="col-md-2">
+                  <p>Optional help link label:</p>
+                </div>
+                <div class="col-md-4">
+                  <input type="text" class="form-control" placeholder="Help link label" data-ng-model="admin.selectedCycleDetails.helpLinkText">
+                </div>
+                <div class="col-md-2">
+                  <p>Optional help link url:</p>
+                </div>
+                <div class="col-md-4">
+                  <input type="text" class="form-control" placeholder="Help link url" data-ng-model="admin.selectedCycleDetails.helpLinkUrl">
                 </div>
               </div>
               <div class="row top-buffer">
@@ -309,6 +296,11 @@
               <div class="row top-buffer">
                 <div class="col-md-6">
                   <p class="lead">Feedback cycle questions</p>
+                </div>
+              </div>
+              <div class="row top-buffer" data-ng-show="admin.selectedCycleDetails.helpLinkText && admin.selectedCycleDetails.helpLinkUrl">
+                <div class="col-md-12">
+                  <p>For additional information about how to answer the questions visit: <a href="{{admin.selectedCycleDetails.helpLinkUrl}}">{{admin.selectedCycleDetails.helpLinkText}}</a></p>
                 </div>
               </div>
               <div class="row top-buffer" data-ng-repeat="question in admin.selectedCycleDetails.questions">
