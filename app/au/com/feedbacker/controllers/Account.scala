@@ -56,7 +56,7 @@ class Account @Inject() (person: PersonDao,
     Ok(Json.obj("body" -> Json.toJson(user)))
   }
 
-  def getReports = AuthenticatedAction { user =>
+  def getUserReports = AuthenticatedAction { user =>
     val reports = person.findDirectReports(user.credentials.email).map { report =>
       Report(report, nomination.getAllFeedbackHistoryForUser(report.credentials.email))
     }

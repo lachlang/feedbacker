@@ -12,7 +12,8 @@ fbServices.service('Model', ['$log', '$q', 'Account', 'Feedback', 'Nomination', 
 	var feedbackCandidates = [];
 	var activeFeedbackCycles = [];
 	var allFeedbackCycles = [];
-	var reports = [];
+	var userReports = [];
+	var cycleReports = [];
   var adHocFeedbackForUser = {};
   var adHocFeedbackForSelf = [];
   var adHocFeedbackFromSelf = [];
@@ -54,7 +55,8 @@ fbServices.service('Model', ['$log', '$q', 'Account', 'Feedback', 'Nomination', 
             feedbackCandidates = [];
             activeFeedbackCycles = [];
             allFeedbackCycles = [];
-            reports = [];
+            userReports = [];
+            cycleReports = [];
             adHocFeedbackForUser = {};
             adHocFeedbackForSelf = [];
             adHocFeedbackFromSelf = [];
@@ -69,12 +71,20 @@ fbServices.service('Model', ['$log', '$q', 'Account', 'Feedback', 'Nomination', 
 									"Account.getCurrentUser");
 		},
 
-		getReports: function(flushCache) {
-			return cacheServiceCall(function(result) { reports = result.data.body },
-									function() {return ( !reports || reports.length == 0 || flushCache ) },
-									function() { return reports },
-									Account.getReports,
-									"Account.getReports");
+		getUserReports: function(flushCache) {
+			return cacheServiceCall(function(result) { userReports = result.data.body },
+									function() {return ( !userReports || userReports.length == 0 || flushCache ) },
+									function() { return userReports },
+									Account.getUserReports,
+									"Account.getUserReports");
+		},
+
+		getCycleReports: function(flushCache) {
+			return cacheServiceCall(function(result) { cycleReports = result.data.body },
+									function() {return ( !cycleReports || cycleReports.length == 0 || flushCache ) },
+									function() { return cycleReports },
+									Feedback.getCycleReports,
+									"Feedback.getCycleReports");
 		},
 
 		updateCurrentUser: function(name, role, managerEmail) {

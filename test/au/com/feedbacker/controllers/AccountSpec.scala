@@ -87,7 +87,7 @@ class AccountSpec extends PlaySpec with MockitoSugar with AllFixtures with Prope
         when(f.mockSessionManager.extractToken(any())).thenReturn(Some(st))
         when(f.mockPersonDao.findByEmail(st.username)).thenReturn(Some(person))
         when(f.mockPersonDao.findDirectReports(person.credentials.email)).thenReturn(Seq())
-        val result: Future[Result] = f.controller.getReports().apply(FakeRequest().withCookies(SessionManager.createSessionCookie(st.token)))
+        val result: Future[Result] = f.controller.getUserReports().apply(FakeRequest().withCookies(SessionManager.createSessionCookie(st.token)))
 
         // verify
         verify(f.mockSessionManager).extractToken(any())
@@ -117,7 +117,7 @@ class AccountSpec extends PlaySpec with MockitoSugar with AllFixtures with Prope
         }
 
         // call
-        val result: Future[Result] = f.controller.getReports().apply(FakeRequest().withCookies(SessionManager.createSessionCookie(st.token)))
+        val result: Future[Result] = f.controller.getUserReports().apply(FakeRequest().withCookies(SessionManager.createSessionCookie(st.token)))
 
         // verify
         verify(f.mockSessionManager).extractToken(any())
@@ -134,7 +134,7 @@ class AccountSpec extends PlaySpec with MockitoSugar with AllFixtures with Prope
       forAll() { st: SessionToken =>
         val f = fixture
         when(f.mockSessionManager.extractToken(any())).thenReturn(None)
-        val result: Future[Result] = f.controller.getReports().apply(FakeRequest().withCookies(SessionManager.createSessionCookie(st.token)))
+        val result: Future[Result] = f.controller.getUserReports().apply(FakeRequest().withCookies(SessionManager.createSessionCookie(st.token)))
 
         // verify
         verify(f.mockSessionManager).extractToken(any())

@@ -39,6 +39,7 @@ describe('service [Feedback]', function() {
         expect(angular.isFunction(feedback.createFeedbackCycle)).toBe(true);
         expect(angular.isFunction(feedback.updateFeedbackCycle)).toBe(true);
         expect(angular.isFunction(feedback.updateFeedbackCycle360Status)).toBe(true);
+        expect(angular.isFunction(feedback.getCycleReports)).toBe(true);
     });
 
     describe("calls the appropriate server api", function() {
@@ -316,6 +317,21 @@ describe('service [Feedback]', function() {
             expect(result).toEqual(dummyResult);
         });
 
+    it('to get the feedback information for people reporting to the current user by cycle', function() {
+      var result, promise = feedback.getCycleReports();
+
+      $httpBackend.expectGET('/api/cycle/reports').respond(200, dummyResult);
+
+      // set the response value
+      promise.then(function(data) {
+        result = data.data;
+      });
+      expect(result).toBeUndefined();
+      $httpBackend.flush();
+
+      expect(result).toBeDefined();
+      expect(result).toEqual(dummyResult);
     });
+  });
 
 });

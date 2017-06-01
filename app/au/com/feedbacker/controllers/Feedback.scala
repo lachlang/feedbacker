@@ -213,6 +213,11 @@ class Nominations @Inject() (emailer: Emailer,
     }
   }
 
+  def getCycleReports = AuthenticatedAction { user =>
+    val reports = nomination.getFeedbackForUsers(person.findDirectReports(user.credentials.email).map { _.credentials.email })
+    Ok(Json.obj("body" -> Json.toJson(reports)))
+  }
+
 }
 
 class FeedbackCycleController @Inject() (person: PersonDao,

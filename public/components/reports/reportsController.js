@@ -5,17 +5,16 @@ fbControllers.controller('ReportsCtrl', ['$log', 'Model', 'Nomination', function
 
 	var ctrl = this;
 
-    ctrl.error = undefined;
-    ctrl.reports = [];
-    ctrl.displayFilter = 'current';
+  ctrl.userReports = [];
+  ctrl.cycleReports = [];
+//  ctrl.displayFilter = 'current';
 
-    Model.getReports().then(function(response) {
-        ctrl.reports = response;
-    }, function(response) {
-        ctrl.error = response;
-    });
+  Model.getUserReports().then(function(response) {
+    ctrl.reports = response;
+  });
 
-    ctrl.export = function() {
-        alert("This exciting new function is coming soon :)");
-    };
+  Model.getCycleReports().then(function(response) {
+    ctrl.cycles = response;
+  });
+
 }]);

@@ -599,6 +599,13 @@ class NominationDao @Inject() (db: play.api.db.Database,
     }
   }
 
+  def getFeedbackForUsers(usernames: Seq[String]): Seq[FeedbackGroup] = db.withConnection { implicit connection =>
+    SQL( """select * from nominations where from_email in ({emails}) and initiated_by in ({emails}) and status != {statusCancelled} ORDER BY cycle_id DESC, last_updated DESC""")
+      .on('emails -> usernames, 'statusCancelled -> FeedbackStatus.Cancelled.toString, 'statusClosed -> FeedbackStatus.Closed.toString)
+      .as(Nomination.simple *).map { case (a, b, c, d, e, f, g, h) => enrich(a, b, c, d, e, f, g, h) }.groupBy(_.cycleId).toList
+      .map{ case (id, xs) => FeedbackGroup(feedbackCycle.findById(id).getOrElse(FeedbackCycle.orphan), xs)}
+  }
+
   def getAllFeedbackHistoryForUserWithDetail(username: String): Seq[FeedbackGroup] = db.withConnection { implicit connection =>
     person.findByEmail(username) match {
       case Some(_) =>

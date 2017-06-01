@@ -9,7 +9,7 @@ PUT    	/api/session/login          au.com.feedbacker.controllers.Authentication
 GET     /api/session/logout         au.com.feedbacker.controllers.Authentication.logout
 
 GET    	/api/user                   au.com.feedbacker.controllers.Account.getUser
-GET    	/api/user/reports           au.com.feedbacker.controllers.Account.getReports
+GET    	/api/user/reports           au.com.feedbacker.controllers.Account.getUserReports
 PUT     /api/user/update/:email     au.com.feedbacker.controllers.Account.updateUserDetailsForAdmin(email: String)
 PUT    	/api/user/update            au.com.feedbacker.controllers.Account.updateUserDetails
 GET     /api/user/active            au.com.feedbacker.controllers.Account.getActiveUsers
@@ -37,13 +37,13 @@ GET 	  /api/feedback/adhoc/:email  au.com.feedbacker.controllers.Feedback.getAdH
 GET     /api/nominations            au.com.feedbacker.controllers.Nominations.getCurrentNominations
 POST    /api/nominations            au.com.feedbacker.controllers.Nominations.createNomination
 GET     /api/nominations/cancel/:id au.com.feedbacker.controllers.Nominations.cancelNomination(id: Long)
+GET     /api/cycle/reports          au.com.feedbacker.controllers.Nominations.getCycleReports
 GET     /api/cycle/active           au.com.feedbacker.controllers.FeedbackCycleController.getActiveFeedbackCycles
 GET     /api/cycle/:id              au.com.feedbacker.controllers.FeedbackCycleController.getFeedbackCycleDetails(id: Long)
 GET     /api/cycle                  au.com.feedbacker.controllers.FeedbackCycleController.getAllFeedbackCycles
 POST    /api/cycle                  au.com.feedbacker.controllers.FeedbackCycleController.createFeedbackCycle
 PUT     /api/cycle/:id              au.com.feedbacker.controllers.FeedbackCycleController.updateFeedbackCycle(id: Long)
 PUT     /api/cycle/:id/360          au.com.feedbacker.controllers.FeedbackCycleController.updateFeedbackCycle360Status(id: Long)
-
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /components/*file           controllers.Assets.at(path="/public/components", file)

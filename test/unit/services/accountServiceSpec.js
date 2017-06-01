@@ -32,7 +32,7 @@ describe('service [Account]', function() {
         expect(angular.isFunction(account.sendActivationEmail)).toBe(true);
         expect(angular.isFunction(account.resetPassword)).toBe(true);
         expect(angular.isFunction(account.sendPasswordResetEmail)).toBe(true);
-        expect(angular.isFunction(account.getReports)).toBe(true);
+        expect(angular.isFunction(account.getUserReports)).toBe(true);
     });
 
     describe("calls the appropriate server api", function() {
@@ -198,8 +198,8 @@ describe('service [Account]', function() {
           expect(result).toEqual(dummyResult);
       });
 
-      it('to get the list of people reporting to the current user', function() {
-          var result, promise = account.getReports();
+      it('to get the feedback information for people reporting to the current user', function() {
+          var result, promise = account.getUserReports();
 
           $httpBackend.expectGET('/api/user/reports').respond(200, dummyResult);
 

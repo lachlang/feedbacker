@@ -134,7 +134,7 @@ fbServices.service('Account', ['$log', '$http', '$q', function($log, $http, $q) 
 			});
 		},
 
-		getReports: function() {
+		getUserReports: function() {
 			return $http.get('/api/user/reports');
 		}
 	}
