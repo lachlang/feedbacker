@@ -7,14 +7,14 @@ fbControllers.controller('ReportsCtrl', ['$log', 'Model', 'Nomination', function
 
   ctrl.userReports = [];
   ctrl.cycleReports = [];
-//  ctrl.displayFilter = 'current';
+  ctrl.displayFilter = 'active';
 
   Model.getUserReports().then(function(response) {
-    ctrl.reports = response;
+    ctrl.userReports = response;
   });
 
   Model.getCycleReports().then(function(response) {
-    ctrl.cycles = response;
+    ctrl.cycleReports = response;
   });
 
 }]);

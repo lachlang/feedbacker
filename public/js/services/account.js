@@ -39,7 +39,7 @@ fbServices.service('Account', ['$log', '$http', '$q', function($log, $http, $q) 
 			return $http.get("/api/user/active");
 		},
 
-		updateCurrentUser: function(name, role, managerEmail) {
+		updateCurrentUser: function(name, role) {
 			return $http({
 				method: "PUT",
 				url: "/api/user/update",
@@ -47,8 +47,7 @@ fbServices.service('Account', ['$log', '$http', '$q', function($log, $http, $q) 
 					apiVersion: "1.0",
 					body: {
 						name: name,
-						role: role,
-						managerEmail: managerEmail
+						role: role
 					}
 				}
 			});

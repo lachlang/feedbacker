@@ -31,7 +31,7 @@ class Registration @Inject() (emailer: Emailer,
   def register: Action[JsValue] = LoggingAction(parse.json(maxLength = 2000)) { request =>
 
     request.body.validate[RegistrationContent].asOpt
-      .map(rc => RegistrationContent(rc.name,rc.role,rc.email.toLowerCase.toLowerCase,rc.password,rc.managerEmail.toLowerCase)) match {
+      .map(rc => RegistrationContent(rc.name,rc.role,rc.email.toLowerCase,rc.password,rc.managerEmail.toLowerCase)) match {
       case None => BadRequest(Json.obj("message" -> "Your request was invalid.  Please submit all the required fields."))
       case Some(body) => if (body.managerEmail == body.email) {
         BadRequest(Json.obj("message" -> "Your email and manager's email must be different."))

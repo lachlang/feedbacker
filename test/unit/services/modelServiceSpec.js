@@ -248,13 +248,13 @@ describe('service [Model]', function() {
   describe('write through tests', function() {
 
       it('should call the account.updateCurrentUser service', function() {
-          model.updateCurrentUser("1", "2","3");
+          model.updateCurrentUser("1", "2");
 
-          expect(account.updateCurrentUser).toHaveBeenCalledWith("1", "2", "3");
+          expect(account.updateCurrentUser).toHaveBeenCalledWith("1", "2");
       });
 
       it('should set the cache when the account.updateCurrentUser service is called', function() {
-          model.updateCurrentUser("1", "2","3");
+          model.updateCurrentUser("1", "2");
 
           deferred.resolve({ "data": {"body":"value"}});
           scope.$digest();

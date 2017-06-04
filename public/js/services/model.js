@@ -87,11 +87,11 @@ fbServices.service('Model', ['$log', '$q', 'Account', 'Feedback', 'Nomination', 
 									"Feedback.getCycleReports");
 		},
 
-		updateCurrentUser: function(name, role, managerEmail) {
+		updateCurrentUser: function(name, role) {
 			var deferred = $q.defer();
 
 			$log.debug("[Account.updateCurrentUser] Updating to server...");
-			Account.updateCurrentUser(name, role, managerEmail).then(function(result){
+			Account.updateCurrentUser(name, role).then(function(result){
 				$log.debug("[Account.updateCurrentUser] Response from server...");
 				$log.debug(result)
 				self = result.data.body;

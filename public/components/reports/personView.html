@@ -1,0 +1,64 @@
+<div class="row top-buffer">
+    <div class="col-sm-12">
+        <div data-ng-show="!reportCtrl.userReports || reportCtrl.userReports.length == 0">
+            <p class="lead">No people in your team</p>
+        </div>
+        <div data-ng-repeat="report in reportCtrl.userReports">
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="lead text-left">Feedback for <strong>{{report.person.name}}</strong></p>
+                </div>
+                <div class="col-md-6">
+                    <p class="text-right"><a href="/api/report/user/{{report.person.id}}" class="btn btn-default">Export <em>{{report.person.name}}</em> history (to CSV)</a></p>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <tbody >
+                        <tr data-ng-hide="report.reviewCycle.length > 0">
+                            <td class="col-xs-12">No feedback nominations</td>
+                        </tr>
+                        <tr data-ng-repeat="cycle in report.reviewCycle">
+                            <td class="col-xs-12">
+                                <table class="table table-hover">
+                                    <caption>
+                                        Review Cycle: <strong>{{cycle.cycle.label}}</strong> <em>{{cycle.cycle.start_date | date: 'mediumDate'}} to {{cycle.cycle.end_date | date: 'mediumDate'}}</em>
+                                    </caption>
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Colleague</th>
+                                            <th>Role</th>
+                                            <th>Status</th>
+                                            <th>Feedback Cycle</th>
+                                            <th>Cycle End Date</th>
+                                            <th>Last Updated</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr data-ng-repeat="nominee in cycle.feedback | orderBy: 'lastUpdated'">
+                                            <td>{{$index + 1}}</td>
+                                            <td>{{nominee.to.name}}</td>
+                                            <td>{{nominee.to.role}}</td>
+                                            <td>{{nominee.status}}</td>
+                                            <td>{{cycle.cycle.label}}</td>
+                                            <td>{{cycle.cycle.endDate  | date : 'medium'}}</td>
+                                            <td>
+                                                <span data-ng-show="nominee.lastUpdated">{{nominee.lastUpdated | date : 'medium'}}</span>
+                                                <span data-ng-hide="nominee.lastUpdated">--</span>
+                                            </td>
+                                            <td>
+                                                <a data-ng-show="nominee.status=='Submitted' && nominee.id" href="#/detailView?id={{nominee.id}}">View</a>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

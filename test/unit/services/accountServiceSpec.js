@@ -55,9 +55,9 @@ describe('service [Account]', function() {
     	});
 
     	it('to update the current user', function() {
-    		var result, promise = account.updateCurrentUser("string1", "string2", "string3");
+    		var result, promise = account.updateCurrentUser("string1", "string2");
 
-            $httpBackend.expectPUT('/api/user/update', '{"apiVersion":"1.0","body":{"name":"string1","role":"string2","managerEmail":"string3"}}').respond(200, dummyResult);
+            $httpBackend.expectPUT('/api/user/update', '{"apiVersion":"1.0","body":{"name":"string1","role":"string2"}}').respond(200, dummyResult);
 
     		// set the response value
     		promise.then(function(data) {

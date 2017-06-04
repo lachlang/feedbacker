@@ -17,14 +17,17 @@
         <!--</div>-->
     </div>
     <uib-tabset active="active">
-        <uib-tab index="0" heading="Active feedback cycle(s)">
+        <uib-tab index="0" data-ng-click="reportCtrl.displayFilter = 'active'" heading="Active feedback cycle(s)">
             <div data-ng-include="'/components/reports/cycleView.html'"></div>
         </uib-tab>
-        <uib-tab index="1" heading="Previous feedback cycles">
+        <uib-tab index="1" data-ng-click="reportCtrl.displayFilter = 'inactive'" heading="Previous feedback cycles">
+            <div data-ng-include="'/components/reports/cycleView.html'"></div>
         </uib-tab>
         <uib-tab index="2" heading="Direct reports">
+            <div data-ng-include="'/components/reports/personView.html'"></div>
         </uib-tab>
         <uib-tab index="3" heading="Extended reporting line">
+            <p class="lead">This exciting new functionality is coming soon.</p>
         </uib-tab>
     </uib-tabset>
 

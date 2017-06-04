@@ -19,12 +19,12 @@ fbControllers.controller('ProfileCtrl',  ['$log', 'Model', function($log, Model)
 		ctrl.message = undefined;
 		ctrl.error = undefined;
 
-		if (!ctrl.name || !ctrl.role || !ctrl.managerEmail) {
+		if (!ctrl.name || !ctrl.role) {
 		    ctrl.error = "Cannot set blank values."
 		    return
 		}
 
-		Model.updateCurrentUser(ctrl.name, ctrl.role, ctrl.managerEmail).then(function(response) {
+		Model.updateCurrentUser(ctrl.name, ctrl.role).then(function(response) {
 			ctrl.initialise();
 			ctrl.message = "Your profile details have been successfully updated."
 		}, function(response) {
