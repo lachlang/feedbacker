@@ -28,8 +28,8 @@
             <tbody>
             <tr data-ng-repeat="history in summary.currentFeedbackList">
               <td>{{$index + 1}}</td>
-              <td>{{history.from.name}}</td>
-              <td>{{history.from.role}}</td>
+              <td>{{history.to.name}}</td>
+              <td>{{history.to.role}}</td>
               <td>{{history.status}}</td>
               <td>{{history.lastUpdated | date: 'medium'}}</td>
               <td>
@@ -94,8 +94,8 @@
             <tbody>
             <tr data-ng-repeat="history in summary.feedbackHistoryList">
               <td>{{$index + 1}}</td>
-              <td>{{history.from.name}}</td>
-              <td>{{history.from.role}}</td>
+              <td>{{history.to.name}}</td>
+              <td>{{history.to.role}}</td>
               <td>{{history.status}}</td>
               <td>{{history.lastUpdated | date: 'medium'}}</td>
               <td>

@@ -9,10 +9,10 @@
                   <div class="col-md-9">
                     <div uib-accordion-group class="panel-default">
                       <uib-accordion-heading>
-                        <span class="lead text-left">Feedback for <strong>{{report.person.name}}</strong></span>
+                        <span class="lead text-left">Feedback for <strong>{{report.person.name}}</strong> <em>({{report.person.role}})</em></span>
                         <span class="small">(Click to edit details)</span>
                       </uib-accordion-heading>
-                      <form class="form-group" data-ng-submit="report.updatePerson()">
+                      <form class="form-group" data-ng-submit="reportCtrl.updateUser(report.person)">
                         <div class="row">
                           <div class="col-sm-1"><p>Name:</p></div>
                           <div class="col-sm-5">
@@ -31,21 +31,21 @@
                             <input type="text" class="form-control" placeholder="Your Role" data-ng-model="report.person.managerEmail" required>
                           </div>
                         </div>
-                        <div class="col-sm-1"><p>User Enabled: <span data-ng-show="report.person.isEnabled">(Yes)</span>
-                          <span data-ng-hide="report.person.isEnabled">(No)</span></p></div>
-                        <div class="col-sm-2">
-                          <div class="btn-group" role="group" aria-label="Is user enabled">
-                            <a class="btn btn-default"
-                               for="true"
-                               data-ng-model="report.person.isEnabled"
-                               uib-btn-radio="true">Yes</a>
-                            <a class="btn btn-default"
-                               for="false"
-                               data-ng-model="report.person.isEnabled"
-                               uib-btn-radio="false">No</a>
-                          </div>
-                        </div>
                         <div class="row top-buffer-small">
+                          <div class="col-sm-1"><p>User Enabled: <span data-ng-show="report.person.isEnabled">(Yes)</span>
+                            <span data-ng-hide="report.person.isEnabled">(No)</span></p></div>
+                          <div class="col-sm-2">
+                            <div class="btn-group" role="group" aria-label="Is user enabled">
+                              <a class="btn btn-default"
+                                 for="true"
+                                 data-ng-model="report.person.isEnabled"
+                                 uib-btn-radio="true">Yes</a>
+                              <a class="btn btn-default"
+                                 for="false"
+                                 data-ng-model="report.person.isEnabled"
+                                 uib-btn-radio="false">No</a>
+                            </div>
+                          </div>
                           <div class="col-sm-6">
                             <button type="submit" class="btn btn-primary">Update</button>
                           </div>

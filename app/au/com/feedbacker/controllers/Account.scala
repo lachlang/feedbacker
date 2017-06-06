@@ -75,26 +75,31 @@ class Account @Inject() (person: PersonDao,
     }
   }
 
-  def updateUserDetailsForAdmin(username: String) = AuthenticatedAdminRequestAction { json =>
+  def updateUserDetailsForAdmin(username: String) = AuthenticatedRequestAction { (user, json) =>
     (json.validate[UpdateContentForAdmin].asOpt, person.findByEmail(username)) match {
       case (None, None) => BadRequest(Json.obj("message" -> "Invalid request."))
       case (None, _) => BadRequest(Json.obj("message" -> "Invalid Request."))
       case (_, None) => BadRequest(Json.obj("message" -> "Cannot update invalid user."))
       case (Some(uc), Some(targetPerson)) => {
-        val status =
-          if ((targetPerson.credentials.status == CredentialStatus.Active || targetPerson.credentials.status == CredentialStatus.Inactive) && uc.isEnabled == false) CredentialStatus.Disabled
-          else if (targetPerson.credentials.status == CredentialStatus.Disabled && uc.isEnabled == true) CredentialStatus.Inactive
-          else targetPerson.credentials.status
-        person.updateWithAdmin(Person(id = targetPerson.id,
-                  name = uc.name,
-                  role = uc.role,
-                  credentials = targetPerson.credentials.copy(status = status),
-                  managerEmail = uc.managerEmail.toLowerCase,
-                  isLeader = targetPerson.isLeader,
-                  isAdmin = uc.isAdmin)) match {
+        if (!user.isAdmin && user.credentials.email != targetPerson.managerEmail) Unauthorized
+        else {
+          val status =
+            if ((targetPerson.credentials.status == CredentialStatus.Active || targetPerson.credentials.status == CredentialStatus.Inactive) && uc.isEnabled == false) CredentialStatus.Disabled
+            else if (targetPerson.credentials.status == CredentialStatus.Disabled && uc.isEnabled == true) CredentialStatus.Inactive
+            else targetPerson.credentials.status
+          val isAdmin =
+            if (user.isAdmin) uc.isAdmin
+            else targetPerson.isAdmin
+          person.updateWithAdmin(Person(id = targetPerson.id,
+            name = uc.name,
+            role = uc.role,
+            credentials = targetPerson.credentials.copy(status = status),
+            managerEmail = uc.managerEmail.toLowerCase,
+            isLeader = targetPerson.isLeader,
+            isAdmin = isAdmin)) match {
             case Left(e) => BadRequest(Json.obj("body" -> Json.obj("message" -> e.getMessage)))
             case Right(updatedPerson) => person.recalculateIsLeader(targetPerson.managerEmail, updatedPerson.managerEmail); Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(updatedPerson)))
-
+          }
         }
       }
     }
@@ -158,8 +163,6 @@ object RegistrationContent {
   )(RegistrationContent.apply, unlift(RegistrationContent.unapply))
 }
 
-
-// LG: 2016-09-15 I suspect there is a better way to do this...
 case class UpdateContent(name: String, role: String, managerEmail: String)
 
 object UpdateContent {

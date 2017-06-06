@@ -569,7 +569,7 @@ class NominationDao @Inject() (db: play.api.db.Database,
   }
 
   def getPendingNominationsForUser(username: String): Seq[Nomination] = db.withConnection { implicit connection =>
-    SQL("""select * from nominations where to_email = {email} and initiated_by != {email} and status NOT IN ({statusCancelled}, {statusCancelled}) and cycle_id in (select id from cycle where active = TRUE)""")
+    SQL("""select * from nominations where to_email = {email} and initiated_by != {email} and status NOT IN ({statusCancelled}, {statusClosed}) and cycle_id in (select id from cycle where active = TRUE)""")
       .on('email -> username, 'statusCancelled -> FeedbackStatus.Cancelled.toString, 'statusClosed -> FeedbackStatus.Closed.toString)
       .as(Nomination.simple *).map{case (a,b,c,d,e,f,g,h) => enrich(a,b,c,d,e,f,g,h)}
   }
@@ -620,13 +620,13 @@ class NominationDao @Inject() (db: play.api.db.Database,
   }
 
   def getPendingFeedbackItemsForUser(username: String): Seq[Nomination] = db.withConnection { implicit connection =>
-    SQL("""select * from nominations where to_email = {email} and cycle_id in (select id from cycle where active = TRUE)""")
+    SQL("""select * from nominations where from_email = {email} and cycle_id in (select id from cycle where active = TRUE)""")
       .on('email -> username).as(Nomination.simple *)
       .map { case (a,b,c,d,e,f,g,h) => enrich(a,b,c,d,e,f,g,h)}
   }
 
   def getHistoryFeedbackForUser(username: String): Seq[Nomination] = db.withConnection { implicit connection =>
-    SQL("""select * from nominations where to_email = {email} and cycle_id not in (select id from cycle where active = TRUE) ORDER BY last_updated DESC NULLS LAST""")
+    SQL("""select * from nominations where from_email = {email} and cycle_id not in (select id from cycle where active = TRUE) ORDER BY last_updated DESC NULLS LAST""")
       .on('email -> username).as(Nomination.simple *)
       .map { case (a,b,c,d,e,f,g,h) => enrich(a,b,c,d,e,f,g,h)}
   }
