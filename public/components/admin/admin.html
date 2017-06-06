@@ -75,7 +75,7 @@
           <div class="col-sm-1"><p>User Disabled: <span data-ng-show="admin.selectedUser.isEnabled">(No)</span>
             <span data-ng-hide="admin.selectedUser.isEnabled">(Yes)</span></p></div>
           <div class="col-sm-2">
-            <div class="btn-group" role="group" aria-label="Is admin user">
+            <div class="btn-group" role="group" aria-label="Is user enabled">
               <a class="btn btn-default"
                       for="false"
                       data-ng-model="admin.selectedUser.isEnabled"
@@ -175,7 +175,7 @@
               <div class="row top-buffer">
                 <div class="col-sm-2"><p>Feedback cycle is currently active/enabled (Feedback may be edited: {{admin.selectedCycleDetails.active?'Yes':'No'}})</span></p></div>
                 <div class="col-sm-2">
-                  <div class="btn-group" role="group" aria-label="Is admin user">
+                  <div class="btn-group" role="group" aria-label="Is feedback cycle active">
                     <a class="btn btn-default"
                             for="true"
                             data-ng-model="admin.selectedCycleDetails.active"
@@ -188,7 +188,7 @@
                 </div>
                 <div class="col-sm-2"><p>Automatic sharing with feedback recipient: {{admin.selectedCycleDetails.hasForcedSharing?'Yes':'No'}})</span></p></div>
                 <div class="col-sm-2">
-                  <div class="btn-group" role="group" aria-label="Is admin user">
+                  <div class="btn-group" role="group" aria-label="Does feedback cycle force sharing">
                     <a class="btn btn-default"
                             for="true"
                             data-ng-model="admin.selectedCycleDetails.hasForcedSharing"
@@ -201,7 +201,7 @@
                 </div>
                 <div class="col-sm-2"><p>Hide option to share feedback with feedback recipient: {{admin.selectedCycleDetails.hasOptionalSharing?'No':'Yes'}}</span></p></div>
                 <div class="col-sm-2">
-                  <div class="btn-group" role="group" aria-label="Is admin user">
+                  <div class="btn-group" role="group" aria-label="Does feedback cycle allow optional sharing">
                     <a class="btn btn-default"
                             for="false"
                             data-ng-model="admin.selectedCycleDetails.hasOptionalSharing"

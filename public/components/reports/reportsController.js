@@ -17,4 +17,7 @@ fbControllers.controller('ReportsCtrl', ['$log', 'Model', 'Nomination', function
     ctrl.cycleReports = response;
   });
 
+  ctrl.updateUser = function(user){
+  
+  }
 }]);

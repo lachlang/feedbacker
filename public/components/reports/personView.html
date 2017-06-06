@@ -3,62 +3,109 @@
         <div data-ng-show="!reportCtrl.userReports || reportCtrl.userReports.length == 0">
             <p class="lead">No people in your team</p>
         </div>
-        <div data-ng-repeat="report in reportCtrl.userReports">
-            <div class="row">
-                <div class="col-md-6">
-                    <p class="lead text-left">Feedback for <strong>{{report.person.name}}</strong></p>
-                </div>
-                <div class="col-md-6">
-                    <p class="text-right"><a href="/api/report/user/{{report.person.id}}" class="btn btn-default">Export <em>{{report.person.name}}</em> history (to CSV)</a></p>
-                </div>
-            </div>
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <tbody >
-                        <tr data-ng-hide="report.reviewCycle.length > 0">
-                            <td class="col-xs-12">No feedback nominations</td>
-                        </tr>
-                        <tr data-ng-repeat="cycle in report.reviewCycle">
-                            <td class="col-xs-12">
-                                <table class="table table-hover">
-                                    <caption>
-                                        Review Cycle: <strong>{{cycle.cycle.label}}</strong> <em>{{cycle.cycle.start_date | date: 'mediumDate'}} to {{cycle.cycle.end_date | date: 'mediumDate'}}</em>
-                                    </caption>
-                                    <thead>
-                                        <tr>
-                                            <th>#</th>
-                                            <th>Colleague</th>
-                                            <th>Role</th>
-                                            <th>Status</th>
-                                            <th>Feedback Cycle</th>
-                                            <th>Cycle End Date</th>
-                                            <th>Last Updated</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr data-ng-repeat="nominee in cycle.feedback | orderBy: 'lastUpdated'">
-                                            <td>{{$index + 1}}</td>
-                                            <td>{{nominee.to.name}}</td>
-                                            <td>{{nominee.to.role}}</td>
-                                            <td>{{nominee.status}}</td>
-                                            <td>{{cycle.cycle.label}}</td>
-                                            <td>{{cycle.cycle.endDate  | date : 'medium'}}</td>
-                                            <td>
-                                                <span data-ng-show="nominee.lastUpdated">{{nominee.lastUpdated | date : 'medium'}}</span>
-                                                <span data-ng-hide="nominee.lastUpdated">--</span>
-                                            </td>
-                                            <td>
-                                                <a data-ng-show="nominee.status=='Submitted' && nominee.id" href="#/detailView?id={{nominee.id}}">View</a>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+        <uib-accordion close-others="true">
+          <div data-ng-repeat="report in reportCtrl.userReports">
+              <div class="row">
+                  <div class="col-md-9">
+                    <div uib-accordion-group class="panel-default">
+                      <uib-accordion-heading>
+                        <span class="lead text-left">Feedback for <strong>{{report.person.name}}</strong></span>
+                        <span class="small">(Click to edit details)</span>
+                      </uib-accordion-heading>
+                      <form class="form-group" data-ng-submit="report.updatePerson()">
+                        <div class="row">
+                          <div class="col-sm-1"><p>Name:</p></div>
+                          <div class="col-sm-5">
+                            <input type="text" class="form-control" placeholder="Name" data-ng-model="report.person.name" required>
+                          </div>
+                        </div>
+                        <div class="row top-buffer-small">
+                          <div class="col-sm-1"><p>Role:</p></div>
+                          <div class="col-sm-5">
+                            <input type="text" class="form-control" placeholder="Your Role" data-ng-model="report.person.role" required>
+                          </div>
+                        </div>
+                        <div class="row top-buffer-small">
+                          <div class="col-sm-1"><p>Boss Email:</p></div>
+                          <div class="col-sm-5">
+                            <input type="text" class="form-control" placeholder="Your Role" data-ng-model="report.person.managerEmail" required>
+                          </div>
+                        </div>
+                        <div class="col-sm-1"><p>User Enabled: <span data-ng-show="report.person.isEnabled">(Yes)</span>
+                          <span data-ng-hide="report.person.isEnabled">(No)</span></p></div>
+                        <div class="col-sm-2">
+                          <div class="btn-group" role="group" aria-label="Is user enabled">
+                            <a class="btn btn-default"
+                               for="true"
+                               data-ng-model="report.person.isEnabled"
+                               uib-btn-radio="true">Yes</a>
+                            <a class="btn btn-default"
+                               for="false"
+                               data-ng-model="report.person.isEnabled"
+                               uib-btn-radio="false">No</a>
+                          </div>
+                        </div>
+                        <div class="row top-buffer-small">
+                          <div class="col-sm-6">
+                            <button type="submit" class="btn btn-primary">Update</button>
+                          </div>
+                        </div>
+                      </form>
+
+                    </div>
+                  </div>
+                  <div class="col-md-3">
+                      <p class="text-right"><a href="/api/report/user/{{report.person.id}}" class="btn btn-default">Export <em>{{report.person.name}}</em> history (to CSV)</a></p>
+                  </div>
+              </div>
+              <div class="table-responsive">
+                  <table class="table table-hover">
+                      <tbody >
+                          <tr data-ng-hide="report.reviewCycle.length > 0">
+                              <td class="col-xs-12">No feedback nominations</td>
+                          </tr>
+                          <tr data-ng-repeat="cycle in report.reviewCycle">
+                              <td class="col-xs-12">
+                                  <table class="table table-hover">
+                                      <caption>
+                                          Review Cycle: <strong>{{cycle.cycle.label}}</strong> <em>{{cycle.cycle.startDate | date: 'mediumDate'}} to {{cycle.cycle.endDate | date: 'mediumDate'}}</em>
+                                      </caption>
+                                      <thead>
+                                          <tr>
+                                              <th>#</th>
+                                              <th>Colleague</th>
+                                              <th>Role</th>
+                                              <th>Status</th>
+                                              <th>Feedback Cycle</th>
+                                              <th>Cycle End Date</th>
+                                              <th>Last Updated</th>
+                                              <th>Action</th>
+                                          </tr>
+                                      </thead>
+                                      <tbody>
+                                          <tr data-ng-repeat="nominee in cycle.feedback | orderBy: 'lastUpdated'">
+                                              <td>{{$index + 1}}</td>
+                                              <td>{{nominee.to.name}}</td>
+                                              <td>{{nominee.to.role}}</td>
+                                              <td>{{nominee.status}}</td>
+                                              <td>{{cycle.cycle.label}}</td>
+                                              <td>{{cycle.cycle.endDate  | date : 'medium'}}</td>
+                                              <td>
+                                                  <span data-ng-show="nominee.lastUpdated">{{nominee.lastUpdated | date : 'medium'}}</span>
+                                                  <span data-ng-hide="nominee.lastUpdated">--</span>
+                                              </td>
+                                              <td>
+                                                  <a data-ng-show="nominee.status=='Submitted' && nominee.id" href="#/detailView?id={{nominee.id}}">View</a>
+                                              </td>
+                                          </tr>
+                                      </tbody>
+                                  </table>
+                              </td>
+                          </tr>
+                      </tbody>
+                  </table>
+              </div>
+          </div>
+        </uib-accordion>
     </div>
 </div>

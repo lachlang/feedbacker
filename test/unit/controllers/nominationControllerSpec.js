@@ -82,7 +82,7 @@ describe('nomination controller [NominationCtrl]', function() {
 			expect(nominationController.error).toEqual("Must send a nomination to a valid email address.");
 
 			nominationController.addNomination("a@b", 1);
-			expect(nominationController.message).toBeUndefined();
+			expect(nominationController.success).toBeUndefined();
 			expect(nominationController.update).toBeUndefined();
 			expect(nominationController.error).toEqual("Must send a nomination to a valid email address.");
 		});
@@ -91,12 +91,12 @@ describe('nomination controller [NominationCtrl]', function() {
 			nominationController.addNomination("a@b.co", 1);
 
       expect(nominationController.update).toEqual("Thank you.  Your feedback nomination is being created and a notification email is being sent to 'a@b.co'.");
-			expect(nominationController.message).toBeUndefined();
+			expect(nominationController.success).toBeUndefined();
 			expect(nominationController.error).toBeUndefined();
 			deferredNom.resolve();
 			scope.$digest();
 
-      expect(nominationController.message).toEqual("Thank you. The feedback nomination has been created and an email notification has been sent to 'a@b.co'.");
+      expect(nominationController.success).toEqual("Thank you. The feedback nomination has been created and an email notification has been sent to 'a@b.co'.");
 			expect(nominationController.error).toBeUndefined();
 			expect(nominationController.update).toBeUndefined();
 			expect(model.getCurrentNominations).toHaveBeenCalledWith(true);
@@ -108,7 +108,7 @@ describe('nomination controller [NominationCtrl]', function() {
 			deferredNom.reject();
 			scope.$digest();
 
-			expect(nominationController.message).toBeUndefined();
+			expect(nominationController.success).toBeUndefined();
 			expect(nominationController.update).toBeUndefined();
 			expect(nominationController.error).toEqual("Could not create nomination at this time.  Please try again later.");
 		});

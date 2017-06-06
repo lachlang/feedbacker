@@ -11,6 +11,7 @@ fbControllers.controller('NominationCtrl',  ['$scope', '$log', 'Model', 'Nominat
 	ctrl.selectedCycle = undefined
 	ctrl.nominee = undefined
 	ctrl.message = undefined
+	ctrl.success = undefined
 	ctrl.update = undefined
 	ctrl.error = undefined
 
@@ -46,7 +47,7 @@ fbControllers.controller('NominationCtrl',  ['$scope', '$log', 'Model', 'Nominat
     // update model
     Nomination.addNomination(emailAddress, cycleId, personalMessage).then(function() {
       ctrl.update = undefined
-      ctrl.message = "Thank you. The feedback nomination has been created and an email notification has been sent to '" + emailAddress + "'."
+      ctrl.success = "Thank you. The feedback nomination has been created and an email notification has been sent to '" + emailAddress + "'."
       Model.getCurrentNominations(true).then(function(response) {
         ctrl.nominations = response
       })
@@ -65,7 +66,7 @@ fbControllers.controller('NominationCtrl',  ['$scope', '$log', 'Model', 'Nominat
     }
     Nomination.cancelNomination(nominationId).then(function() {
       Model.getCurrentNominations(true).then(function(response) {
-        ctrl.message = "Nomination successfully removed"
+        ctrl.success = "Nomination successfully removed"
         ctrl.nominations = response
       })
     }, function() {
@@ -74,7 +75,7 @@ fbControllers.controller('NominationCtrl',  ['$scope', '$log', 'Model', 'Nominat
   }
 
 	ctrl.resetMessages = function() {
-	  ctrl.message = undefined
+	  ctrl.success = undefined
 	  ctrl.update = undefined
 	  ctrl.error = undefined
 	}
