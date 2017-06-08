@@ -339,7 +339,7 @@ object Activation {
 }
 
 class ActivationDao @Inject() (db: play.api.db.Database, sessionManager: SessionManager) {
-  private val tokenExpiryInSeconds = 3600
+  private val tokenExpiryInSeconds = 3600 * 24 // 1 day -> 1 hour x 24
 
   // Queries
   /**
