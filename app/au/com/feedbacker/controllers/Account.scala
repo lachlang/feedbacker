@@ -194,7 +194,7 @@ class ActivationCtrl @Inject() (emailer: Emailer, person: PersonDao, activation:
       request.getQueryString("token").map{token => SessionToken(username, token.replaceAll(" ", "+"))}}
     match {
       case None => BadRequest
-      case Some(st) => if (!activation.validateToken(st)) Forbidden else if (activation.activate(st)) sessionManager.signIn(st, Redirect("/#/list")) else BadRequest
+      case Some(st) => if (!activation.validateToken(st)) Forbidden else if (activation.activate(st)) sessionManager.signIn(st, Redirect("/#/worklist")) else BadRequest
     }
   }
 

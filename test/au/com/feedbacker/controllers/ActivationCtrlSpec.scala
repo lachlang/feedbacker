@@ -88,7 +88,7 @@ class ActivationCtrlSpec extends PlaySpec with MockitoSugar with AllFixtures wit
     "redirect the user when the activation succeeds" in {
       forAll() { (st: SessionToken) =>
         val f = fixture
-        val targetUrl: String = "/#/list"
+        val targetUrl: String = "/#/worklist"
         val tt = SessionToken(st.username.toLowerCase, st.token)
         when(f.mockActivationDao.validateToken(tt)).thenReturn(true)
         when(f.mockActivationDao.activate(tt)).thenReturn(true)
