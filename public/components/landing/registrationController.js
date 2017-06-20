@@ -29,7 +29,7 @@ fbControllers.controller('RegistrationCtrl',  ['$rootScope', '$log', 'Account', 
 
 	$rootScope.$on('inactive-account', function() {
 		$log.debug("Account is inactive");
-		ctrl.error = "You account is not yet active.  Please follow the link sent in your activation email.";
+		ctrl.error = "You account is not yet active.  Please follow the link sent in your activation email or click the link below if your link has expired.";
 	});
 
 	$rootScope.$on('invalid-credentials', function() {

@@ -21,9 +21,9 @@ fbControllers.controller('MenuCtrl', ['$rootScope', '$log', '$location', 'Sessio
 			$location.path("/worklist");
 		}, function(response) {
 			$log.error("Login FAILED!");
-			if (response.status == 401) {
+			if (response.status == 406) {
 				$rootScope.$broadcast('inactive-account', {});
-			} else if (response.status == 400) {
+			} else if (response.status == 401) {
 				$rootScope.$broadcast('invalid-credentials', {});
 			}
 			ctrl.error = "Could not log in.  Please try again later.";
