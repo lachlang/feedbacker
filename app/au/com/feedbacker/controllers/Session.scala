@@ -153,7 +153,7 @@ object SessionManager {
 
   // TODO: pull this out into config
   val cookieName: String = "FEEDBACKER_SESSION"
-  protected val cookieMaxAge: Option[Int] = Some(60 * 60 * 2) // 60 minutes * 60 seconds * 2 hours
+  protected val cookieMaxAge: Option[Int] = Some(60 * 60 * 24) // 60 minutes * 60 seconds * 24 hours
   protected val cookiePathOption: String = "/"
   protected val cookieDomainOption: Option[String] = None
   protected val secureOnly : Boolean = false

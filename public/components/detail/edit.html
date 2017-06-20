@@ -15,9 +15,9 @@
     </div>
   </div>
     <div class="row top-buffer">
-        <div class="col-md-12">
-            <p class="lead">Feedback for <strong>{{edit.feedback.fromName}}</strong> from <strong>{{edit.feedback.toName}}</strong>.  When <strong>published</strong>, Feedback will be visible by <em>{{edit.feedback.bossEmail}}</em><span data-ng-show="edit.feedback.shareFeedback"> and <em>{{edit.feedback.fromName}}</em></span>.</p>
-        </div>
+      <div class="col-md-12">
+        <p class="lead">Feedback for <strong>{{edit.feedback.fromName}}</strong> from <strong>{{edit.feedback.toName}}</strong>.  When <strong>published</strong>, Feedback will be visible by <em>{{edit.feedback.bossEmail}}</em><span data-ng-show="edit.feedback.shareFeedback"> and <em>{{edit.feedback.fromName}}</em></span>.</p>
+      </div>
     </div>
   <div class="row top-buffer" data-ng-show="!edit.feedback.hasForceSharing && edit.feedback.hasOptionalSharing">
     <div class="col-md-3">
@@ -56,32 +56,32 @@
     </div>
   </div>
   <div class="row top-buffer" data-ng-repeat="question in edit.feedback.questions">
-      <div class="col-sm-1">
-          <span>Q{{$index +1}}</span>
-          <span uib-tooltip="{{question.helpText}}" tooltip-placement="right" data-ng-show="question.helpText" class="fa fa-question-circle-o"></span>
+    <div class="col-sm-1">
+      <span>Q{{$index +1}}</span>
+    </div>
+    <div class="col-md-4">
+      <span>{{question.text}}</span>
+      <span uib-tooltip="{{question.helpText}}" tooltip-placement="right" data-ng-show="question.helpText" class="fa fa-question-circle-o"></span>
+    </div>
+    <div class="col-md-2">
+      <div data-ng-if="question.format== 'RADIO'">
+        <div class="btn-group" role="group" aria-label="Answer options">
+          <button class="btn btn-default"
+            data-ng-repeat="option in question.responseOptions"
+            for="{{option}}"
+            data-ng-model="question.response"
+            uib-btn-radio="'{{option}}'">{{option}}</button>
+        </div>
       </div>
-      <div class="col-md-4">
-          <span>{{question.text}}</span>
+      <div data-ng-if="question.format == 'SELECT'">
+        <select class="form-control" data-ng-model="question.response">
+          <option data-ng-repeat="option in question.responseOptions">{{option}}</option>
+        </select>
       </div>
-      <div class="col-md-2">
-          <div data-ng-if="question.format== 'RADIO'">
-              <div class="btn-group" role="group" aria-label="Answer options">
-                  <button class="btn btn-default"
-                          data-ng-repeat="option in question.responseOptions"
-                          for="{{option}}"
-                          data-ng-model="question.response"
-                          uib-btn-radio="'{{option}}'">{{option}}</button>
-              </div>
-          </div>
-          <div data-ng-if="question.format == 'SELECT'">
-              <select class="form-control" data-ng-model="question.response">
-                  <option data-ng-repeat="option in question.responseOptions">{{option}}</option>
-              </select>
-          </div>
-      </div>
-      <div class="col-md-4">
-          <textarea class="form-control" rows="5" data-ng-model="question.comments" placeholder="Please enter comments here.  Written comments using examples and framed constructively are the most rich and valuable form of feedback."></textarea>
-      </div>
+    </div>
+    <div class="col-md-4">
+      <textarea class="form-control" rows="5" data-ng-model="question.comments" placeholder="Please enter comments here.  Written comments using examples and framed constructively are the most rich and valuable form of feedback."></textarea>
+    </div>
   </div>
   <div class="row top-buffer">
     <div class="col-md-2">
