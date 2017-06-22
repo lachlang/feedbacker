@@ -34,25 +34,63 @@ User interface tests are implemented using [Karma](https://karma-runner.github.i
 Running these requires the following npm installations:
 
 ```
-npm install karma --save-dev
-npm install karma-jasmine jasmine-core karma-chrome-launcher --save-dev
-npm install -g karma-cli
+> npm install karma --save-dev
+> npm install karma-jasmine jasmine-core karma-chrome-launcher --save-dev
+> npm install -g karma-cli
 ```
 
 The test may be executed via ```karma start conf/karma.conf.js``` from the base
 project directory.
 
-#### Server config
+#### Server Test and Startup
 
 The server is implemented in Scala and by default uses a PostgreSQL database.
+
+Some useful commands are:
+
+```
+> sbt
+sbt> test
+sbt> run
+sbt> docker:publishLocal
+```
+
+### Tech Stack
+
+Feedbacker is implemented using scala and Play Framework on the server side, with Angular JS (version 1) and Bootstrap
+in the browser.
+
+To develop you will need:
+
+* [sbt (Scala Build Tool)](http://www.scala-sbt.org/)
+* [NodeJS (for testing only)](https://nodejs.org/en/download/)
+* [PostgreSQL](https://www.postgresql.org/)
+
+Tools and documentation include:
+
+* [Play Framework (v2.5.x)](https://www.playframework.com/documentation/2.5.x/Home)
+* [Angular JS (v1.5.3)](https://docs.angularjs.org/guide)
+* [Angular Bootstrap (v2.5.0)](https://angular-ui.github.io/bootstrap/)
+* [Bootstrap CSS (v3.3.5)](http://getbootstrap.com/getting-started/)
+
+
+#### Database Development Configuration
+
+To initialise the database for development follow the below steps:
+
+1. Install [PostgreSQL](https://www.postgresql.org/)
+2. Create a system user with the following credentials
+Username: `feedback-service`
+Password: `password`
+3. Create a new schema called **feedbacks** using the new user
+4. Apply all the *up* evolutions in the /conf/evolutions directory
+
+NOTE: change the system password when deploying on a server.
 
 ### Future Scope
 
 There are are number of features which have been considered but not implemented at this point.  These include:
 
 * pre-configure an internal hierarchy model within Feedbacker
-* admin controls to set up additional review cycles and/or update questions
 * additional reporting for viewing and/or sharing feedback
-* export of feedback results to csv or excel for appropriate users
-* nomination for ad-hoc/immediate feedback for individuals without a nomination
 * renaming Feedbacker to remove needless vowels
