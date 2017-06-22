@@ -79,7 +79,7 @@ class AuthenticationSpec extends PlaySpec with MockitoSugar with AllFixtures wit
         verifyZeroInteractions(f.mockPersonDao)
       }
     }
-    "return forbidden when person not registered" in {
+    "return unauthorised when person not registered" in {
       forAll() { (credentials: Credentials, password: String) =>
         // setup
         val f = fixture
@@ -89,12 +89,12 @@ class AuthenticationSpec extends PlaySpec with MockitoSugar with AllFixtures wit
 
         // verify
         verify(f.mockPersonDao).findByEmail(credentials.email.toLowerCase)
-        status(result) mustBe 403
+        status(result) mustBe 401
         contentAsString(result) mustBe ""
         verifyZeroInteractions(f.mockSessionManager)
       }
     }
-    "return unauthorised when person is not active" in {
+    "return not acceptable (406) when person is not active" in {
       forAll() { (person: Person, password: String) =>
         whenever(person.credentials.status != CredentialStatus.Active) {
           // setup
@@ -105,13 +105,13 @@ class AuthenticationSpec extends PlaySpec with MockitoSugar with AllFixtures wit
 
           // verify
           verify(f.mockPersonDao).findByEmail(person.credentials.email.toLowerCase)
-          status(result) mustBe 401
+          status(result) mustBe 406
           contentAsString(result) mustBe ""
           verifyZeroInteractions(f.mockSessionManager)
         }
       }
     }
-    "return bad request when no session token is created" in {
+    "return unauthorised (401) when no session token is created" in {
       forAll() { (example: Person, password: String) =>
         // setup
         val person = example.copy(credentials = example.credentials.copy(status = CredentialStatus.Active))
@@ -124,7 +124,7 @@ class AuthenticationSpec extends PlaySpec with MockitoSugar with AllFixtures wit
         // verify
         verify(f.mockPersonDao).findByEmail(person.credentials.email.toLowerCase)
         verify(f.mockSessionManager).initialiseToken(person, password)
-        status(result) mustBe 400
+        status(result) mustBe 401
         contentAsString(result) mustBe ""
       }
     }

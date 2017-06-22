@@ -112,7 +112,7 @@ describe('menu controller [MenuCtrl]', function() {
 
 			menuController.login("username", "password");
 
-            response.status = 400;
+            response.status = 401;
 			deferred.reject(response);
 			scope.$digest();
 
@@ -121,8 +121,8 @@ describe('menu controller [MenuCtrl]', function() {
 
 			menuController.login("username", "password");
 
-            response.status = 401;
-			deferred.reject({response: {status: 401}});
+            response.status = 406;
+			deferred.reject({response: {status: 406}});
 			scope.$digest();
 
             expect($rootScope.$broadcast).toHaveBeenCalledWith('inactive-account', {});
