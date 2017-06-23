@@ -1,7 +1,7 @@
 /*
  * Controller for feedback action
  */
-fbControllers.controller('EditCtrl',  ['$scope', '$log', 'Model','Feedback', '$location', 'Util', function($scope, $log, Model, Feedback, $location, Util) {
+fbControllers.controller('EditCtrl',  ['$scope', '$log', 'Model', '$location', 'Util', function($scope, $log, Model, $location, Util) {
 
 	var ctrl = this;
 
@@ -33,8 +33,9 @@ fbControllers.controller('EditCtrl',  ['$scope', '$log', 'Model','Feedback', '$l
 		if (!feedbackItem || !feedbackItem.id || !feedbackItem.questions) {
 			return;
 		}
-		Feedback.updateFeedback(feedbackItem.id, feedbackItem.questions, !!feedbackItem.shareFeedback, !!submit).then(function(response) {
+		Model.updateFeedbackDetail(feedbackItem.id, feedbackItem.questions, !!feedbackItem.shareFeedback, !!submit).then(function(response) {
 			Model.getPendingFeedbackActions(true);
+      ctrl.feedback = response
 
 			if (!!submit) {
 				// update the summary view and return to the list view

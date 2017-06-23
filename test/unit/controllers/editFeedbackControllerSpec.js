@@ -2,24 +2,22 @@
 
 describe('edit feedback detail controller [EditCtrl]', function() {
 
-  var scope, editController, model, location, util, feedback;
+  var scope, editController, model, location, util;
   var deferred, deferredUpdate;
 
   beforeEach(module('feedbacker'));
 
     // define the mock person and relationship services
-    beforeEach(inject(function($rootScope, $q, $controller, _Model_, $location, _Util_, _Feedback_) {
+    beforeEach(inject(function($rootScope, $q, $controller, _Model_, $location, _Util_) {
     scope = $rootScope.$new();
 
     deferredUpdate = $q.defer();
     deferred = $q.defer();
 
     model = _Model_;
-    spyOn(model, 'getFeedbackDetail').and.returnValue(deferred.promise);
-    spyOn(model, 'getPendingFeedbackActions').and.returnValue(deferredUpdate.promise);
-
-    feedback = _Feedback_;
-    spyOn(feedback, 'updateFeedback').and.returnValue(deferredUpdate.promise);
+    spyOn(model, 'getFeedbackDetail').and.returnValue(deferred.promise)
+    spyOn(model, 'updateFeedbackDetail').and.returnValue(deferredUpdate.promise)
+    spyOn(model, 'getPendingFeedbackActions').and.returnValue(deferredUpdate.promise)
 
     location = $location;
     spyOn(location, 'search').and.returnValue({"id":"12"});
@@ -115,16 +113,16 @@ describe('edit feedback detail controller [EditCtrl]', function() {
 
     it('should reject saving feedback without enough arguments', function(){
       editController.save();
-      expect(feedback.updateFeedback).not.toHaveBeenCalled();
+      expect(model.updateFeedbackDetail).not.toHaveBeenCalled();
 
       editController.save({"id":1});
-      expect(feedback.updateFeedback).not.toHaveBeenCalled();
+      expect(model.updateFeedbackDetail).not.toHaveBeenCalled();
 
       editController.save({"questions":[]});
-      expect(feedback.updateFeedback).not.toHaveBeenCalled();
+      expect(model.updateFeedbackDetail).not.toHaveBeenCalled();
 
       editController.save({"id":1, "questions":[]});
-      expect(feedback.updateFeedback).toHaveBeenCalledWith(1, [], false, false);
+      expect(model.updateFeedbackDetail).toHaveBeenCalledWith(1, [], false, false);
     });
 
     it('resets the error messages when saving', function() {
@@ -133,35 +131,37 @@ describe('edit feedback detail controller [EditCtrl]', function() {
       expect(editController.resetError).toHaveBeenCalled();
     });
 
-    it('should call the feedback.updateFeedback function and navigate away after submit', function() {
+    it('should call the model.updateFeedbackDetail function and navigate away after submit', function() {
       editController.save({"id":123, questions:[{"question":"answer"}], "shareFeedback": true}, true);
-      expect(feedback.updateFeedback).toHaveBeenCalledWith(123,[{"question":"answer"}], true, true);
+      expect(model.updateFeedbackDetail).toHaveBeenCalledWith(123,[{"question":"answer"}], true, true);
 
       spyOn(editController, 'navigateToList');
       deferredUpdate.resolve();
       scope.$digest();
 
+      expect(editController.feedback).toBeUndefined();
       expect(model.getPendingFeedbackActions).toHaveBeenCalledWith(true);
       expect(editController.navigateToList).toHaveBeenCalled();
       expect(editController.message).toBeUndefined();
     });
 
-    it('should call the feedback.updateFeedback function and display message after save', function() {
+    it('should call the model.updateFeedbackDetail function and display message after save', function() {
       editController.save({"id":123, questions:[{"question":"answer"}], "shareFeedback": true});
-      expect(feedback.updateFeedback).toHaveBeenCalledWith(123,[{"question":"answer"}], true, false);
+      expect(model.updateFeedbackDetail).toHaveBeenCalledWith(123,[{"question":"answer"}], true, false);
 
       spyOn(editController, 'navigateToList');
-      deferredUpdate.resolve();
+      deferredUpdate.resolve({"response":"value"});
       scope.$digest();
 
+      expect(editController.feedback).toEqual({"response":"value"});
       expect(model.getPendingFeedbackActions).toHaveBeenCalledWith(true);
       expect(editController.navigateToList).not.toHaveBeenCalled();
       expect(editController.message).toEqual("Saved feedback.");
     });
 
-    it('should call the feedback.updateFeedback function and display message after failing', function() {
+    it('should call the model.updateFeedbackDetail function and display message after failing', function() {
       editController.save({"id":123, questions:[{"question":"answer"}], "shareFeedback": true});
-      expect(feedback.updateFeedback).toHaveBeenCalledWith(123,[{"question":"answer"}], true, false);
+      expect(model.updateFeedbackDetail).toHaveBeenCalledWith(123,[{"question":"answer"}], true, false);
 
       spyOn(editController, 'navigateToList');
       deferredUpdate.reject();

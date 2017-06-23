@@ -34,6 +34,7 @@ describe('service [Model]', function() {
     spyOn(feedback, 'createFeedbackCycle').and.returnValue(deferred.promise);
     spyOn(feedback, 'updateFeedbackCycle').and.returnValue(deferred.promise);
     spyOn(feedback, 'getCycleReports').and.returnValue(deferred.promise)
+    spyOn(feedback, 'updateFeedback').and.returnValue(deferred.promise)
 
     nomination = _Nomination_;
     spyOn(nomination, 'getCurrentNominations').and.returnValue(deferred.promise);
@@ -53,6 +54,7 @@ describe('service [Model]', function() {
       expect(angular.isFunction(model.getCurrentFeedback)).toBe(true);
       expect(angular.isFunction(model.getFeedbackHistory)).toBe(true);
       expect(angular.isFunction(model.getFeedbackDetail)).toBe(true);
+      expect(angular.isFunction(model.updateFeedbackDetail)).toBe(true);
       expect(angular.isFunction(model.getActiveUsers)).toBe(true);
       expect(angular.isFunction(model.getRegisteredUsers)).toBe(true);
       expect(angular.isFunction(model.getCurrentNominations)).toBe(true);
@@ -247,84 +249,104 @@ describe('service [Model]', function() {
 
   describe('write through tests', function() {
 
-      it('should call the account.updateCurrentUser service', function() {
-          model.updateCurrentUser("1", "2");
+    it('should call the account.updateCurrentUser service', function() {
+      model.updateCurrentUser("1", "2");
 
-          expect(account.updateCurrentUser).toHaveBeenCalledWith("1", "2");
+      expect(account.updateCurrentUser).toHaveBeenCalledWith("1", "2");
+    });
+
+    it('should set the cache when the account.updateCurrentUser service is called', function() {
+      model.updateCurrentUser("1", "2");
+
+      deferred.resolve({ "data": {"body":"value"}});
+      scope.$digest();
+
+      model.getCurrentUser();
+      expect(account.getCurrentUser).not.toHaveBeenCalled();
+    });
+
+    it('should call the feedback.createAdHocFeedback service', function() {
+      model.createAdHocFeedback("username", "message", true);
+
+      expect(feedback.createAdHocFeedback).toHaveBeenCalledWith("username", "message", true)
+    });
+
+    it('should update the cache when feedback.createAdHocFeedback service is called', function() {
+      var result;
+      model.createAdHocFeedback("username", "message", true).then(function(response){
+        result = response;
       });
 
-      it('should set the cache when the account.updateCurrentUser service is called', function() {
-          model.updateCurrentUser("1", "2");
+      deferred.resolve({ "data": {"body": "value" } });
+      scope.$digest();
 
-          deferred.resolve({ "data": {"body":"value"}});
-          scope.$digest();
+      expect(result).toEqual(["value"]);
 
-          model.getCurrentUser();
-          expect(account.getCurrentUser).not.toHaveBeenCalled();
+      model.getSubmittedAdHocFeedback().then(function(response) {
+        result = response;
+      });
+      scope.$digest();
+
+      expect(result).toEqual(["value"]);
+    });
+
+    it('should update the cache when feedback.createFeedbackCycle service is called', function() {
+      var result;
+      model.createFeedbackCycle({"some":"thing"}).then(function(response){
+        result = response;
       });
 
-      it('should call the feedback.createAdHocFeedback service', function() {
-        model.createAdHocFeedback("username", "message", true);
+      deferred.resolve({ "data": {"body": { "id": "value" } } });
+      scope.$digest();
 
-        expect(feedback.createAdHocFeedback).toHaveBeenCalledWith("username", "message", true)
+      expect(result).toEqual({ "id": "value" });
+
+      model.getFeedbackCycle("value").then(function(response) {
+        result = response;
+      });
+      scope.$digest();
+
+      expect(result).toEqual({ "id": "value" });
+    });
+
+    it('should update the cache when feedback.updateFeedbackCycle service is called', function() {
+      var result;
+      model.updateFeedbackCycle({"some":"thing"}).then(function(response){
+        result = response;
       });
 
-      it('should update the cache when feedback.createAdHocFeedback service is called', function() {
-        var result;
-        model.createAdHocFeedback("username", "message", true).then(function(response){
-          result = response;
-        });
+      deferred.resolve({ "data": {"body": { "id": "value" } } });
+      scope.$digest();
 
-        deferred.resolve({ "data": {"body": "value" } });
-        scope.$digest();
+      expect(result).toEqual({ "id": "value" });
 
-        expect(result).toEqual(["value"]);
+      model.getFeedbackCycle("value").then(function(response) {
+        result = response;
+      });
+      scope.$digest();
 
-        model.getSubmittedAdHocFeedback().then(function(response) {
-          result = response;
-        });
-        scope.$digest();
+      expect(result).toEqual({ "id": "value" });
+    });
 
-        expect(result).toEqual(["value"]);
+    it('should update the cache when feedback.updateFeedback service is called', function() {
+      var result;
+      model.updateFeedbackDetail(123, [{"some": "thing"}, {"some":"other thing"}], undefined, undefined).then(function(response){
+        result = response;
       });
 
-      it('should update the cache when feedback.createFeedbackCycle service is called', function() {
-        var result;
-        model.createFeedbackCycle({"some":"thing"}).then(function(response){
-          result = response;
-        });
+      deferred.resolve({ "data": {"body": { "id": "value" } } });
+      scope.$digest()
 
-        deferred.resolve({ "data": {"body": { "id": "value" } } });
-        scope.$digest();
+      expect(feedback.updateFeedback).toHaveBeenCalledWith(123, [{"some": "thing"}, {"some":"other thing"}], false, false)
+      expect(result).toEqual({ "id": "value" })
 
-        expect(result).toEqual({ "id": "value" });
+      model.getFeedbackDetail("value").then(function(response) {
+        result = response
+      })
+      scope.$digest()
 
-        model.getFeedbackCycle("value").then(function(response) {
-          result = response;
-        });
-        scope.$digest();
-
-        expect(result).toEqual({ "id": "value" });
-      });
-
-      it('should update the cache when feedback.updateFeedbackCycle service is called', function() {
-        var result;
-        model.updateFeedbackCycle({"some":"thing"}).then(function(response){
-          result = response;
-        });
-
-        deferred.resolve({ "data": {"body": { "id": "value" } } });
-        scope.$digest();
-
-        expect(result).toEqual({ "id": "value" });
-
-        model.getFeedbackCycle("value").then(function(response) {
-          result = response;
-        });
-        scope.$digest();
-
-        expect(result).toEqual({ "id": "value" });
-      });
+      expect(result).toEqual({ "id": "value" })
+    });
   });
 
   describe('flushes the entire cache', function() {
