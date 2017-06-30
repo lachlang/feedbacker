@@ -32,20 +32,20 @@ class CsvReport {
   private def serialiseNominations(nominations: Seq[Nomination], output: String = ""): String = {
     nominations match {
       case Nil    => output
-      case n::ns  => serialiseNominations(ns, s"$output\nFeedback from ${n.to.map(_.name).getOrElse("")} for ${n.from.map(_.name).getOrElse("")} on ${n.lastUpdated.getOrElse("not submitted")}\n${serialiseQuestions(n.questions).toString}")
+      case n::ns  => serialiseNominations(ns, s"$output\nFeedback from ${n.to.map(_.name).getOrElse("")} for ${n.from.map(_.name).getOrElse("")} on ${n.lastUpdated.getOrElse("not submitted")}\n${serialiseQuestions(1, n.questions).toString}")
     }
   }
 
-  private def serialiseQuestions(questions: Seq[QuestionResponse], qf: QuestionFormat = QuestionFormat()): QuestionFormat = {
+  private def serialiseQuestions(count: Int, questions: Seq[QuestionResponse], qf: QuestionFormat = QuestionFormat()): QuestionFormat = {
     questions match {
       case Nil    => qf
-      case q::qs  => serialiseQuestions(qs, QuestionFormat(s"${qf.questionText},${q.text.replace(',',' ')}", s"${qf.response},${q.response.getOrElse("").replace(',',' ')}", s"${qf.comments},${q.comments.getOrElse("").replace(',',' ')}"))
+      case q::qs  => serialiseQuestions(count + 1, qs, QuestionFormat(s"${qf.questionCount},Question ${count}", s"${qf.questionText},${q.text.replace(',',' ')}", s"${qf.response},${q.response.getOrElse("").replace(',',' ')}", s"${qf.comments},${q.comments.getOrElse("").replace(',',' ').replace('\n',' ')}"))
     }
   }
 }
 
 object CsvReport extends CsvReport
 
-case class QuestionFormat(questionText: String = "", response: String = "", comments: String = "") {
-  override def toString(): String = s"${this.questionText}\n${this.response}\n${this.comments}"
+case class QuestionFormat(questionCount: String = "", questionText: String = "", response: String = "", comments: String = "") {
+  override def toString(): String = s"${this.questionCount}\n${this.questionText}\n${this.response}\n${this.comments}"
 }

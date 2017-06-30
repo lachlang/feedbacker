@@ -29,6 +29,7 @@
 	</div>
 	<div class="col-md-4">
 		<span>{{question.text}}</span>
+		<span uib-tooltip="{{question.helpText}}" tooltip-placement="right" data-ng-show="question.helpText" class="fa fa-question-circle-o"></span>
 	</div>
 	<div class="col-md-2">
 		<div class="btn-group" data-ng-if="question.format == 'RADIO'" role="group" aria-label="Answer options">

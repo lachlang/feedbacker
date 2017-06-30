@@ -39,7 +39,9 @@ class Feedback @Inject() (person: PersonDao,
         val questionsJson: JsResult[Seq[QuestionResponse]] = json.validate[Seq[QuestionResponse]]((JsPath \ "body" \ "questions").read[Seq[QuestionResponse]])
         (questionsJson, submittedJson, shareFeedbackJson) match {
           case (JsSuccess(questions,_), JsSuccess(submitted,_), JsSuccess(shareFeedback,_)) =>
-            if (nomination.submitFeedback(nominationId, questions, submitted, feedbackCycle.getSharingSettingsForNomination(nominationId,shareFeedback))) Ok else BadRequest
+            if (nomination.submitFeedback(nominationId, questions, submitted, feedbackCycle.getSharingSettingsForNomination(nominationId,shareFeedback)))
+              Ok(Json.obj("apiVersion" -> "1.0", "body" -> Json.toJson(DetailItem.detailFromNomination(n, feedbackCycle.findById(n.cycleId)))))
+            else BadRequest
           case _ => BadRequest
         }
       }
