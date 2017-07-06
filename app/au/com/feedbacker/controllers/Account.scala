@@ -138,7 +138,7 @@ class ReportFile @Inject() (person: PersonDao, nomination: NominationDao, cycle:
         Forbidden
       } else {
         val report: Report = Report(p, nomination.getAllFeedbackHistoryForUserWithDetail(p.credentials.email))
-        Ok(csvReport.createReportForPerson(report)).as(mime).withHeaders(attachmentHeader(s"Review_Summary_for_${user.name}_at_${DateTime.now()}.csv"))
+        Ok(csvReport.createReportForPerson(report)).as(mime).withHeaders(attachmentHeader(s"Review_Summary_for_${p.name}_at_${DateTime.now()}.csv"))
       }
     }
   }
