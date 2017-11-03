@@ -47,7 +47,7 @@ fbControllers.controller('EditCtrl',  ['$scope', '$log', 'Model', '$location', '
 			ctrl.error = "Could not save feedback.  Please try again later."
 		});
 	};
-
+	
 	ctrl.initialiseController();
 
 	ctrl.navigateToList = function() {
